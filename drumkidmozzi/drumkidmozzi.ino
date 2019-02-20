@@ -53,7 +53,7 @@ void updateControl(){
     beatIndex = beatIndex % 16;
     kTriggerDelay.start(beatTime);
   }
-  if(true) lpf.setCutoffFreq(mozziAnalogRead(0)>>2);
+  if(false) lpf.setCutoffFreq(mozziAnalogRead(0)>>2);
   if(false) {
     bitCrushLevel = 7-(mozziAnalogRead(0)>>7);
     bitCrushCompensation = bitCrushLevel;
@@ -61,6 +61,11 @@ void updateControl(){
     if(bitCrushLevel >= 7) bitCrushCompensation --;
   }
   if(false) beatTime = 20 + mozziAnalogRead(0); // temp
+  if(true) {
+    aSample.setFreq(((float) mozziAnalogRead(0) / 255.0f) * (float) kick_SAMPLERATE / (float) kick_NUM_CELLS);
+    bSample.setFreq(((float) mozziAnalogRead(0) / 255.0f) * (float) closedhat_SAMPLERATE / (float) closedhat_NUM_CELLS);
+    cSample.setFreq(((float) mozziAnalogRead(0) / 255.0f) * (float) snare_SAMPLERATE / (float) snare_NUM_CELLS);
+  }
 }
 
 
