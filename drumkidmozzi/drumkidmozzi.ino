@@ -24,6 +24,12 @@ EventDelay kTriggerDelay;
 byte bitCrushLevel; // between 0 and 7
 byte bitCrushCompensation;
 int beatTime = 150;
+byte beatIndex = 0;
+
+// define beats (temporarily here, probably move to a separate file later?)
+bool beat1[][16] = {  {1,0,0,0,0,0,0,0,1,0,1,0,0,0,0,1,},
+                      {1,0,1,0,1,0,1,1,0,1,1,0,1,0,1,0,},
+                      {0,0,0,0,1,0,0,0,0,0,0,0,1,0,0,0,},};
 
 void setup(){
   startMozzi(CONTROL_RATE);
@@ -39,10 +45,12 @@ void setup(){
 
 void updateControl(){
   if(kTriggerDelay.ready()){
-    byte r = rand(3);
-    if(r==0) aSample.start();
-    else if(r==1) cSample.start();
-    else bSample.start();
+    //byte r = rand(3);
+    if(beat1[0][beatIndex]) aSample.start();
+    if(beat1[1][beatIndex]) bSample.start();
+    if(beat1[2][beatIndex]) cSample.start();
+    beatIndex ++;
+    beatIndex = beatIndex % 16;
     kTriggerDelay.start(beatTime);
   }
   if(true) lpf.setCutoffFreq(mozziAnalogRead(0)>>2);
