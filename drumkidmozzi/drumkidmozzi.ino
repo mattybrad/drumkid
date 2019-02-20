@@ -21,6 +21,9 @@ Sample <snare_NUM_CELLS, AUDIO_RATE> cSample(snare_DATA);
 LowPassFilter lpf;
 EventDelay kTriggerDelay;
 
+byte bitCrushLevel; // between 0 and 7
+byte bitCrushCompensation;
+
 void setup(){
   startMozzi(CONTROL_RATE);
   aSample.setFreq((float) kick_SAMPLERATE / (float) kick_NUM_CELLS);
@@ -28,7 +31,8 @@ void setup(){
   cSample.setFreq((float) snare_SAMPLERATE / (float) snare_NUM_CELLS);
   aSample.setEnd(7000); // was getting a funny click at the end of the kick sample
   lpf.setResonance(200);
-  kTriggerDelay.set(100);
+  lpf.setCutoffFreq(255);
+  kTriggerDelay.set(200);
 }
 
 
@@ -42,12 +46,19 @@ void updateControl(){
     bSample.start();
     kTriggerDelay.start();
   }
-  lpf.setCutoffFreq(mozziAnalogRead(0)>>2);
+  if(false) lpf.setCutoffFreq(mozziAnalogRead(0)>>2);
+  if(true) {
+    bitCrushLevel = 7-(mozziAnalogRead(0)>>7);
+    bitCrushCompensation = bitCrushLevel;
+    if(bitCrushLevel >= 6) bitCrushCompensation --;
+    if(bitCrushLevel >= 7) bitCrushCompensation --;
+  }
 }
 
 
 int updateAudio(){
   char asig = lpf.next((aSample.next()>>1)+(bSample.next()>>1)+(cSample.next()>>1));
+  asig = (asig>>bitCrushLevel)<<bitCrushCompensation;
   return (int) asig;
 }
 
