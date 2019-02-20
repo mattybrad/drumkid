@@ -23,6 +23,7 @@ EventDelay kTriggerDelay;
 
 byte bitCrushLevel; // between 0 and 7
 byte bitCrushCompensation;
+int beatTime = 150;
 
 void setup(){
   startMozzi(CONTROL_RATE);
@@ -32,27 +33,26 @@ void setup(){
   aSample.setEnd(7000); // was getting a funny click at the end of the kick sample
   lpf.setResonance(200);
   lpf.setCutoffFreq(255);
-  kTriggerDelay.set(200);
+  kTriggerDelay.set(beatTime);
 }
 
 
 void updateControl(){
   if(kTriggerDelay.ready()){
-    byte r = rand(2);
-    if(r==0) {
-      aSample.start();
-    }
+    byte r = rand(3);
+    if(r==0) aSample.start();
     else if(r==1) cSample.start();
-    bSample.start();
-    kTriggerDelay.start();
+    else bSample.start();
+    kTriggerDelay.start(beatTime);
   }
-  if(false) lpf.setCutoffFreq(mozziAnalogRead(0)>>2);
-  if(true) {
+  if(true) lpf.setCutoffFreq(mozziAnalogRead(0)>>2);
+  if(false) {
     bitCrushLevel = 7-(mozziAnalogRead(0)>>7);
     bitCrushCompensation = bitCrushLevel;
     if(bitCrushLevel >= 6) bitCrushCompensation --;
     if(bitCrushLevel >= 7) bitCrushCompensation --;
   }
+  if(false) beatTime = 20 + mozziAnalogRead(0); // temp
 }
 
 
