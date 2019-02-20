@@ -1,0 +1,20 @@
+these notes are just for my reference really but feel free to read them!
+
+------------
+
+start with three basic sounds, kick/snare/hat
+controls from previous drumkid:
+tempo -> yes
+blend -> yes but cycle through all patterns
+hyperactivity -> yes
+zoom -> yes
+sloppiness -> yes?
+toms -> hmmmm no?
+percussion -> hmmm probs no?
+pitch -> hopefully
+ceiling -> probably
+kick -> no?
+snare -> no? or crossfade with kick/hats somehow?
+resonance/cutoff -> combine somehow?
+delay time/level -> nah, not enough processing power
+volume -> analog knob i guess
