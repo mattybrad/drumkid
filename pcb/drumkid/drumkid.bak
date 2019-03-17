@@ -1,0 +1,275 @@
+EESchema Schematic File Version 4
+LIBS:drumkid-cache
+EELAYER 26 0
+EELAYER END
+$Descr A4 11693 8268
+encoding utf-8
+Sheet 1 1
+Title ""
+Date ""
+Rev ""
+Comp ""
+Comment1 ""
+Comment2 ""
+Comment3 ""
+Comment4 ""
+$EndDescr
+$Comp
+L MCU_Microchip_ATmega:ATmega328P-PU U?
+U 1 1 5C708905
+P 5450 3750
+F 0 "U?" H 4809 3796 50  0000 R CNN
+F 1 "ATmega328P-PU" H 4809 3705 50  0000 R CNN
+F 2 "Package_DIP:DIP-28_W7.62mm" H 5450 3750 50  0001 C CIN
+F 3 "http://ww1.microchip.com/downloads/en/DeviceDoc/ATmega328_P%20AVR%20MCU%20with%20picoPower%20Technology%20Data%20Sheet%2040001984A.pdf" H 5450 3750 50  0001 C CNN
+	1    5450 3750
+	1    0    0    -1  
+$EndComp
+$Comp
+L Connector:AudioJack3_Ground J?
+U 1 1 5C708CAA
+P 7850 2850
+F 0 "J?" H 7854 3192 50  0000 C CNN
+F 1 "AudioJack3_Ground" H 7854 3101 50  0000 C CNN
+F 2 "" H 7850 2850 50  0001 C CNN
+F 3 "~" H 7850 2850 50  0001 C CNN
+	1    7850 2850
+	-1   0    0    1   
+$EndComp
+$Comp
+L Switch:SW_SPST SW?
+U 1 1 5C8A4739
+P 6800 4450
+F 0 "SW?" H 6800 4685 50  0000 C CNN
+F 1 "SW_SPST" H 6800 4594 50  0000 C CNN
+F 2 "" H 6800 4450 50  0001 C CNN
+F 3 "" H 6800 4450 50  0001 C CNN
+	1    6800 4450
+	1    0    0    -1  
+$EndComp
+$Comp
+L Switch:SW_SPST SW?
+U 1 1 5C8A47F7
+P 7250 4550
+F 0 "SW?" H 7250 4785 50  0000 C CNN
+F 1 "SW_SPST" H 7250 4694 50  0000 C CNN
+F 2 "" H 7250 4550 50  0001 C CNN
+F 3 "" H 7250 4550 50  0001 C CNN
+	1    7250 4550
+	1    0    0    -1  
+$EndComp
+$Comp
+L Switch:SW_SPST SW?
+U 1 1 5C8A4857
+P 7700 4650
+F 0 "SW?" H 7700 4885 50  0000 C CNN
+F 1 "SW_SPST" H 7700 4794 50  0000 C CNN
+F 2 "" H 7700 4650 50  0001 C CNN
+F 3 "" H 7700 4650 50  0001 C CNN
+	1    7700 4650
+	1    0    0    -1  
+$EndComp
+$Comp
+L Switch:SW_SPST SW?
+U 1 1 5C8A48AF
+P 8150 4750
+F 0 "SW?" H 8150 4985 50  0000 C CNN
+F 1 "SW_SPST" H 8150 4894 50  0000 C CNN
+F 2 "" H 8150 4750 50  0001 C CNN
+F 3 "" H 8150 4750 50  0001 C CNN
+	1    8150 4750
+	1    0    0    -1  
+$EndComp
+$Comp
+L Switch:SW_SPST SW?
+U 1 1 5C8A4957
+P 8600 4850
+F 0 "SW?" H 8600 5085 50  0000 C CNN
+F 1 "SW_SPST" H 8600 4994 50  0000 C CNN
+F 2 "" H 8600 4850 50  0001 C CNN
+F 3 "" H 8600 4850 50  0001 C CNN
+	1    8600 4850
+	1    0    0    -1  
+$EndComp
+$Comp
+L Switch:SW_SPST SW?
+U 1 1 5C8A49E1
+P 9050 4950
+F 0 "SW?" H 9050 5185 50  0000 C CNN
+F 1 "SW_SPST" H 9050 5094 50  0000 C CNN
+F 2 "" H 9050 4950 50  0001 C CNN
+F 3 "" H 9050 4950 50  0001 C CNN
+	1    9050 4950
+	1    0    0    -1  
+$EndComp
+Wire Wire Line
+	6050 4450 6600 4450
+Wire Wire Line
+	6050 4550 7050 4550
+Wire Wire Line
+	6050 4650 7500 4650
+Wire Wire Line
+	6050 4750 7950 4750
+Wire Wire Line
+	6050 4850 8400 4850
+Wire Wire Line
+	6050 4950 8850 4950
+$Comp
+L Switch:SW_SPST SW?
+U 1 1 5C8A4CD3
+P 7100 2300
+F 0 "SW?" H 7100 2535 50  0000 C CNN
+F 1 "SW_SPST" H 7100 2444 50  0000 C CNN
+F 2 "" H 7100 2300 50  0001 C CNN
+F 3 "" H 7100 2300 50  0001 C CNN
+	1    7100 2300
+	1    0    0    -1  
+$EndComp
+Wire Wire Line
+	9250 5250 9250 4950
+Wire Wire Line
+	8800 4850 8800 5250
+Connection ~ 8800 5250
+Wire Wire Line
+	8800 5250 9250 5250
+Wire Wire Line
+	8350 4750 8350 5250
+Wire Wire Line
+	5450 5250 7000 5250
+Connection ~ 8350 5250
+Wire Wire Line
+	8350 5250 8800 5250
+Wire Wire Line
+	7900 4650 7900 5250
+Connection ~ 7900 5250
+Wire Wire Line
+	7900 5250 8350 5250
+Wire Wire Line
+	7450 4550 7450 5250
+Connection ~ 7450 5250
+Wire Wire Line
+	7450 5250 7900 5250
+Wire Wire Line
+	7000 4450 7000 5250
+Connection ~ 7000 5250
+Wire Wire Line
+	7000 5250 7450 5250
+$Comp
+L power:GND #PWR?
+U 1 1 5C8A5E49
+P 5450 5250
+F 0 "#PWR?" H 5450 5000 50  0001 C CNN
+F 1 "GND" H 5455 5077 50  0000 C CNN
+F 2 "" H 5450 5250 50  0001 C CNN
+F 3 "" H 5450 5250 50  0001 C CNN
+	1    5450 5250
+	1    0    0    -1  
+$EndComp
+Connection ~ 9250 4950
+$Comp
+L Device:R R?
+U 1 1 5C8A8E33
+P 6350 2650
+F 0 "R?" V 6143 2650 50  0000 C CNN
+F 1 "R" V 6234 2650 50  0000 C CNN
+F 2 "" V 6280 2650 50  0001 C CNN
+F 3 "~" H 6350 2650 50  0001 C CNN
+	1    6350 2650
+	0    1    1    0   
+$EndComp
+Connection ~ 5450 5250
+$Comp
+L Device:C C?
+U 1 1 5C8A9CE9
+P 6700 2800
+F 0 "C?" H 6585 2754 50  0000 R CNN
+F 1 "C" H 6585 2845 50  0000 R CNN
+F 2 "" H 6738 2650 50  0001 C CNN
+F 3 "~" H 6700 2800 50  0001 C CNN
+	1    6700 2800
+	-1   0    0    1   
+$EndComp
+$Comp
+L Device:R_POT RV?
+U 1 1 5C8AAE8E
+P 6550 3450
+F 0 "RV?" H 6480 3404 50  0000 R CNN
+F 1 "R_POT" H 6480 3495 50  0000 R CNN
+F 2 "" H 6550 3450 50  0001 C CNN
+F 3 "~" H 6550 3450 50  0001 C CNN
+	1    6550 3450
+	-1   0    0    1   
+$EndComp
+$Comp
+L power:VCC #PWR?
+U 1 1 5C8AB0EA
+P 5450 2250
+F 0 "#PWR?" H 5450 2100 50  0001 C CNN
+F 1 "VCC" H 5467 2423 50  0000 C CNN
+F 2 "" H 5450 2250 50  0001 C CNN
+F 3 "" H 5450 2250 50  0001 C CNN
+	1    5450 2250
+	1    0    0    -1  
+$EndComp
+$Comp
+L power:VCC #PWR?
+U 1 1 5C8AB124
+P 6550 3300
+F 0 "#PWR?" H 6550 3150 50  0001 C CNN
+F 1 "VCC" H 6567 3473 50  0000 C CNN
+F 2 "" H 6550 3300 50  0001 C CNN
+F 3 "" H 6550 3300 50  0001 C CNN
+	1    6550 3300
+	1    0    0    -1  
+$EndComp
+Wire Wire Line
+	6550 3600 7350 3600
+Wire Wire Line
+	9250 3600 9250 4950
+Wire Wire Line
+	6400 3450 6050 3450
+$Comp
+L Device:R_POT RV?
+U 1 1 5C8B00DF
+P 7350 2800
+F 0 "RV?" H 7280 2846 50  0000 R CNN
+F 1 "R_POT" H 7280 2755 50  0000 R CNN
+F 2 "" H 7350 2800 50  0001 C CNN
+F 3 "~" H 7350 2800 50  0001 C CNN
+	1    7350 2800
+	1    0    0    -1  
+$EndComp
+Wire Wire Line
+	6050 2650 6200 2650
+Wire Wire Line
+	6500 2650 6700 2650
+Wire Wire Line
+	6700 2950 7350 2950
+Wire Wire Line
+	7350 2950 7650 2950
+Connection ~ 7350 2950
+Wire Wire Line
+	7500 2800 7650 2800
+Wire Wire Line
+	7650 2800 7650 2750
+Wire Wire Line
+	7650 2850 7650 2800
+Connection ~ 7650 2800
+Wire Wire Line
+	7350 2650 6700 2650
+Connection ~ 6700 2650
+Wire Wire Line
+	7350 2950 7350 3600
+Connection ~ 7350 3600
+Wire Wire Line
+	7350 3600 9250 3600
+Wire Wire Line
+	6050 2550 6050 2300
+Wire Wire Line
+	6050 2300 6900 2300
+Wire Wire Line
+	7300 2300 9250 2300
+Wire Wire Line
+	9250 2300 9250 3600
+Connection ~ 9250 3600
+$EndSCHEMATC
