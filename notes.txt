@@ -18,3 +18,21 @@ snare -> no? or crossfade with kick/hats somehow?
 resonance/cutoff -> combine somehow?
 delay time/level -> nah, not enough processing power
 volume -> analog knob i guess
+
+use EEPROM to save settings!
+BUT, can only write to EEPROM ~10,000 times (per address?)
+512 bytes of EEPROM, maybe store 40 bytes of data
+with address cycling could write 100,000 times?
+that would be fine if only stored beat on power off (30 years, 10 power cycles per day!)
+could save every ten seconds (naively, 700 hours total run time, more if sensible), but EEPROM saving likely to disrupt audio out?
+could save with a button, quick and dirty solution, maybe fine?
+otherwise need to save on power off, bit of a headache, need to keep arduino on for maybe 200ms or so, surely not beyond the realm of possibility?
+a capacitor might do the job - rough calculations say i might need 10,000uF or more, about £1.
+other option is like a mosfet or something?
+
+SETS:
+tempo   blend   ceiling?
+kick    snare   hat
+perc    toms    
+hyper   zoom    ?
+pitch   cutoff  crush
