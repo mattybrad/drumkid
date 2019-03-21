@@ -10,13 +10,6 @@
   )
 
   (page A4)
-  (title_block
-    (title DrumKid)
-    (rev v01)
-    (company "Matt Bradshaw Design")
-    (comment 4 "Author: Matt Bradshaw")
-  )
-
   (layers
     (0 F.Cu signal)
     (31 B.Cu signal)
@@ -191,7 +184,7 @@
   )
 
   (module Connector_PinHeader_2.54mm:PinHeader_1x02_P2.54mm_Vertical (layer F.Cu) (tedit 59FED5CC) (tstamp 5CB878B5)
-    (at 158.75 162.56)
+    (at 203.2 135.89)
     (descr "Through hole straight pin header, 1x02, 2.54mm pitch, single row")
     (tags "Through hole pin header THT 1x02 2.54mm single row")
     (path /5C8C17C6)
@@ -231,7 +224,7 @@
   )
 
   (module Capacitor_THT:CP_Radial_D6.3mm_P2.50mm (layer F.Cu) (tedit 5AE50EF0) (tstamp 5CB87949)
-    (at 110.49 163.83)
+    (at 154.94 137.16)
     (descr "CP, Radial series, Radial, pin pitch=2.50mm, , diameter=6.3mm, Electrolytic Capacitor")
     (tags "CP Radial series Radial pin pitch 2.50mm  diameter 6.3mm Electrolytic Capacitor")
     (path /5C8C4C33)
@@ -397,7 +390,7 @@
   )
 
   (module Capacitor_THT:C_Disc_D3.4mm_W2.1mm_P2.50mm (layer F.Cu) (tedit 5AE50EF0) (tstamp 5CB8795E)
-    (at 102.87 149.86)
+    (at 147.32 123.19)
     (descr "C, Disc series, Radial, pin pitch=2.50mm, , diameter*width=3.4*2.1mm^2, Capacitor, http://www.vishay.com/docs/45233/krseries.pdf")
     (tags "C Disc series Radial pin pitch 2.50mm  diameter 3.4mm width 2.1mm Capacitor")
     (path /5C8C2261)
@@ -436,7 +429,7 @@
   )
 
   (module Capacitor_THT:C_Disc_D3.4mm_W2.1mm_P2.50mm (layer F.Cu) (tedit 5AE50EF0) (tstamp 5CB87973)
-    (at 87.63 30.48)
+    (at 132.08 3.81)
     (descr "C, Disc series, Radial, pin pitch=2.50mm, , diameter*width=3.4*2.1mm^2, Capacitor, http://www.vishay.com/docs/45233/krseries.pdf")
     (tags "C Disc series Radial pin pitch 2.50mm  diameter 3.4mm width 2.1mm Capacitor")
     (path /5C8A9CE9)
@@ -475,7 +468,7 @@
   )
 
   (module Capacitor_THT:C_Disc_D3.4mm_W2.1mm_P2.50mm (layer F.Cu) (tedit 5AE50EF0) (tstamp 5CB87988)
-    (at 101.6 88.9)
+    (at 146.05 62.23)
     (descr "C, Disc series, Radial, pin pitch=2.50mm, , diameter*width=3.4*2.1mm^2, Capacitor, http://www.vishay.com/docs/45233/krseries.pdf")
     (tags "C Disc series Radial pin pitch 2.50mm  diameter 3.4mm width 2.1mm Capacitor")
     (path /5C8EA7A1)
@@ -514,7 +507,7 @@
   )
 
   (module Capacitor_THT:C_Disc_D3.4mm_W2.1mm_P2.50mm (layer F.Cu) (tedit 5AE50EF0) (tstamp 5CB8799D)
-    (at 113.03 88.9)
+    (at 157.48 62.23)
     (descr "C, Disc series, Radial, pin pitch=2.50mm, , diameter*width=3.4*2.1mm^2, Capacitor, http://www.vishay.com/docs/45233/krseries.pdf")
     (tags "C Disc series Radial pin pitch 2.50mm  diameter 3.4mm width 2.1mm Capacitor")
     (path /5C8EA73D)
@@ -553,7 +546,7 @@
   )
 
   (module Capacitor_THT:CP_Radial_D6.3mm_P2.50mm (layer F.Cu) (tedit 5AE50EF0) (tstamp 5CB87A31)
-    (at 138.43 165.1)
+    (at 182.88 138.43)
     (descr "CP, Radial series, Radial, pin pitch=2.50mm, , diameter=6.3mm, Electrolytic Capacitor")
     (tags "CP Radial series Radial pin pitch 2.50mm  diameter 6.3mm Electrolytic Capacitor")
     (path /5C8C8CCA)
@@ -719,7 +712,7 @@
   )
 
   (module Diode_THT:D_DO-41_SOD81_P10.16mm_Horizontal (layer F.Cu) (tedit 5AE50CD5) (tstamp 5CB87A50)
-    (at 85.09 163.83)
+    (at 129.54 137.16)
     (descr "Diode, DO-41_SOD81 series, Axial, Horizontal, pin pitch=10.16mm, , length*diameter=5.2*2.7mm^2, , http://www.diodes.com/_files/packages/DO-41%20(Plastic).pdf")
     (tags "Diode DO-41_SOD81 series Axial Horizontal pin pitch 10.16mm  length 5.2mm diameter 2.7mm")
     (path /5C8C8A69)
@@ -772,7 +765,7 @@
   )
 
   (module LED_THT:LED_D5.0mm (layer F.Cu) (tedit 5995936A) (tstamp 5CB87A62)
-    (at 105.41 50.8)
+    (at 149.86 24.13)
     (descr "LED, diameter 5.0mm, 2 pins, http://cdn-reichelt.de/documents/datenblatt/A500/LL-504BC2E-009.pdf")
     (tags "LED diameter 5.0mm 2 pins")
     (path /5C939F82)
@@ -808,7 +801,7 @@
   )
 
   (module LED_THT:LED_D5.0mm (layer F.Cu) (tedit 5995936A) (tstamp 5CB87A74)
-    (at 92.71 50.8)
+    (at 137.16 24.13)
     (descr "LED, diameter 5.0mm, 2 pins, http://cdn-reichelt.de/documents/datenblatt/A500/LL-504BC2E-009.pdf")
     (tags "LED diameter 5.0mm 2 pins")
     (path /5C93A0E2)
@@ -844,7 +837,7 @@
   )
 
   (module LED_THT:LED_D5.0mm (layer F.Cu) (tedit 5995936A) (tstamp 5CB87A86)
-    (at 129.54 50.8)
+    (at 173.99 24.13)
     (descr "LED, diameter 5.0mm, 2 pins, http://cdn-reichelt.de/documents/datenblatt/A500/LL-504BC2E-009.pdf")
     (tags "LED diameter 5.0mm 2 pins")
     (path /5C93E548)
@@ -880,7 +873,7 @@
   )
 
   (module LED_THT:LED_D5.0mm (layer F.Cu) (tedit 5995936A) (tstamp 5CB87A98)
-    (at 82.55 52.07)
+    (at 127 25.4)
     (descr "LED, diameter 5.0mm, 2 pins, http://cdn-reichelt.de/documents/datenblatt/A500/LL-504BC2E-009.pdf")
     (tags "LED diameter 5.0mm 2 pins")
     (path /5C935964)
@@ -916,7 +909,7 @@
   )
 
   (module LED_THT:LED_D5.0mm (layer F.Cu) (tedit 5995936A) (tstamp 5CB87AAA)
-    (at 115.57 50.8)
+    (at 160.02 24.13)
     (descr "LED, diameter 5.0mm, 2 pins, http://cdn-reichelt.de/documents/datenblatt/A500/LL-504BC2E-009.pdf")
     (tags "LED diameter 5.0mm 2 pins")
     (path /5C97EA78)
@@ -952,7 +945,7 @@
   )
 
   (module headphone:Tayda_3.5mm_stereo_TRS_jack_A-853 (layer F.Cu) (tedit 5C937D29) (tstamp 5CB87AC5)
-    (at 102.87 35.56)
+    (at 147.32 8.89)
     (path /5C93B028)
     (fp_text reference J1 (at -4.318 7.112) (layer F.SilkS)
       (effects (font (size 0.8 0.8) (thickness 0.15)))
@@ -991,7 +984,7 @@
   )
 
   (module Inductor_THT:L_Radial_D6.0mm_P4.00mm (layer F.Cu) (tedit 5AE59B06) (tstamp 5CB87AD0)
-    (at 139.7 148.59)
+    (at 184.15 121.92)
     (descr "Inductor, Radial series, Radial, pin pitch=4.00mm, , diameter=6.0mm, http://www.abracon.com/Magnetics/radial/AIUR-07.pdf")
     (tags "Inductor Radial series Radial pin pitch 4.00mm  diameter 6.0mm")
     (path /5C8C73E3)
@@ -1020,7 +1013,7 @@
   )
 
   (module Resistor_THT:R_Axial_DIN0207_L6.3mm_D2.5mm_P10.16mm_Horizontal (layer F.Cu) (tedit 5AE5139B) (tstamp 5CB87AE7)
-    (at 77.47 36.83)
+    (at 121.92 10.16)
     (descr "Resistor, Axial_DIN0207 series, Axial, Horizontal, pin pitch=10.16mm, 0.25W = 1/4W, length*diameter=6.3*2.5mm^2, http://cdn-reichelt.de/documents/datenblatt/B400/1_4W%23YAG.pdf")
     (tags "Resistor Axial_DIN0207 series Axial Horizontal pin pitch 10.16mm 0.25W = 1/4W length 6.3mm diameter 2.5mm")
     (path /5C8A8E33)
@@ -1061,7 +1054,7 @@
   )
 
   (module Resistor_THT:R_Axial_DIN0207_L6.3mm_D2.5mm_P10.16mm_Horizontal (layer F.Cu) (tedit 5AE5139B) (tstamp 5CB87AFE)
-    (at 68.58 67.31)
+    (at 113.03 40.64)
     (descr "Resistor, Axial_DIN0207 series, Axial, Horizontal, pin pitch=10.16mm, 0.25W = 1/4W, length*diameter=6.3*2.5mm^2, http://cdn-reichelt.de/documents/datenblatt/B400/1_4W%23YAG.pdf")
     (tags "Resistor Axial_DIN0207 series Axial Horizontal pin pitch 10.16mm 0.25W = 1/4W length 6.3mm diameter 2.5mm")
     (path /5C940E1E)
@@ -1102,7 +1095,7 @@
   )
 
   (module Resistor_THT:R_Axial_DIN0207_L6.3mm_D2.5mm_P10.16mm_Horizontal (layer F.Cu) (tedit 5AE5139B) (tstamp 5CB87B15)
-    (at 167.64 67.31)
+    (at 212.09 40.64)
     (descr "Resistor, Axial_DIN0207 series, Axial, Horizontal, pin pitch=10.16mm, 0.25W = 1/4W, length*diameter=6.3*2.5mm^2, http://cdn-reichelt.de/documents/datenblatt/B400/1_4W%23YAG.pdf")
     (tags "Resistor Axial_DIN0207 series Axial Horizontal pin pitch 10.16mm 0.25W = 1/4W length 6.3mm diameter 2.5mm")
     (path /5C94B589)
@@ -1143,7 +1136,7 @@
   )
 
   (module Resistor_THT:R_Axial_DIN0207_L6.3mm_D2.5mm_P10.16mm_Horizontal (layer F.Cu) (tedit 5AE5139B) (tstamp 5CB87B2C)
-    (at 157.48 58.42)
+    (at 201.93 31.75)
     (descr "Resistor, Axial_DIN0207 series, Axial, Horizontal, pin pitch=10.16mm, 0.25W = 1/4W, length*diameter=6.3*2.5mm^2, http://cdn-reichelt.de/documents/datenblatt/B400/1_4W%23YAG.pdf")
     (tags "Resistor Axial_DIN0207 series Axial Horizontal pin pitch 10.16mm 0.25W = 1/4W length 6.3mm diameter 2.5mm")
     (path /5C94B639)
@@ -1184,7 +1177,7 @@
   )
 
   (module Resistor_THT:R_Axial_DIN0207_L6.3mm_D2.5mm_P10.16mm_Horizontal (layer F.Cu) (tedit 5AE5139B) (tstamp 5CB87B43)
-    (at 196.85 81.28)
+    (at 241.3 54.61)
     (descr "Resistor, Axial_DIN0207 series, Axial, Horizontal, pin pitch=10.16mm, 0.25W = 1/4W, length*diameter=6.3*2.5mm^2, http://cdn-reichelt.de/documents/datenblatt/B400/1_4W%23YAG.pdf")
     (tags "Resistor Axial_DIN0207 series Axial Horizontal pin pitch 10.16mm 0.25W = 1/4W length 6.3mm diameter 2.5mm")
     (path /5C94B6A1)
@@ -1225,7 +1218,7 @@
   )
 
   (module Resistor_THT:R_Axial_DIN0207_L6.3mm_D2.5mm_P10.16mm_Horizontal (layer F.Cu) (tedit 5AE5139B) (tstamp 5CB87B5A)
-    (at 190.5 73.66)
+    (at 234.95 46.99)
     (descr "Resistor, Axial_DIN0207 series, Axial, Horizontal, pin pitch=10.16mm, 0.25W = 1/4W, length*diameter=6.3*2.5mm^2, http://cdn-reichelt.de/documents/datenblatt/B400/1_4W%23YAG.pdf")
     (tags "Resistor Axial_DIN0207 series Axial Horizontal pin pitch 10.16mm 0.25W = 1/4W length 6.3mm diameter 2.5mm")
     (path /5C94B70B)
@@ -1266,7 +1259,7 @@
   )
 
   (module Resistor_THT:R_Axial_DIN0207_L6.3mm_D2.5mm_P10.16mm_Horizontal (layer F.Cu) (tedit 5AE5139B) (tstamp 5CB87B71)
-    (at 158.75 49.53)
+    (at 203.2 22.86)
     (descr "Resistor, Axial_DIN0207 series, Axial, Horizontal, pin pitch=10.16mm, 0.25W = 1/4W, length*diameter=6.3*2.5mm^2, http://cdn-reichelt.de/documents/datenblatt/B400/1_4W%23YAG.pdf")
     (tags "Resistor Axial_DIN0207 series Axial Horizontal pin pitch 10.16mm 0.25W = 1/4W length 6.3mm diameter 2.5mm")
     (path /5C97EA7F)
@@ -1307,7 +1300,7 @@
   )
 
   (module Potentiometer_THT:Potentiometer_Bourns_PTV09A-1_Single_Vertical (layer F.Cu) (tedit 5A3D4993) (tstamp 5CB87B8D)
-    (at 99.925001 104.14)
+    (at 144.375001 77.47)
     (descr "Potentiometer, vertical, Bourns PTV09A-1 Single, http://www.bourns.com/docs/Product-Datasheets/ptv09.pdf")
     (tags "Potentiometer vertical Bourns PTV09A-1 Single")
     (path /5C8B00DF)
@@ -1354,7 +1347,7 @@
   )
 
   (module Potentiometer_THT:Potentiometer_Bourns_PTV09A-1_Single_Vertical (layer F.Cu) (tedit 5A3D4993) (tstamp 5CB87BA9)
-    (at 50.8 101.6)
+    (at 95.25 74.93)
     (descr "Potentiometer, vertical, Bourns PTV09A-1 Single, http://www.bourns.com/docs/Product-Datasheets/ptv09.pdf")
     (tags "Potentiometer vertical Bourns PTV09A-1 Single")
     (path /5C8AAE8E)
@@ -1401,7 +1394,7 @@
   )
 
   (module Button_Switch_THT:SW_CuK_OS102011MA1QN1_SPDT_Angled (layer F.Cu) (tedit 5A02FE31) (tstamp 5CB87BC1)
-    (at 127 31.75)
+    (at 171.45 5.08)
     (descr "CuK miniature slide switch, OS series, SPDT, right angle, http://www.ckswitches.com/media/1428/os.pdf")
     (tags "switch SPDT")
     (path /5C93A215)
@@ -1444,7 +1437,7 @@
   )
 
   (module softtactile:SOFT_TACTILE_2 (layer F.Cu) (tedit 5C937392) (tstamp 5CB87BCF)
-    (at 171.45 102.87)
+    (at 215.9 76.2)
     (descr https://www.omron.com/ecb/products/pdf/en-b3f.pdf)
     (tags "tact sw push 6mm")
     (path /5C8A4739)
@@ -1478,7 +1471,7 @@
   )
 
   (module softtactile:SOFT_TACTILE_2 (layer F.Cu) (tedit 5C937392) (tstamp 5CB87BDD)
-    (at 55.88 124.46)
+    (at 100.33 97.79)
     (descr https://www.omron.com/ecb/products/pdf/en-b3f.pdf)
     (tags "tact sw push 6mm")
     (path /5C8A4CD3)
@@ -1512,7 +1505,7 @@
   )
 
   (module softtactile:SOFT_TACTILE_2 (layer F.Cu) (tedit 5C937392) (tstamp 5CB87BEB)
-    (at 43.18 124.46)
+    (at 87.63 97.79)
     (descr https://www.omron.com/ecb/products/pdf/en-b3f.pdf)
     (tags "tact sw push 6mm")
     (path /5C8A47F7)
@@ -1546,7 +1539,7 @@
   )
 
   (module softtactile:SOFT_TACTILE_2 (layer F.Cu) (tedit 5C937392) (tstamp 5CB87BF9)
-    (at 189.23 102.87)
+    (at 233.68 76.2)
     (descr https://www.omron.com/ecb/products/pdf/en-b3f.pdf)
     (tags "tact sw push 6mm")
     (path /5C8A4857)
@@ -1580,7 +1573,7 @@
   )
 
   (module softtactile:SOFT_TACTILE_2 (layer F.Cu) (tedit 5C937392) (tstamp 5CB87C07)
-    (at 170.84 118.11)
+    (at 215.29 91.44)
     (descr https://www.omron.com/ecb/products/pdf/en-b3f.pdf)
     (tags "tact sw push 6mm")
     (path /5C8A48AF)
@@ -1614,7 +1607,7 @@
   )
 
   (module softtactile:SOFT_TACTILE_2 (layer F.Cu) (tedit 5C937392) (tstamp 5CB87C15)
-    (at 72.39 125.175001)
+    (at 116.84 98.505001)
     (descr https://www.omron.com/ecb/products/pdf/en-b3f.pdf)
     (tags "tact sw push 6mm")
     (path /5C8A4957)
@@ -1648,7 +1641,7 @@
   )
 
   (module softtactile:SOFT_TACTILE_2 (layer F.Cu) (tedit 5C937392) (tstamp 5CB87C23)
-    (at 191.77 119.38)
+    (at 236.22 92.71)
     (descr https://www.omron.com/ecb/products/pdf/en-b3f.pdf)
     (tags "tact sw push 6mm")
     (path /5C8A49E1)
@@ -1682,7 +1675,7 @@
   )
 
   (module Package_DIP:DIP-28_W7.62mm (layer F.Cu) (tedit 5A02E8C5) (tstamp 5CB87C53)
-    (at 87.63 71.12 90)
+    (at 132.08 44.45 90)
     (descr "28-lead though-hole mounted DIP package, row spacing 7.62 mm (300 mils)")
     (tags "THT DIP DIL PDIP 2.54mm 7.62mm 300mil")
     (path /5C708905)
@@ -1774,7 +1767,7 @@
   )
 
   (module Package_DIP:DIP-8_W7.62mm_Socket (layer F.Cu) (tedit 5A02E8C5) (tstamp 5CB87C77)
-    (at 120.65 147.32)
+    (at 165.1 120.65)
     (descr "8-lead though-hole mounted DIP package, row spacing 7.62 mm (300 mils), Socket")
     (tags "THT DIP DIL PDIP 2.54mm 7.62mm 300mil Socket")
     (path /5C8C1974)
@@ -1834,7 +1827,7 @@
   )
 
   (module Crystal:Crystal_HC49-4H_Vertical (layer F.Cu) (tedit 5A1AD3B7) (tstamp 5CB87C8E)
-    (at 106.68 82.55)
+    (at 151.13 55.88)
     (descr "Crystal THT HC-49-4H http://5hertz.com/pdfs/04404_D.pdf")
     (tags "THT crystalHC-49-4H")
     (path /5C8E974C)

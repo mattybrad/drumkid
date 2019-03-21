@@ -2,4 +2,5 @@
   (lib (name Device)(type Legacy)(uri ${KIPRJMOD}/Device.lib)(options "")(descr "")(disabled))
   (lib (name adafruit)(type Legacy)(uri ${KIPRJMOD}/adafruit.lib)(options "")(descr "")(disabled))
   (lib (name MAX756)(type Legacy)(uri ${KIPRJMOD}/MAX756.lib)(options "")(descr ""))
+  (lib (name JACK_TRS)(type Legacy)(uri ${KIPRJMOD}/JACK_TRS.lib)(options "")(descr "")(disabled))
 )
