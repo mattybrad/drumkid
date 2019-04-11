@@ -15,11 +15,19 @@
 
 // define some numbers etc
 #define CONTROL_RATE 64
-#define START_STOP_PIN 2
-#define BUTTON_A_PIN 5
-#define BUTTON_B_PIN 6
+#define START_STOP_PIN 0
+#define BUTTON_A_PIN 2
+#define BUTTON_B_PIN 4
 #define BUTTON_C_PIN 7
 #define BUTTON_D_PIN 8
+#define BUTTON_E_PIN 12
+#define BUTTON_F_PIN 13
+
+#define LED_1 3
+#define LED_2 5
+#define LED_3 6
+#define LED_4 10
+#define LED_5 11
 
 // define buttons
 Bounce startStopButton = Bounce();
@@ -48,9 +56,26 @@ bool beat1[][16] = {  {1,0,0,0,0,0,0,0,1,0,1,0,0,0,0,1,},
                       {0,0,0,0,1,0,0,0,0,0,0,0,1,0,0,0,},};
 
 void setup(){
-  for(int i=2;i<=8;i++) {
-    pinMode(i,INPUT_PULLUP);
-  }
+  pinMode(LED_1,OUTPUT);
+  pinMode(LED_2,OUTPUT);
+  pinMode(LED_3,OUTPUT);
+  pinMode(LED_4,OUTPUT);
+  pinMode(LED_5,OUTPUT);
+  digitalWrite(LED_1,HIGH);
+  delay(200);
+  digitalWrite(LED_1,LOW);
+  digitalWrite(LED_2,HIGH);
+  delay(200);
+  digitalWrite(LED_2,LOW);
+  digitalWrite(LED_3,HIGH);
+  delay(200);
+  digitalWrite(LED_3,LOW);
+  digitalWrite(LED_4,HIGH);
+  delay(200);
+  digitalWrite(LED_4,LOW);
+  digitalWrite(LED_5,HIGH);
+  delay(200);
+  digitalWrite(LED_5,LOW);
   startStopButton.attach(START_STOP_PIN, INPUT_PULLUP);
   buttonA.attach(BUTTON_A_PIN, INPUT_PULLUP);
   buttonB.attach(BUTTON_B_PIN, INPUT_PULLUP);
