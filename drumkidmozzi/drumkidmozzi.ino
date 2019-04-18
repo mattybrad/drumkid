@@ -15,19 +15,19 @@
 
 // define some numbers etc
 #define CONTROL_RATE 64
-#define START_STOP_PIN 0
-#define BUTTON_A_PIN 2
-#define BUTTON_B_PIN 4
-#define BUTTON_C_PIN 7
-#define BUTTON_D_PIN 8
-#define BUTTON_E_PIN 12
-#define BUTTON_F_PIN 13
+#define BUTTON_A_PIN 0
+#define BUTTON_B_PIN 8
+#define BUTTON_C_PIN 1
+#define BUTTON_D_PIN 2
+#define BUTTON_E_PIN 4
+#define BUTTON_F_PIN 12
+#define BUTTON_G_PIN 7
 
-#define LED_1 3
+#define LED_1 10
 #define LED_2 5
-#define LED_3 6
-#define LED_4 10
-#define LED_5 11
+#define LED_3 3
+#define LED_4 11
+#define LED_5 6
 
 // define buttons
 Bounce startStopButton = Bounce();
@@ -76,7 +76,7 @@ void setup(){
   digitalWrite(LED_5,HIGH);
   delay(200);
   digitalWrite(LED_5,LOW);
-  startStopButton.attach(START_STOP_PIN, INPUT_PULLUP);
+  startStopButton.attach(BUTTON_G_PIN, INPUT_PULLUP);
   buttonA.attach(BUTTON_A_PIN, INPUT_PULLUP);
   buttonB.attach(BUTTON_B_PIN, INPUT_PULLUP);
   buttonC.attach(BUTTON_C_PIN, INPUT_PULLUP);
@@ -130,7 +130,9 @@ void updateControl(){
     if(bitCrushLevel >= 6) bitCrushCompensation --;
     if(bitCrushLevel >= 7) bitCrushCompensation --;
   }
-  if(!buttonC.read()) beatTime = 20 + mozziAnalogRead(0); // temp
+  if(!buttonC.read()){
+    beatTime = 20 + mozziAnalogRead(0); // temp
+  }
   if(!buttonD.read()) {
     aSample.setFreq(((float) mozziAnalogRead(0) / 255.0f) * (float) kick_SAMPLERATE / (float) kick_NUM_CELLS);
     bSample.setFreq(((float) mozziAnalogRead(0) / 255.0f) * (float) closedhat_SAMPLERATE / (float) closedhat_NUM_CELLS);

@@ -1,0 +1,14 @@
+0	Button A
+1	Button C
+2	Button D
+3	LED 3
+4	Button E
+5	LED 2
+6	LED 5
+7	Button G
+8	Button B
+9	Audio
+10	LED 1
+11	LED 4
+12	Button F
+13	Unused
