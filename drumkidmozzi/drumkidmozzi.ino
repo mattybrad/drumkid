@@ -51,10 +51,15 @@ byte bitCrushLevel; // between 0 and 7
 byte bitCrushCompensation;
 int beatTime = 150;
 byte beatIndex = 0;
+float tempo = 120;
 
 // define beats (temporarily here, probably move to a separate file later?)
-bool beat1[][16] = {  {1,0,0,0,0,0,0,0,1,0,1,0,0,0,0,1,},
-                      {1,0,1,0,1,0,1,1,0,1,1,0,1,0,1,0,},
+byte beat1[][16] = {  {255,0,0,0,0,0,0,0,255,0,255,0,64,128,212,255,},
+                      {64,0,64,0,64,0,64,64,0,64,64,0,64,0,64,32,},
+                      {0,0,0,0,255,0,0,0,0,0,0,0,255,0,64,32,},};
+
+byte beat2[][16] = {  {1,0,0,0,0,0,0,0,1,0,1,0,0,0,0,0,},
+                      {1,0,1,0,1,0,1,0,1,0,1,0,1,0,1,0,},
                       {0,0,0,0,1,0,0,0,0,0,0,0,1,0,0,0,},};
 
 void setup(){
@@ -103,6 +108,9 @@ void setup(){
 }
 
 bool started = false;
+byte aVol;
+byte bVol;
+byte cVol;
 void updateControl(){
   bool startNow = false;
   buttonA.update();
@@ -112,11 +120,16 @@ void updateControl(){
   buttonE.update();
   buttonF.update();
   buttonG.update();
+  // attempt blending beat
+  
   if((kTriggerDelay.ready() && started) || startNow){
     //byte r = rand(3);
-    if(beat1[0][beatIndex]) aSample.start();
-    if(beat1[1][beatIndex]) bSample.start();
-    if(beat1[2][beatIndex]) cSample.start();
+    if(beat1[0][beatIndex]>0) aSample.start();
+    if(beat1[1][beatIndex]>0) bSample.start();
+    if(beat1[2][beatIndex]>0) cSample.start();
+    if(beat1[0][beatIndex]>0) aVol = beat1[0][beatIndex];
+    if(beat1[1][beatIndex]>0) bVol = beat1[1][beatIndex];
+    if(beat1[2][beatIndex]>0) cVol = beat1[2][beatIndex];
     beatIndex ++;
     beatIndex = beatIndex % 16;
     kTriggerDelay.start(beatTime);
@@ -136,7 +149,9 @@ void updateControl(){
     if(bitCrushLevel >= 7) bitCrushCompensation --;
   }
   if(!buttonF.read()){
-    beatTime = 20 + mozziAnalogRead(0); // temp
+    // could probably optimise this maths
+    tempo = 40.0 + mozziAnalogRead(0) / 5.0;
+    beatTime = 15.0 / (tempo/1000.0);
   }
   if(!buttonG.read()) {
     aSample.setFreq(((float) mozziAnalogRead(0) / 255.0f) * (float) kick_SAMPLERATE / (float) kick_NUM_CELLS);
@@ -145,9 +160,10 @@ void updateControl(){
   }
 }
 
-
 int updateAudio(){
-  char asig = lpf.next((aSample.next()>>1)+(bSample.next()>>1)+(cSample.next()>>1));
+  //char asig = lpf.next((aSample.next()>>1)+(bSample.next()>>1)+(cSample.next()>>1));
+  //char asig = lpf.next(((aVol*aSample.next())>>9));
+  char asig = lpf.next(((aVol*aSample.next())>>9)+((bVol*bSample.next())>>9)+((cVol*cSample.next())>>9));
   asig = (asig>>bitCrushLevel)<<bitCrushCompensation;
   return (int) asig;
 }
