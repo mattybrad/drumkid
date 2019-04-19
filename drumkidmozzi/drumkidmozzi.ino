@@ -30,11 +30,13 @@
 #define LED_5 6
 
 // define buttons
-Bounce startStopButton = Bounce();
 Bounce buttonA = Bounce();
 Bounce buttonB = Bounce();
 Bounce buttonC = Bounce();
 Bounce buttonD = Bounce();
+Bounce buttonE = Bounce();
+Bounce buttonF = Bounce();
+Bounce buttonG = Bounce();
 
 // define samples
 Sample <kick_NUM_CELLS, AUDIO_RATE> aSample(kick_DATA);
@@ -62,30 +64,34 @@ void setup(){
   pinMode(LED_4,OUTPUT);
   pinMode(LED_5,OUTPUT);
   digitalWrite(LED_1,HIGH);
-  delay(200);
+  delay(20);
   digitalWrite(LED_1,LOW);
   digitalWrite(LED_2,HIGH);
-  delay(200);
+  delay(20);
   digitalWrite(LED_2,LOW);
   digitalWrite(LED_3,HIGH);
-  delay(200);
+  delay(20);
   digitalWrite(LED_3,LOW);
   digitalWrite(LED_4,HIGH);
-  delay(200);
+  delay(20);
   digitalWrite(LED_4,LOW);
   digitalWrite(LED_5,HIGH);
-  delay(200);
+  delay(20);
   digitalWrite(LED_5,LOW);
-  startStopButton.attach(BUTTON_G_PIN, INPUT_PULLUP);
   buttonA.attach(BUTTON_A_PIN, INPUT_PULLUP);
   buttonB.attach(BUTTON_B_PIN, INPUT_PULLUP);
   buttonC.attach(BUTTON_C_PIN, INPUT_PULLUP);
   buttonD.attach(BUTTON_D_PIN, INPUT_PULLUP);
-  startStopButton.interval(25);
+  buttonE.attach(BUTTON_E_PIN, INPUT_PULLUP);
+  buttonF.attach(BUTTON_F_PIN, INPUT_PULLUP);
+  buttonG.attach(BUTTON_G_PIN, INPUT_PULLUP);
   buttonA.interval(25);
   buttonB.interval(25);
   buttonC.interval(25);
   buttonD.interval(25);
+  buttonE.interval(25);
+  buttonF.interval(25);
+  buttonG.interval(25);
   startMozzi(CONTROL_RATE);
   aSample.setFreq((float) kick_SAMPLERATE / (float) kick_NUM_CELLS);
   bSample.setFreq((float) closedhat_SAMPLERATE / (float) closedhat_NUM_CELLS);
@@ -99,21 +105,13 @@ void setup(){
 bool started = false;
 void updateControl(){
   bool startNow = false;
-  startStopButton.update();
-  if(startStopButton.fell()) {
-    started = !started;
-    if(started) {
-      beatIndex = 0;
-      startNow = true;
-    }
-  }
   buttonA.update();
   buttonB.update();
   buttonC.update();
   buttonD.update();
-  if(startStopButton.fell()) {
-    // do something
-  }
+  buttonE.update();
+  buttonF.update();
+  buttonG.update();
   if((kTriggerDelay.ready() && started) || startNow){
     //byte r = rand(3);
     if(beat1[0][beatIndex]) aSample.start();
@@ -123,17 +121,24 @@ void updateControl(){
     beatIndex = beatIndex % 16;
     kTriggerDelay.start(beatTime);
   }
-  if(!buttonA.read()) lpf.setCutoffFreq(mozziAnalogRead(0)>>2);
-  if(!buttonB.read()) {
+  if(buttonA.fell()) {
+    started = !started;
+    if(started) {
+      beatIndex = 0;
+      startNow = true;
+    }
+  }
+  if(!buttonD.read()) lpf.setCutoffFreq(mozziAnalogRead(0)>>2);
+  if(!buttonE.read()) {
     bitCrushLevel = 7-(mozziAnalogRead(0)>>7);
     bitCrushCompensation = bitCrushLevel;
     if(bitCrushLevel >= 6) bitCrushCompensation --;
     if(bitCrushLevel >= 7) bitCrushCompensation --;
   }
-  if(!buttonC.read()){
+  if(!buttonF.read()){
     beatTime = 20 + mozziAnalogRead(0); // temp
   }
-  if(!buttonD.read()) {
+  if(!buttonG.read()) {
     aSample.setFreq(((float) mozziAnalogRead(0) / 255.0f) * (float) kick_SAMPLERATE / (float) kick_NUM_CELLS);
     bSample.setFreq(((float) mozziAnalogRead(0) / 255.0f) * (float) closedhat_SAMPLERATE / (float) closedhat_NUM_CELLS);
     cSample.setFreq(((float) mozziAnalogRead(0) / 255.0f) * (float) snare_SAMPLERATE / (float) snare_NUM_CELLS);
