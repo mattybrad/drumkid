@@ -64,6 +64,7 @@ byte beat2[][16] = {  {255,0,0,0,0,0,0,0,255,0,0,0,0,0,0,0,},
                       {0,0,0,0,255,0,0,0,0,0,0,0,255,0,0,0,},};
 
 byte blendedBeat[3][16];
+byte hyper = 0;
 
 void setup(){
   pinMode(LED_1,OUTPUT);
@@ -108,6 +109,7 @@ void setup(){
   lpf.setResonance(200);
   lpf.setCutoffFreq(255);
   kTriggerDelay.set(beatTime);
+  randSeed();
 }
 
 bool started = false;
@@ -126,12 +128,12 @@ void updateControl(){
   // attempt blending beat
   for(byte i=0;i<3;i++) {
     for(byte j=0;j<16;j++) {
-      blendedBeat[i][j] = blend * beat1[i][j] + (1-blend) * beat2[i][j];
+      blendedBeat[i][j] = constrain(blend * beat1[i][j] + (1-blend) * beat2[i][j] + rand(0, hyper), 0, 255);
+      //blendedBeat[i][j] = rand(0,255);
     }
   }
   
   if((kTriggerDelay.ready() && started) || startNow){
-    //byte r = rand(3);
     if(blendedBeat[0][beatIndex]>0) aSample.start();
     if(blendedBeat[1][beatIndex]>0) bSample.start();
     if(blendedBeat[2][beatIndex]>0) cSample.start();
@@ -150,6 +152,7 @@ void updateControl(){
     }
   }
   if(!buttonB.read()) blend = mozziAnalogRead(0)/1023.0;
+  if(!buttonC.read()) hyper = mozziAnalogRead(0)>>2;
   if(!buttonD.read()) lpf.setCutoffFreq(mozziAnalogRead(0)>>2);
   if(!buttonE.read()) {
     bitCrushLevel = 7-(mozziAnalogRead(0)>>7);
