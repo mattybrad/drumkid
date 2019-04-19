@@ -52,15 +52,18 @@ byte bitCrushCompensation;
 int beatTime = 150;
 byte beatIndex = 0;
 float tempo = 120;
+float blend = 0.5;
 
 // define beats (temporarily here, probably move to a separate file later?)
 byte beat1[][16] = {  {255,0,0,0,0,0,0,0,255,0,255,0,64,128,212,255,},
                       {64,0,64,0,64,0,64,64,0,64,64,0,64,0,64,32,},
                       {0,0,0,0,255,0,0,0,0,0,0,0,255,0,64,32,},};
 
-byte beat2[][16] = {  {1,0,0,0,0,0,0,0,1,0,1,0,0,0,0,0,},
-                      {1,0,1,0,1,0,1,0,1,0,1,0,1,0,1,0,},
-                      {0,0,0,0,1,0,0,0,0,0,0,0,1,0,0,0,},};
+byte beat2[][16] = {  {255,0,0,0,0,0,0,0,255,0,0,0,0,0,0,0,},
+                      {255,0,128,0,255,0,128,0,255,0,128,0,255,0,128,0,},
+                      {0,0,0,0,255,0,0,0,0,0,0,0,255,0,0,0,},};
+
+byte blendedBeat[3][16];
 
 void setup(){
   pinMode(LED_1,OUTPUT);
@@ -121,15 +124,20 @@ void updateControl(){
   buttonF.update();
   buttonG.update();
   // attempt blending beat
+  for(byte i=0;i<3;i++) {
+    for(byte j=0;j<16;j++) {
+      blendedBeat[i][j] = blend * beat1[i][j] + (1-blend) * beat2[i][j];
+    }
+  }
   
   if((kTriggerDelay.ready() && started) || startNow){
     //byte r = rand(3);
-    if(beat1[0][beatIndex]>0) aSample.start();
-    if(beat1[1][beatIndex]>0) bSample.start();
-    if(beat1[2][beatIndex]>0) cSample.start();
-    if(beat1[0][beatIndex]>0) aVol = beat1[0][beatIndex];
-    if(beat1[1][beatIndex]>0) bVol = beat1[1][beatIndex];
-    if(beat1[2][beatIndex]>0) cVol = beat1[2][beatIndex];
+    if(blendedBeat[0][beatIndex]>0) aSample.start();
+    if(blendedBeat[1][beatIndex]>0) bSample.start();
+    if(blendedBeat[2][beatIndex]>0) cSample.start();
+    if(blendedBeat[0][beatIndex]>0) aVol = blendedBeat[0][beatIndex];
+    if(blendedBeat[1][beatIndex]>0) bVol = blendedBeat[1][beatIndex];
+    if(blendedBeat[2][beatIndex]>0) cVol = blendedBeat[2][beatIndex];
     beatIndex ++;
     beatIndex = beatIndex % 16;
     kTriggerDelay.start(beatTime);
@@ -141,6 +149,7 @@ void updateControl(){
       startNow = true;
     }
   }
+  if(!buttonB.read()) blend = mozziAnalogRead(0)/1023.0;
   if(!buttonD.read()) lpf.setCutoffFreq(mozziAnalogRead(0)>>2);
   if(!buttonE.read()) {
     bitCrushLevel = 7-(mozziAnalogRead(0)>>7);
