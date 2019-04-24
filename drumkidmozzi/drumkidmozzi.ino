@@ -15,7 +15,7 @@
 #include "snare.h"
 
 // define some numbers etc
-#define CONTROL_RATE 32
+#define CONTROL_RATE 64
 #define START_STOP_PIN 7
 #define SHIFT_PIN 8
 #define BUTTON_A_PIN 10
@@ -56,7 +56,7 @@ byte sampleVolumes[3][2] = {  {255,255},
                               {255,255},};
 
 // define other mozzi things
-LowPassFilter lpf;
+//LowPassFilter lpf;
 EventDelay kTriggerDelay;
 
 byte bitCrushLevel; // between 0 and 7
@@ -101,19 +101,19 @@ void setup(){
   pinMode(LED_5,OUTPUT);
   digitalWrite(LED_1,HIGH);
   delay(200);
-  digitalWrite(LED_1,LOW);
+  //digitalWrite(LED_1,LOW);
   digitalWrite(LED_2,HIGH);
   delay(200);
-  digitalWrite(LED_2,LOW);
+  //digitalWrite(LED_2,LOW);
   digitalWrite(LED_3,HIGH);
   delay(200);
-  digitalWrite(LED_3,LOW);
+  //digitalWrite(LED_3,LOW);
   digitalWrite(LED_4,HIGH);
   delay(200);
-  digitalWrite(LED_4,LOW);
+  //digitalWrite(LED_4,LOW);
   digitalWrite(LED_5,HIGH);
   delay(200);
-  digitalWrite(LED_5,LOW);
+  //digitalWrite(LED_5,LOW);
   startStopButton.attach(START_STOP_PIN, INPUT_PULLUP);
   shiftButton.attach(SHIFT_PIN, INPUT_PULLUP);
   buttonA.attach(BUTTON_A_PIN, INPUT_PULLUP);
@@ -137,8 +137,8 @@ void setup(){
   snare2.setFreq((float) snare_SAMPLERATE / (float) snare_NUM_CELLS);
   kick1.setEnd(7000);
   kick2.setEnd(7000);
-  lpf.setResonance(200);
-  lpf.setCutoffFreq(255);
+  //lpf.setResonance(200);
+  //lpf.setCutoffFreq(255);
   kTriggerDelay.set(beatTime);
   randSeed();
   for(int i=0;i<20000;i++) {
@@ -232,7 +232,7 @@ void updateControl(){
     kick2.setFreq(newKickFreq);
     closedhat2.setFreq(newHatFreq);
     snare2.setFreq(newSnareFreq);
-    lpf.setCutoffFreq(mozziAnalogRead(1)>>2);
+    //lpf.setCutoffFreq(mozziAnalogRead(1)>>2);
     bitCrushLevel = 7-(mozziAnalogRead(2)>>7);
     bitCrushCompensation = bitCrushLevel;
     if(bitCrushLevel >= 6) bitCrushCompensation --;
