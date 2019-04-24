@@ -14,18 +14,18 @@
 #include "snare.h"
 
 // define some numbers etc
-#define CONTROL_RATE 64
-#define START_STOP_PIN 2
-#define SHIFT_PIN 4
-#define BUTTON_A_PIN 7
-#define BUTTON_B_PIN 8
+#define CONTROL_RATE 32
+#define START_STOP_PIN 7
+#define SHIFT_PIN 8
+#define BUTTON_A_PIN 10
+#define BUTTON_B_PIN 11
 #define BUTTON_C_PIN 12
 
-#define LED_1 3
-#define LED_2 5
-#define LED_3 6
-#define LED_4 10
-#define LED_5 11
+#define LED_1 2
+#define LED_2 3
+#define LED_3 4
+#define LED_4 5
+#define LED_5 6
 
 // define buttons
 Bounce buttonA = Bounce();
@@ -51,6 +51,7 @@ float tempo = 120;
 float blend = 0.5;
 byte controlSet = 0;
 byte ledPins[] = {LED_1,LED_2,LED_3,LED_4,LED_5};
+byte ledBrightness[] = {0,0,0,0,0};
 
 int storedValues[6][3] = {  {0,0,0},
                             {0,0,0},
@@ -145,8 +146,17 @@ void updateControl(){
     if(blendedBeat[0][beatIndex]>0) aVol = blendedBeat[0][beatIndex];
     if(blendedBeat[1][beatIndex]>0) bVol = blendedBeat[1][beatIndex];
     if(blendedBeat[2][beatIndex]>0) cVol = blendedBeat[2][beatIndex];
-    for(int i=0;i<5;i++) digitalWrite(ledPins[i], LOW);
-    if(beatIndex%4==0) digitalWrite(ledPins[beatIndex/4], HIGH);
+    /*for(int i=0;i<5;i++) digitalWrite(ledPins[i], LOW);
+    if(beatIndex%4==0) digitalWrite(ledPins[beatIndex/4], HIGH);*/
+    ledBrightness[0] = 0;
+    ledBrightness[1] = 0;
+    ledBrightness[2] = 0;
+    ledBrightness[3] = 16;
+    ledBrightness[4] = 255;
+    if(beatIndex==0) ledBrightness[0] = 255;
+    else if(beatIndex%4==0) ledBrightness[0] = 32;
+    if(beatIndex%2==0) ledBrightness[1] = 128;
+    else ledBrightness[2] = 128;
     beatIndex ++;
     beatIndex = beatIndex % 16;
     kTriggerDelay.start(beatTime);
@@ -194,6 +204,7 @@ void updateControl(){
 int updateAudio(){
   //char asig = lpf.next((aSample.next()>>1)+(bSample.next()>>1)+(cSample.next()>>1));
   //char asig = lpf.next(((aVol*aSample.next())>>9));
+  updateLEDs();
   char asig = lpf.next(((aVol*aSample.next())>>9)+((bVol*bSample.next())>>9)+((cVol*cSample.next())>>9));
   asig = (asig>>bitCrushLevel)<<bitCrushCompensation;
   return (int) asig;
@@ -204,5 +215,18 @@ void loop(){
   audioHook();
 }
 
-
+void updateLEDs() {
+  static byte count_1=0;
+  static byte count_2=85;
+  static byte count_3=170;
+  static byte count_4=32;
+  static byte count_5=96;
+// PORTD maps to Arduino digital pins 0 to 7
+// http://playground.arduino.cc/Learning/PortManipulation
+  (count_1++ >= ledBrightness[0]) ? PORTD &= ~(1 << ledPins[0]) : PORTD |= (1 << ledPins[0]);
+  (count_2++ >= ledBrightness[1]) ? PORTD &= ~(1 << ledPins[1]) : PORTD |= (1 << ledPins[1]);
+  (count_3++ >= ledBrightness[2]) ? PORTD &= ~(1 << ledPins[2]) : PORTD |= (1 << ledPins[2]);
+  (count_4++ >= ledBrightness[3]) ? PORTD &= ~(1 << ledPins[3]) : PORTD |= (1 << ledPins[3]);
+  (count_5++ >= ledBrightness[4]) ? PORTD &= ~(1 << ledPins[4]) : PORTD |= (1 << ledPins[4]);
+}
 
