@@ -4,6 +4,7 @@
 #include <LowPassFilter.h>
 #include <EventDelay.h>
 #include <mozzi_rand.h>
+#include "Channel.h"
 
 // include other stuff
 #include <Bounce2.h>
@@ -38,6 +39,21 @@ Bounce shiftButton = Bounce();
 Sample <kick_NUM_CELLS, AUDIO_RATE> aSample(kick_DATA);
 Sample <closedhat_NUM_CELLS, AUDIO_RATE> bSample(closedhat_DATA);
 Sample <snare_NUM_CELLS, AUDIO_RATE> cSample(snare_DATA);
+
+Sample <kick_NUM_CELLS, AUDIO_RATE> kick1(kick_DATA);
+Sample <kick_NUM_CELLS, AUDIO_RATE> kick2(kick_DATA);
+Sample <closedhat_NUM_CELLS, AUDIO_RATE> closedhat1(closedhat_DATA);
+Sample <closedhat_NUM_CELLS, AUDIO_RATE> closedhat2(closedhat_DATA);
+Sample <snare_NUM_CELLS, AUDIO_RATE> snare1(snare_DATA);
+Sample <snare_NUM_CELLS, AUDIO_RATE> snare2(snare_DATA);
+
+// define channels
+Channel kick;
+
+byte nextSample[3] = {0,0,0};
+byte sampleVolumes[3][2] = {  {255,255},
+                              {255,255},
+                              {255,255},};
 
 // define other mozzi things
 LowPassFilter lpf;
@@ -74,6 +90,10 @@ byte hyper = 0;
 
 
 void setup(){
+  // initialise kick channel
+  //kick.init(
+  
+  
   pinMode(LED_1,OUTPUT);
   pinMode(LED_2,OUTPUT);
   pinMode(LED_3,OUTPUT);
@@ -109,16 +129,35 @@ void setup(){
   bSample.setFreq((float) closedhat_SAMPLERATE / (float) closedhat_NUM_CELLS);
   cSample.setFreq((float) snare_SAMPLERATE / (float) snare_NUM_CELLS);
   aSample.setEnd(7000); // was getting a funny click at the end of the kick sample
+  kick1.setFreq((float) kick_SAMPLERATE / (float) kick_NUM_CELLS);
+  kick2.setFreq((float) kick_SAMPLERATE / (float) kick_NUM_CELLS);
+  closedhat1.setFreq((float) closedhat_SAMPLERATE / (float) closedhat_NUM_CELLS);
+  closedhat2.setFreq((float) closedhat_SAMPLERATE / (float) closedhat_NUM_CELLS);
+  snare1.setFreq((float) snare_SAMPLERATE / (float) snare_NUM_CELLS);
+  snare2.setFreq((float) snare_SAMPLERATE / (float) snare_NUM_CELLS);
+  kick1.setEnd(7000);
+  kick2.setEnd(7000);
   lpf.setResonance(200);
   lpf.setCutoffFreq(255);
   kTriggerDelay.set(beatTime);
   randSeed();
+  for(int i=0;i<20000;i++) {
+    kick1.next();
+    kick2.next();
+    closedhat1.next();
+    closedhat2.next();
+    snare1.next();
+    snare2.next();
+  }
 }
 
 bool started = false;
 byte aVol;
 byte bVol;
 byte cVol;
+float newKickFreq;
+float newHatFreq;
+float newSnareFreq;
 void updateControl(){
   bool startNow = false;
   buttonA.update();
@@ -131,32 +170,41 @@ void updateControl(){
   else if(buttonB.fell()) controlSet = 1 + (!shiftButton.read()?3:0);
   else if(buttonC.fell()) controlSet = 2 + (!shiftButton.read()?3:0);
   
-  // attempt blending beat
-  for(byte i=0;i<3;i++) {
-    for(byte j=0;j<16;j++) {
-      blendedBeat[i][j] = constrain(blend * beat1[i][j] + (1-blend) * beat2[i][j] + rand(0, hyper), 0, 255);
-      //blendedBeat[i][j] = rand(0,255);
-    }
-  }
-  
   if((kTriggerDelay.ready() && started) || startNow){
-    if(blendedBeat[0][beatIndex]>0) aSample.start();
-    if(blendedBeat[1][beatIndex]>0) bSample.start();
-    if(blendedBeat[2][beatIndex]>0) cSample.start();
-    if(blendedBeat[0][beatIndex]>0) aVol = blendedBeat[0][beatIndex];
-    if(blendedBeat[1][beatIndex]>0) bVol = blendedBeat[1][beatIndex];
-    if(blendedBeat[2][beatIndex]>0) cVol = blendedBeat[2][beatIndex];
-    /*for(int i=0;i<5;i++) digitalWrite(ledPins[i], LOW);
-    if(beatIndex%4==0) digitalWrite(ledPins[beatIndex/4], HIGH);*/
-    ledBrightness[0] = 0;
-    ledBrightness[1] = 0;
-    ledBrightness[2] = 0;
-    ledBrightness[3] = 16;
-    ledBrightness[4] = 255;
+    // blend beat (make more efficient later)
+    for(byte i=0;i<3;i++) {
+      for(byte j=0;j<16;j++) {
+        blendedBeat[i][j] = constrain(blend * beat1[i][j] + (1.0-blend) * beat2[i][j] + rand(0, hyper), 0, 255);
+      }
+    }
     if(beatIndex==0) ledBrightness[0] = 255;
     else if(beatIndex%4==0) ledBrightness[0] = 32;
     if(beatIndex%2==0) ledBrightness[1] = 128;
     else ledBrightness[2] = 128;
+
+    // temp
+    if(blendedBeat[0][beatIndex]>0) {
+      if(nextSample[0]==0) kick1.start();
+      else if(nextSample[0]==1) kick2.start();
+      sampleVolumes[0][nextSample[0]] = blendedBeat[0][beatIndex];
+      nextSample[0] ++;
+      nextSample[0] = nextSample[0]%2;
+    }
+    if(blendedBeat[1][beatIndex]>0) {
+      if(nextSample[1]==0) closedhat1.start();
+      else if(nextSample[1]==1) closedhat2.start();
+      sampleVolumes[1][nextSample[1]] = blendedBeat[1][beatIndex];
+      nextSample[1] ++;
+      nextSample[1] = nextSample[0]%2;
+    }
+    if(blendedBeat[2][beatIndex]>0) {
+      if(nextSample[2]==0) snare1.start();
+      else if(nextSample[2]==1) snare2.start();
+      sampleVolumes[2][nextSample[2]] = blendedBeat[2][beatIndex];
+      nextSample[2] ++;
+      nextSample[2] = nextSample[0]%2;
+    }
+    
     beatIndex ++;
     beatIndex = beatIndex % 16;
     kTriggerDelay.start(beatTime);
@@ -175,9 +223,15 @@ void updateControl(){
     //zoom = mozziAnalogRead(2)>>2;
     break;
     case 1:
-    aSample.setFreq(((float) mozziAnalogRead(0) / 255.0f) * (float) kick_SAMPLERATE / (float) kick_NUM_CELLS);
-    bSample.setFreq(((float) mozziAnalogRead(0) / 255.0f) * (float) closedhat_SAMPLERATE / (float) closedhat_NUM_CELLS);
-    cSample.setFreq(((float) mozziAnalogRead(0) / 255.0f) * (float) snare_SAMPLERATE / (float) snare_NUM_CELLS);
+    newKickFreq = ((float) mozziAnalogRead(0) / 255.0f) * (float) kick_SAMPLERATE / (float) kick_NUM_CELLS;
+    newHatFreq = ((float) mozziAnalogRead(0) / 255.0f) * (float) closedhat_SAMPLERATE / (float) closedhat_NUM_CELLS;
+    newSnareFreq = ((float) mozziAnalogRead(0) / 255.0f) * (float) snare_SAMPLERATE / (float) snare_NUM_CELLS;
+    kick1.setFreq(newKickFreq);
+    closedhat1.setFreq(newHatFreq);
+    snare1.setFreq(newSnareFreq);
+    kick2.setFreq(newKickFreq);
+    closedhat2.setFreq(newHatFreq);
+    snare2.setFreq(newSnareFreq);
     lpf.setCutoffFreq(mozziAnalogRead(1)>>2);
     bitCrushLevel = 7-(mozziAnalogRead(2)>>7);
     bitCrushCompensation = bitCrushLevel;
@@ -186,7 +240,7 @@ void updateControl(){
     break;
     case 2:
     // could probably optimise this maths
-    tempo = 40.0 + mozziAnalogRead(0) / 5.0;
+    tempo = 40.0 + ((float) mozziAnalogRead(0)) / 5.0;
     beatTime = 15.0 / (tempo/1000.0);
     break;
     case 3:
@@ -201,11 +255,17 @@ void updateControl(){
   }
 }
 
+const byte atten = 10;
 int updateAudio(){
   //char asig = lpf.next((aSample.next()>>1)+(bSample.next()>>1)+(cSample.next()>>1));
   //char asig = lpf.next(((aVol*aSample.next())>>9));
-  updateLEDs();
-  char asig = lpf.next(((aVol*aSample.next())>>9)+((bVol*bSample.next())>>9)+((cVol*cSample.next())>>9));
+  //updateLEDs();
+  //char asig = lpf.next(((aVol*aSample.next())>>9)+((bVol*bSample.next())>>9)+((cVol*cSample.next())>>9));
+  //asig = (asig>>bitCrushLevel)<<bitCrushCompensation;
+  //return (int) asig;
+  //char asig = started ? ((kick1.next()>>2) + (kick2.next()>>2) + (closedhat1.next()>>2) + (closedhat2.next()>>2) + (snare1.next()>>2) + (snare2.next()>>2)) : 0;
+  //char asig = ((sampleVolumes[1][0]*closedhat1.next())>>9)+((sampleVolumes[1][1]*closedhat2.next())>>9);
+  char asig = ((sampleVolumes[0][0]*kick1.next())>>atten)+((sampleVolumes[0][1]*kick2.next())>>atten)+((sampleVolumes[1][0]*closedhat1.next())>>atten)+((sampleVolumes[1][1]*closedhat2.next())>>atten)+((sampleVolumes[2][0]*snare1.next())>>atten)+((sampleVolumes[2][1]*snare2.next())>>atten);
   asig = (asig>>bitCrushLevel)<<bitCrushCompensation;
   return (int) asig;
 }
