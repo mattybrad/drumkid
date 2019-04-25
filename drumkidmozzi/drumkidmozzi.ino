@@ -1,7 +1,6 @@
 // include relevant mozzi libraries
 #include <MozziGuts.h>
 #include <Sample.h>
-#include <LowPassFilter.h>
 #include <EventDelay.h>
 #include <mozzi_rand.h>
 #include "Channel.h"
@@ -56,15 +55,14 @@ byte sampleVolumes[3][2] = {  {255,255},
                               {255,255},};
 
 // define other mozzi things
-//LowPassFilter lpf;
 EventDelay kTriggerDelay;
 
 byte bitCrushLevel; // between 0 and 7
 byte bitCrushCompensation;
 int beatTime = 150;
 byte beatIndex = 0;
-float tempo = 120;
-float blend = 0.5;
+float tempo = 30;
+byte blend = 64;
 byte controlSet = 0;
 byte ledPins[] = {LED_1,LED_2,LED_3,LED_4,LED_5};
 byte ledBrightness[] = {0,0,0,0,0};
@@ -90,10 +88,7 @@ byte hyper = 0;
 
 
 void setup(){
-  // initialise kick channel
-  //kick.init(
-  
-  
+  Serial.begin(9600);
   pinMode(LED_1,OUTPUT);
   pinMode(LED_2,OUTPUT);
   pinMode(LED_3,OUTPUT);
@@ -137,8 +132,6 @@ void setup(){
   snare2.setFreq((float) snare_SAMPLERATE / (float) snare_NUM_CELLS);
   kick1.setEnd(7000);
   kick2.setEnd(7000);
-  //lpf.setResonance(200);
-  //lpf.setCutoffFreq(255);
   kTriggerDelay.set(beatTime);
   randSeed();
   for(int i=0;i<20000;i++) {
@@ -158,6 +151,7 @@ byte cVol;
 float newKickFreq;
 float newHatFreq;
 float newSnareFreq;
+int thisRand[3];
 void updateControl(){
   bool startNow = false;
   buttonA.update();
@@ -172,11 +166,16 @@ void updateControl(){
   
   if((kTriggerDelay.ready() && started) || startNow){
     // blend beat (make more efficient later)
+    int blendedStep;
     for(byte i=0;i<3;i++) {
+      thisRand[i] = rand(0,hyper); // if you do this inline (with blendedStep =...) it goes weird, so i'm doing it here
       for(byte j=0;j<16;j++) {
-        blendedBeat[i][j] = constrain(blend * beat1[i][j] + (1.0-blend) * beat2[i][j] + rand(0, hyper), 0, 255);
+        //blendedBeat[i][j] = constrain(blend * (float) beat1[i][j] + (1.0-blend) * (float) beat2[i][j] + rand(0, hyper), 0, 255);
+        blendedStep = constrain(((unsigned int)(blend * beat1[i][j])>>8)+((unsigned int)((255-blend) * beat2[i][j])>>8) + thisRand[i], 0, 255);
+        blendedBeat[i][j] = blendedStep;
       }
     }
+    if(beatIndex==4||beatIndex==12) Serial.println(thisRand[1]);
     if(beatIndex==0) ledBrightness[0] = 255;
     else if(beatIndex%4==0) ledBrightness[0] = 32;
     if(beatIndex%2==0) ledBrightness[1] = 128;
@@ -232,7 +231,6 @@ void updateControl(){
     kick2.setFreq(newKickFreq);
     closedhat2.setFreq(newHatFreq);
     snare2.setFreq(newSnareFreq);
-    //lpf.setCutoffFreq(mozziAnalogRead(1)>>2);
     bitCrushLevel = 7-(mozziAnalogRead(2)>>7);
     bitCrushCompensation = bitCrushLevel;
     if(bitCrushLevel >= 6) bitCrushCompensation --;
@@ -250,21 +248,13 @@ void updateControl(){
 
     break;
     case 5:
-    blend = mozziAnalogRead(0)/1023.0;
+    blend = mozziAnalogRead(0)>>2;
     break;
   }
 }
 
 const byte atten = 10;
 int updateAudio(){
-  //char asig = lpf.next((aSample.next()>>1)+(bSample.next()>>1)+(cSample.next()>>1));
-  //char asig = lpf.next(((aVol*aSample.next())>>9));
-  //updateLEDs();
-  //char asig = lpf.next(((aVol*aSample.next())>>9)+((bVol*bSample.next())>>9)+((cVol*cSample.next())>>9));
-  //asig = (asig>>bitCrushLevel)<<bitCrushCompensation;
-  //return (int) asig;
-  //char asig = started ? ((kick1.next()>>2) + (kick2.next()>>2) + (closedhat1.next()>>2) + (closedhat2.next()>>2) + (snare1.next()>>2) + (snare2.next()>>2)) : 0;
-  //char asig = ((sampleVolumes[1][0]*closedhat1.next())>>9)+((sampleVolumes[1][1]*closedhat2.next())>>9);
   char asig = ((sampleVolumes[0][0]*kick1.next())>>atten)+((sampleVolumes[0][1]*kick2.next())>>atten)+((sampleVolumes[1][0]*closedhat1.next())>>atten)+((sampleVolumes[1][1]*closedhat2.next())>>atten)+((sampleVolumes[2][0]*snare1.next())>>atten)+((sampleVolumes[2][1]*snare2.next())>>atten);
   asig = (asig>>bitCrushLevel)<<bitCrushCompensation;
   return (int) asig;

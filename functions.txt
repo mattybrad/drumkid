@@ -1,8 +1,17 @@
 assuming a new multi-knob layout, here are the possible functions:
 
 A	hyper		zoom		ceiling
-B	tempo		blend		sloppiness
-C	pitch		cutoff		crush
+B	pitch		cutoff		crush
+C	tempo		time signature	"chop"
 sA	kick		snare		hat
 sB	toms		percussion	
-sC
+sC	blend		sloppiness	
+
+buttons:
+A/B/C
+start-stop
+shift
+
+other combos:
+save: hold shift+start-stop
+
