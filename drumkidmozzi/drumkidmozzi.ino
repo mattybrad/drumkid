@@ -67,6 +67,10 @@ byte controlSet = 0;
 byte ledPins[] = {LED_1,LED_2,LED_3,LED_4,LED_5};
 byte ledBrightness[] = {0,0,0,0,0};
 
+// variables relating to knob values
+bool knobLocked[3] = {true,true,true}; // use byte instead?
+int analogValues[3] = {0,0,0};
+int initValues[3] = {0,0,0};
 int storedValues[6][3] = {  {0,0,0},
                             {0,0,0},
                             {0,0,0},
@@ -89,26 +93,27 @@ byte hyper = 0;
 
 void setup(){
   Serial.begin(9600);
+  byte ledIntroDelay = 50;
   pinMode(LED_1,OUTPUT);
   pinMode(LED_2,OUTPUT);
   pinMode(LED_3,OUTPUT);
   pinMode(LED_4,OUTPUT);
   pinMode(LED_5,OUTPUT);
   digitalWrite(LED_1,HIGH);
-  delay(200);
-  //digitalWrite(LED_1,LOW);
+  delay(ledIntroDelay);
+  digitalWrite(LED_1,LOW);
   digitalWrite(LED_2,HIGH);
-  delay(200);
-  //digitalWrite(LED_2,LOW);
+  delay(ledIntroDelay);
+  digitalWrite(LED_2,LOW);
   digitalWrite(LED_3,HIGH);
-  delay(200);
-  //digitalWrite(LED_3,LOW);
+  delay(ledIntroDelay);
+  digitalWrite(LED_3,LOW);
   digitalWrite(LED_4,HIGH);
-  delay(200);
-  //digitalWrite(LED_4,LOW);
+  delay(ledIntroDelay);
+  digitalWrite(LED_4,LOW);
   digitalWrite(LED_5,HIGH);
-  delay(200);
-  //digitalWrite(LED_5,LOW);
+  delay(ledIntroDelay);
+  digitalWrite(LED_5,LOW);
   startStopButton.attach(START_STOP_PIN, INPUT_PULLUP);
   shiftButton.attach(SHIFT_PIN, INPUT_PULLUP);
   buttonA.attach(BUTTON_A_PIN, INPUT_PULLUP);
@@ -144,6 +149,7 @@ void setup(){
   }
 }
 
+// tidy these up soon...
 bool started = false;
 byte aVol;
 byte bVol;
@@ -160,9 +166,11 @@ void updateControl(){
   startStopButton.update();
   shiftButton.update();
 
+  byte prevControlSet = controlSet;
   if(buttonA.fell()) controlSet = 0 + (!shiftButton.read()?3:0);
   else if(buttonB.fell()) controlSet = 1 + (!shiftButton.read()?3:0);
   else if(buttonC.fell()) controlSet = 2 + (!shiftButton.read()?3:0);
+  bool controlSetChanged = (prevControlSet != controlSet);
   
   if((kTriggerDelay.ready() && started) || startNow){
     // blend beat (make more efficient later)
@@ -215,30 +223,57 @@ void updateControl(){
       startNow = true;
     }
   }
+  for(int i=0;i<3;i++) {
+    analogValues[i] = mozziAnalogRead(i);
+  }
+  if(controlSetChanged) {
+    for(int i=0;i<3;i++) {
+      knobLocked[i] = true;
+      initValues[i] = analogValues[i];
+      digitalWrite(ledPins[i], HIGH);
+    }
+  } else {
+    for(int i=0;i<3;i++) {
+      if(knobLocked[i]) {
+        if(initValues[i]<storedValues[controlSet][i]) {
+          if(analogValues[i]>=storedValues[controlSet][i]) {
+            knobLocked[i] = false;
+            digitalWrite(ledPins[i], LOW);
+          }
+        } else {
+          if(analogValues[i]<=storedValues[controlSet][i]) {
+            knobLocked[i] = false;
+            digitalWrite(ledPins[i], LOW);
+          }
+        }
+      }
+      if(!knobLocked[i]) storedValues[controlSet][i] = analogValues[i];
+    }
+  }
   switch(controlSet) {
     case 0:
-    hyper = mozziAnalogRead(0)>>2;
-    //ceiling = mozziAnalogRead(1)>>2;
-    //zoom = mozziAnalogRead(2)>>2;
+    hyper = storedValues[controlSet][0]>>2;
+    //ceiling = storedValues[controlSet][1]>>2;
+    //zoom = storedValues[controlSet][2]>>2;
     break;
     case 1:
-    newKickFreq = ((float) mozziAnalogRead(0) / 255.0f) * (float) kick_SAMPLERATE / (float) kick_NUM_CELLS;
-    newHatFreq = ((float) mozziAnalogRead(0) / 255.0f) * (float) closedhat_SAMPLERATE / (float) closedhat_NUM_CELLS;
-    newSnareFreq = ((float) mozziAnalogRead(0) / 255.0f) * (float) snare_SAMPLERATE / (float) snare_NUM_CELLS;
+    newKickFreq = ((float) storedValues[controlSet][0] / 255.0f) * (float) kick_SAMPLERATE / (float) kick_NUM_CELLS;
+    newHatFreq = ((float) storedValues[controlSet][0] / 255.0f) * (float) closedhat_SAMPLERATE / (float) closedhat_NUM_CELLS;
+    newSnareFreq = ((float) storedValues[controlSet][0] / 255.0f) * (float) snare_SAMPLERATE / (float) snare_NUM_CELLS;
     kick1.setFreq(newKickFreq);
     closedhat1.setFreq(newHatFreq);
     snare1.setFreq(newSnareFreq);
     kick2.setFreq(newKickFreq);
     closedhat2.setFreq(newHatFreq);
     snare2.setFreq(newSnareFreq);
-    bitCrushLevel = 7-(mozziAnalogRead(2)>>7);
+    bitCrushLevel = 7-(storedValues[controlSet][2]>>7);
     bitCrushCompensation = bitCrushLevel;
     if(bitCrushLevel >= 6) bitCrushCompensation --;
     if(bitCrushLevel >= 7) bitCrushCompensation --;
     break;
     case 2:
     // could probably optimise this maths
-    tempo = 40.0 + ((float) mozziAnalogRead(0)) / 5.0;
+    tempo = 40.0 + ((float) storedValues[controlSet][0]) / 5.0;
     beatTime = 15.0 / (tempo/1000.0);
     break;
     case 3:
@@ -248,7 +283,7 @@ void updateControl(){
 
     break;
     case 5:
-    blend = mozziAnalogRead(0)>>2;
+    blend = storedValues[controlSet][0]>>2;
     break;
   }
 }
