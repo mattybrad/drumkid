@@ -1325,36 +1325,6 @@ Wire Wire Line
 	7300 3700 6600 3700
 Wire Wire Line
 	7300 3700 7300 4200
-$Comp
-L Connector:DIN-5_180degree J?
-U 1 1 5CF5B633
-P 4100 6600
-F 0 "J?" H 4100 6326 50  0000 C CNN
-F 1 "DIN-5_180degree" H 4100 6235 50  0000 C CNN
-F 2 "" H 4100 6600 50  0001 C CNN
-F 3 "http://www.mouser.com/ds/2/18/40_c091_abd_e-75918.pdf" H 4100 6600 50  0001 C CNN
-	1    4100 6600
-	1    0    0    -1  
-$EndComp
-$Comp
-L Connector:DIN-5_180degree J?
-U 1 1 5CF5B6FF
-P 5050 6600
-F 0 "J?" H 5050 6326 50  0000 C CNN
-F 1 "DIN-5_180degree" H 5050 6235 50  0000 C CNN
-F 2 "" H 5050 6600 50  0001 C CNN
-F 3 "http://www.mouser.com/ds/2/18/40_c091_abd_e-75918.pdf" H 5050 6600 50  0001 C CNN
-	1    5050 6600
-	1    0    0    -1  
-$EndComp
-NoConn ~ 3800 6600
-NoConn ~ 3800 6500
-NoConn ~ 4100 6300
-NoConn ~ 4400 6500
-NoConn ~ 4400 6600
-NoConn ~ 4750 6600
-NoConn ~ 4750 6500
-NoConn ~ 5350 6500
-NoConn ~ 5350 6600
-NoConn ~ 5050 6300
+Text Label 1350 900  1    50   ~ 0
+BAT_ON
 $EndSCHEMATC

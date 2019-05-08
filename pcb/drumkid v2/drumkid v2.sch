@@ -981,13 +981,13 @@ $EndComp
 $Comp
 L Device:CP C17
 U 1 1 5CD6A157
-P 8050 850
-F 0 "C17" V 7795 850 50  0000 C CNN
-F 1 "10uF" V 7886 850 50  0000 C CNN
-F 2 "Capacitor_THT:CP_Radial_D6.3mm_P2.50mm" H 8088 700 50  0001 C CNN
-F 3 "~" H 8050 850 50  0001 C CNN
-	1    8050 850 
-	0    1    1    0   
+P 8200 850
+F 0 "C17" V 8455 850 50  0000 C CNN
+F 1 "10uF" V 8364 850 50  0000 C CNN
+F 2 "Capacitor_THT:CP_Radial_D6.3mm_P2.50mm" H 8238 700 50  0001 C CNN
+F 3 "~" H 8200 850 50  0001 C CNN
+	1    8200 850 
+	0    -1   -1   0   
 $EndComp
 $Comp
 L Device:CP C13
@@ -1134,8 +1134,6 @@ Wire Wire Line
 Connection ~ 9050 1150
 Wire Wire Line
 	9050 1150 9100 1150
-Wire Wire Line
-	8200 850  8600 850 
 Wire Wire Line
 	8600 850  8600 1900
 Wire Wire Line
@@ -1325,4 +1323,10 @@ Wire Wire Line
 	7300 3700 6600 3700
 Wire Wire Line
 	7300 3700 7300 4200
+Text Label 1350 900  1    50   ~ 0
+BAT_ON
+Wire Wire Line
+	8350 850  8600 850 
+Wire Wire Line
+	7900 850  8050 850 
 $EndSCHEMATC
