@@ -1044,17 +1044,6 @@ F 3 "http://www.ti.com/lit/ds/symlink/lm386.pdf" H 8100 1350 50  0001 C CNN
 	1    7900 1150
 	1    0    0    -1  
 $EndComp
-$Comp
-L Device:R_POT RV1
-U 1 1 5CD6A7C0
-P 6450 850
-F 0 "RV1" V 6243 850 50  0000 C CNN
-F 1 "10k" V 6334 850 50  0000 C CNN
-F 2 "SamacSys_Parts:RK14J12A0A0K" H 6450 850 50  0001 C CNN
-F 3 "~" H 6450 850 50  0001 C CNN
-	1    6450 850 
-	0    1    1    0   
-$EndComp
 Text Label 4400 850  0    50   ~ 0
 DIGITAL_9
 Wire Wire Line
@@ -1064,8 +1053,6 @@ Wire Wire Line
 Connection ~ 5800 850 
 Wire Wire Line
 	5800 850  5900 850 
-Wire Wire Line
-	6600 850  6700 850 
 Wire Wire Line
 	6450 1000 6450 1050
 Wire Wire Line
@@ -1149,8 +1136,6 @@ Wire Wire Line
 	5800 1900 6700 1900
 Connection ~ 5800 1900
 Connection ~ 8600 1900
-Wire Wire Line
-	6200 850  6300 850 
 Connection ~ 6700 1900
 Wire Wire Line
 	6700 1900 7150 1900
@@ -1329,4 +1314,19 @@ Wire Wire Line
 	8350 850  8600 850 
 Wire Wire Line
 	7900 850  8050 850 
+Wire Wire Line
+	6200 850  6300 850 
+Wire Wire Line
+	6600 850  6700 850 
+$Comp
+L Device:R_POT RV1
+U 1 1 5CD6A7C0
+P 6450 850
+F 0 "RV1" V 6243 850 50  0000 C CNN
+F 1 "10k" V 6334 850 50  0000 C CNN
+F 2 "SamacSys_Parts:RK14J12A0A0K" H 6450 850 50  0001 C CNN
+F 3 "~" H 6450 850 50  0001 C CNN
+	1    6450 850 
+	0    1    1    0   
+$EndComp
 $EndSCHEMATC
