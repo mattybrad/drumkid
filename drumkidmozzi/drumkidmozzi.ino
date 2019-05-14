@@ -17,9 +17,9 @@
 #define CONTROL_RATE 64
 #define START_STOP_PIN 7
 #define SHIFT_PIN 8
-#define BUTTON_A_PIN 10
-#define BUTTON_B_PIN 11
-#define BUTTON_C_PIN 12
+#define BUTTON_A_PIN 11
+#define BUTTON_B_PIN 12
+#define BUTTON_C_PIN 13
 
 #define LED_1 2
 #define LED_2 3
@@ -90,6 +90,7 @@ byte beat2[][16] = {  {255,0,0,0,0,0,0,0,255,0,0,0,0,0,0,0,},
 byte blendedBeat[3][16];
 byte hyper = 0;
 
+bool isBreadboard = true;
 
 void setup(){
   Serial.begin(9600);
@@ -118,7 +119,8 @@ void setup(){
   shiftButton.attach(SHIFT_PIN, INPUT_PULLUP);
   buttonA.attach(BUTTON_A_PIN, INPUT_PULLUP);
   buttonB.attach(BUTTON_B_PIN, INPUT_PULLUP);
-  buttonC.attach(BUTTON_C_PIN, INPUT_PULLUP);
+  
+  buttonC.attach(BUTTON_C_PIN, isBreadboard ? INPUT : INPUT_PULLUP);
   startStopButton.interval(25);
   shiftButton.interval(25);
   buttonA.interval(25);
@@ -169,7 +171,7 @@ void updateControl(){
   byte prevControlSet = controlSet;
   if(buttonA.fell()) controlSet = 0 + (!shiftButton.read()?3:0);
   else if(buttonB.fell()) controlSet = 1 + (!shiftButton.read()?3:0);
-  else if(buttonC.fell()) controlSet = 2 + (!shiftButton.read()?3:0);
+  else if((isBreadboard&&buttonC.rose())||(!isBreadboard&&buttonC.fell())) controlSet = 2 + (!shiftButton.read()?3:0);
   bool controlSetChanged = (prevControlSet != controlSet);
   
   if((kTriggerDelay.ready() && started) || startNow){
