@@ -57,16 +57,17 @@ byte sampleVolumes[3][2] = {  {255,255},
 // define other mozzi things
 EventDelay kTriggerDelay;
 
+const byte subdivisions = 2; // should equal 2 to the power of subdivisionSteps
+const byte subdivisionSteps = 1;
 byte bitCrushLevel; // between 0 and 7
 byte bitCrushCompensation;
-int beatTime = 150;
+int beatTime = 150 / subdivisions;
 byte beatIndex = 0;
 float tempo = 30;
 byte blend = 0;
 byte controlSet = 0;
 byte ledPins[] = {LED_1,LED_2,LED_3,LED_4,LED_5};
 byte ledBrightness[] = {0,0,0,0,0};
-const byte subdivisions = 1;
 
 // variables relating to knob values
 bool knobLocked[3] = {true,true,true}; // use byte instead?
@@ -162,7 +163,8 @@ float newHatFreq;
 float newSnareFreq;
 int thisRand;
 byte hyperFloor = 64;
-byte hyperCeiling = 128;
+byte hyperCeiling = 255;
+byte zoom;
 void updateControl(){
   bool startNow = false;
   buttonA.update();
@@ -188,6 +190,7 @@ void updateControl(){
         byte beat1Val = (j%subdivisions==0) ? beat1[i][j/subdivisions] : 0;
         byte beat2Val = (j%subdivisions==0) ? beat2[i][j/subdivisions] : 0;
         blendedStep = constrain(((unsigned int)(blend * beat1Val)>>8)+((unsigned int)((255-blend) * beat2Val)>>8) + thisRand, 0, 255);
+        if(j%((subdivisions*16)>>zoom)>0) blendedStep = 0;
         blendedBeat[i][j] = blendedStep;
       }
     }
@@ -256,8 +259,8 @@ void updateControl(){
   switch(controlSet) {
     case 0:
     hyper = storedValues[controlSet][0]>>2;
-    //ceiling = storedValues[controlSet][1]>>2;
-    //zoom = storedValues[controlSet][2]>>2;
+    hyperFloor = storedValues[controlSet][1]>>2;
+    zoom = map(storedValues[controlSet][2],0,1024,0,5+subdivisionSteps);
     break;
     case 1:
     newKickFreq = ((float) storedValues[controlSet][0] / 255.0f) * (float) kick_SAMPLERATE / (float) kick_NUM_CELLS;
