@@ -59,7 +59,7 @@ EventDelay kTriggerDelay;
 
 byte bitCrushLevel; // between 0 and 7
 byte bitCrushCompensation;
-int beatTime = 38;
+int beatTime = 150;
 byte beatIndex = 0;
 float tempo = 30;
 byte blend = 0;
@@ -89,7 +89,7 @@ byte beat2[][16] = {  {255,0,0,0,0,0,0,0,255,0,0,0,0,0,0,0,},
                       {0,0,0,0,255,0,0,0,0,0,0,0,255,0,0,0,},};
 
 byte blendedBeat[3][16*subdivisions];
-byte hyper = 0;
+byte hyper = 255;
 
 bool isBreadboard = true;
 
@@ -160,7 +160,9 @@ byte cVol;
 float newKickFreq;
 float newHatFreq;
 float newSnareFreq;
-int thisRand[3];
+int thisRand;
+byte hyperFloor = 64;
+byte hyperCeiling = 128;
 void updateControl(){
   bool startNow = false;
   buttonA.update();
@@ -179,20 +181,16 @@ void updateControl(){
     // blend beat (make more efficient later)
     int blendedStep;
     for(byte i=0;i<3;i++) {
-      thisRand[i] = rand(0,hyper); // if you do this inline (with blendedStep =...) it goes weird, so i'm doing it here
-      if(thisRand[i]<32) thisRand[i] = 0;
       for(byte j=0;j<16*subdivisions;j++) {
+        thisRand = rand(0,hyper); // if you do this inline (with blendedStep =...) it goes weird, so i'm doing it here
+        if(thisRand < hyperFloor) thisRand = 0;
+        else thisRand = constrain(thisRand, hyperFloor, hyperCeiling);
         byte beat1Val = (j%subdivisions==0) ? beat1[i][j/subdivisions] : 0;
         byte beat2Val = (j%subdivisions==0) ? beat2[i][j/subdivisions] : 0;
-        blendedStep = constrain(((unsigned int)(blend * beat1Val)>>8)+((unsigned int)((255-blend) * beat2Val)>>8) + thisRand[i], 0, 255);
+        blendedStep = constrain(((unsigned int)(blend * beat1Val)>>8)+((unsigned int)((255-blend) * beat2Val)>>8) + thisRand, 0, 255);
         blendedBeat[i][j] = blendedStep;
       }
     }
-    if(beatIndex==4||beatIndex==12) Serial.println(thisRand[1]);
-    if(beatIndex==0) ledBrightness[0] = 255;
-    else if(beatIndex%4==0) ledBrightness[0] = 32;
-    if(beatIndex%2==0) ledBrightness[1] = 128;
-    else ledBrightness[2] = 128;
 
     // temp
     if(blendedBeat[0][beatIndex]>0) {
