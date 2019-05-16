@@ -59,13 +59,14 @@ EventDelay kTriggerDelay;
 
 byte bitCrushLevel; // between 0 and 7
 byte bitCrushCompensation;
-int beatTime = 150;
+int beatTime = 38;
 byte beatIndex = 0;
 float tempo = 30;
-byte blend = 64;
+byte blend = 0;
 byte controlSet = 0;
 byte ledPins[] = {LED_1,LED_2,LED_3,LED_4,LED_5};
 byte ledBrightness[] = {0,0,0,0,0};
+const byte subdivisions = 1;
 
 // variables relating to knob values
 bool knobLocked[3] = {true,true,true}; // use byte instead?
@@ -87,7 +88,7 @@ byte beat2[][16] = {  {255,0,0,0,0,0,0,0,255,0,0,0,0,0,0,0,},
                       {255,0,128,0,255,0,128,0,255,0,128,0,255,0,128,0,},
                       {0,0,0,0,255,0,0,0,0,0,0,0,255,0,0,0,},};
 
-byte blendedBeat[3][16];
+byte blendedBeat[3][16*subdivisions];
 byte hyper = 0;
 
 bool isBreadboard = true;
@@ -179,9 +180,11 @@ void updateControl(){
     int blendedStep;
     for(byte i=0;i<3;i++) {
       thisRand[i] = rand(0,hyper); // if you do this inline (with blendedStep =...) it goes weird, so i'm doing it here
-      for(byte j=0;j<16;j++) {
-        //blendedBeat[i][j] = constrain(blend * (float) beat1[i][j] + (1.0-blend) * (float) beat2[i][j] + rand(0, hyper), 0, 255);
-        blendedStep = constrain(((unsigned int)(blend * beat1[i][j])>>8)+((unsigned int)((255-blend) * beat2[i][j])>>8) + thisRand[i], 0, 255);
+      if(thisRand[i]<32) thisRand[i] = 0;
+      for(byte j=0;j<16*subdivisions;j++) {
+        byte beat1Val = (j%subdivisions==0) ? beat1[i][j/subdivisions] : 0;
+        byte beat2Val = (j%subdivisions==0) ? beat2[i][j/subdivisions] : 0;
+        blendedStep = constrain(((unsigned int)(blend * beat1Val)>>8)+((unsigned int)((255-blend) * beat2Val)>>8) + thisRand[i], 0, 255);
         blendedBeat[i][j] = blendedStep;
       }
     }
@@ -215,7 +218,7 @@ void updateControl(){
     }
     
     beatIndex ++;
-    beatIndex = beatIndex % 16;
+    beatIndex = beatIndex % (16 * subdivisions);
     kTriggerDelay.start(beatTime);
   }
   if(startStopButton.fell()) {
@@ -276,7 +279,7 @@ void updateControl(){
     case 2:
     // could probably optimise this maths
     tempo = 40.0 + ((float) storedValues[controlSet][0]) / 5.0;
-    beatTime = 15.0 / (tempo/1000.0);
+    beatTime = 7.5 / (tempo/1000.0); // 7.5 = 60 / 8 because 8 subdivisions per beat
     break;
     case 3:
 
