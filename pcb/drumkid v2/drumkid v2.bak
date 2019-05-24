@@ -1314,31 +1314,19 @@ Wire Wire Line
 	8350 850  8600 850 
 Wire Wire Line
 	7900 850  8050 850 
+Wire Wire Line
+	6200 850  6300 850 
+Wire Wire Line
+	6600 850  6700 850 
 $Comp
-L Connector_Generic:Conn_01x05 J2
-U 1 1 5CD55EA9
-P 6600 600
-F 0 "J2" V 6566 312 50  0000 R CNN
-F 1 "Conn_01x05" V 6475 312 50  0000 R CNN
-F 2 "SamacSys_Parts:RK14J12A0A0K" H 6600 600 50  0001 C CNN
-F 3 "~" H 6600 600 50  0001 C CNN
-	1    6600 600 
-	0    -1   -1   0   
+L Device:R_POT RV1
+U 1 1 5CD6A7C0
+P 6450 850
+F 0 "RV1" V 6243 850 50  0000 C CNN
+F 1 "10k" V 6334 850 50  0000 C CNN
+F 2 "SamacSys_Parts:RK14J12A0A0K" H 6450 850 50  0001 C CNN
+F 3 "~" H 6450 850 50  0001 C CNN
+	1    6450 850 
+	0    1    1    0   
 $EndComp
-Wire Wire Line
-	6700 850  6800 850 
-Wire Wire Line
-	6800 850  6800 800 
-Wire Wire Line
-	6450 1000 6600 1000
-Wire Wire Line
-	6600 1000 6600 800 
-Wire Wire Line
-	6200 850  6650 850 
-Wire Wire Line
-	6650 850  6650 800 
-Wire Wire Line
-	6650 800  6700 800 
-NoConn ~ 6400 800 
-NoConn ~ 6500 800 
 $EndSCHEMATC
