@@ -57,8 +57,8 @@ byte sampleVolumes[3][2] = {  {255,255},
 // define other mozzi things
 EventDelay kTriggerDelay;
 
-const byte subdivisions = 2; // should equal 2 to the power of subdivisionSteps
-const byte subdivisionSteps = 1;
+const byte subdivisions = 4; // should equal 2 to the power of subdivisionSteps
+const byte subdivisionSteps = 2;
 byte bitCrushLevel; // between 0 and 7
 byte bitCrushCompensation;
 int beatTime = 150 / subdivisions;
@@ -90,7 +90,8 @@ byte beat2[][16] = {  {255,0,0,0,0,0,0,0,255,0,0,0,0,0,0,0,},
                       {0,0,0,0,255,0,0,0,0,0,0,0,255,0,0,0,},};
 
 byte blendedBeat[3][16*subdivisions];
-byte hyper = 255;
+byte chance = 255;
+byte midpoint = 128;
 
 bool isBreadboard = true;
 
@@ -161,9 +162,10 @@ byte cVol;
 float newKickFreq;
 float newHatFreq;
 float newSnareFreq;
-int thisRand;
-byte hyperFloor = 64;
-byte hyperCeiling = 255;
+int yesNoRand;
+int velocityRand;
+byte velocityFloor = 32;
+byte velocityCeiling = 33;
 byte zoom;
 void updateControl(){
   bool startNow = false;
@@ -180,16 +182,20 @@ void updateControl(){
   bool controlSetChanged = (prevControlSet != controlSet);
   
   if((kTriggerDelay.ready() && started) || startNow){
+    // temp led flash
+    if(beatIndex%8==0) digitalWrite(ledPins[0], HIGH);
+    else digitalWrite(ledPins[0], LOW);
+    
     // blend beat (make more efficient later)
     int blendedStep;
     for(byte i=0;i<3;i++) {
       for(byte j=0;j<16*subdivisions;j++) {
-        thisRand = rand(0,hyper); // if you do this inline (with blendedStep =...) it goes weird, so i'm doing it here
-        if(thisRand < hyperFloor) thisRand = 0;
-        else thisRand = constrain(thisRand, hyperFloor, hyperCeiling);
+        yesNoRand = rand(0,255);
+        velocityRand = rand(velocityFloor,velocityCeiling);
+        if(yesNoRand < chance) velocityRand = 0;
         byte beat1Val = (j%subdivisions==0) ? beat1[i][j/subdivisions] : 0;
         byte beat2Val = (j%subdivisions==0) ? beat2[i][j/subdivisions] : 0;
-        blendedStep = constrain(((unsigned int)(blend * beat1Val)>>8)+((unsigned int)((255-blend) * beat2Val)>>8) + thisRand, 0, 255);
+        blendedStep = constrain(((unsigned int)(blend * beat1Val)>>8)+((unsigned int)((255-blend) * beat2Val)>>8) + velocityRand, 0, 255);
         if(j%((subdivisions*16)>>zoom)>0) blendedStep = 0;
         blendedBeat[i][j] = blendedStep;
       }
@@ -236,7 +242,7 @@ void updateControl(){
     for(int i=0;i<3;i++) {
       knobLocked[i] = true;
       initValues[i] = analogValues[i];
-      digitalWrite(ledPins[i], HIGH);
+      //digitalWrite(ledPins[i], HIGH);
     }
   } else {
     for(int i=0;i<3;i++) {
@@ -244,12 +250,12 @@ void updateControl(){
         if(initValues[i]<storedValues[controlSet][i]) {
           if(analogValues[i]>=storedValues[controlSet][i]) {
             knobLocked[i] = false;
-            digitalWrite(ledPins[i], LOW);
+            //digitalWrite(ledPins[i], LOW);
           }
         } else {
           if(analogValues[i]<=storedValues[controlSet][i]) {
             knobLocked[i] = false;
-            digitalWrite(ledPins[i], LOW);
+            //digitalWrite(ledPins[i], LOW);
           }
         }
       }
@@ -258,8 +264,8 @@ void updateControl(){
   }
   switch(controlSet) {
     case 0:
-    hyper = storedValues[controlSet][0]>>2;
-    hyperFloor = storedValues[controlSet][1]>>2;
+    chance = storedValues[controlSet][0]>>2;
+    midpoint = storedValues[controlSet][1]>>2;
     zoom = map(storedValues[controlSet][2],0,1024,0,5+subdivisionSteps);
     break;
     case 1:
@@ -304,20 +310,5 @@ int updateAudio(){
 
 void loop(){
   audioHook();
-}
-
-void updateLEDs() {
-  static byte count_1=0;
-  static byte count_2=85;
-  static byte count_3=170;
-  static byte count_4=32;
-  static byte count_5=96;
-// PORTD maps to Arduino digital pins 0 to 7
-// http://playground.arduino.cc/Learning/PortManipulation
-  (count_1++ >= ledBrightness[0]) ? PORTD &= ~(1 << ledPins[0]) : PORTD |= (1 << ledPins[0]);
-  (count_2++ >= ledBrightness[1]) ? PORTD &= ~(1 << ledPins[1]) : PORTD |= (1 << ledPins[1]);
-  (count_3++ >= ledBrightness[2]) ? PORTD &= ~(1 << ledPins[2]) : PORTD |= (1 << ledPins[2]);
-  (count_4++ >= ledBrightness[3]) ? PORTD &= ~(1 << ledPins[3]) : PORTD |= (1 << ledPins[3]);
-  (count_5++ >= ledBrightness[4]) ? PORTD &= ~(1 << ledPins[4]) : PORTD |= (1 << ledPins[4]);
 }
 
