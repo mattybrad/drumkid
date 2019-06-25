@@ -2,7 +2,7 @@
 
   (general
     (thickness 1.6)
-    (drawings 8)
+    (drawings 9)
     (tracks 0)
     (zones 0)
     (modules 61)
@@ -60,7 +60,7 @@
     (pad_to_mask_clearance 0)
     (solder_mask_min_width 0.25)
     (aux_axis_origin 0 0)
-    (visible_elements 7FFFFFFF)
+    (visible_elements 7FFFF7FF)
     (pcbplotparams
       (layerselection 0x010fc_ffffffff)
       (usegerberextensions false)
@@ -196,7 +196,7 @@
   )
 
   (module MountingHole:MountingHole_3.2mm_M3 (layer F.Cu) (tedit 56D1B4CB) (tstamp 5D54F1C8)
-    (at 150.193946 100.791091)
+    (at 150 100.791091)
     (descr "Mounting Hole 3.2mm, no annular, M3")
     (tags "mounting hole 3.2mm no annular m3")
     (attr virtual)
@@ -2401,7 +2401,7 @@
   )
 
   (module LED_THT:LED_D5.0mm (layer B.Cu) (tedit 5995936A) (tstamp 5D4695FC)
-    (at 166.993946 58.51729)
+    (at 168.75 59.51729)
     (descr "LED, diameter 5.0mm, 2 pins, http://cdn-reichelt.de/documents/datenblatt/A500/LL-504BC2E-009.pdf")
     (tags "LED diameter 5.0mm 2 pins")
     (path /5CC3F320)
@@ -2437,7 +2437,7 @@
   )
 
   (module LED_THT:LED_D5.0mm (layer B.Cu) (tedit 5995936A) (tstamp 5D4695EA)
-    (at 157.993946 58.51729)
+    (at 158.75 59.51729)
     (descr "LED, diameter 5.0mm, 2 pins, http://cdn-reichelt.de/documents/datenblatt/A500/LL-504BC2E-009.pdf")
     (tags "LED diameter 5.0mm 2 pins")
     (path /5CC3F2D4)
@@ -2473,7 +2473,7 @@
   )
 
   (module LED_THT:LED_D5.0mm (layer B.Cu) (tedit 5995936A) (tstamp 5D4695D8)
-    (at 148.993946 58.51729)
+    (at 148.75 59.51729)
     (descr "LED, diameter 5.0mm, 2 pins, http://cdn-reichelt.de/documents/datenblatt/A500/LL-504BC2E-009.pdf")
     (tags "LED diameter 5.0mm 2 pins")
     (path /5CC3F28E)
@@ -2509,7 +2509,7 @@
   )
 
   (module LED_THT:LED_D5.0mm (layer B.Cu) (tedit 5995936A) (tstamp 5D4695C6)
-    (at 139.993946 58.51729)
+    (at 138.75 59.51729)
     (descr "LED, diameter 5.0mm, 2 pins, http://cdn-reichelt.de/documents/datenblatt/A500/LL-504BC2E-009.pdf")
     (tags "LED diameter 5.0mm 2 pins")
     (path /5CC3F23A)
@@ -2545,7 +2545,7 @@
   )
 
   (module LED_THT:LED_D5.0mm (layer B.Cu) (tedit 5995936A) (tstamp 5D4695B4)
-    (at 130.993946 58.51729)
+    (at 128.75 59.51729)
     (descr "LED, diameter 5.0mm, 2 pins, http://cdn-reichelt.de/documents/datenblatt/A500/LL-504BC2E-009.pdf")
     (tags "LED diameter 5.0mm 2 pins")
     (path /5CC2229B)
@@ -3469,7 +3469,7 @@
   )
 
   (module headphone:Tayda_3.5mm_stereo_TRS_jack_A-853 (layer B.Cu) (tedit 5C937D29) (tstamp 5D46939F)
-    (at 148.993946 44.991091 180)
+    (at 150 45 180)
     (path /5CC95FE7)
     (fp_text reference J9 (at -4.318 -7.112 180) (layer B.SilkS)
       (effects (font (size 0.8 0.8) (thickness 0.15)) (justify mirror))
@@ -3622,7 +3622,7 @@
   )
 
   (module MountingHole:MountingHole_3.2mm_M3 (layer F.Cu) (tedit 56D1B4CB) (tstamp 5D54F14C)
-    (at 150.193946 77.291091)
+    (at 150 77.291091)
     (descr "Mounting Hole 3.2mm, no annular, M3")
     (tags "mounting hole 3.2mm no annular m3")
     (attr virtual)
@@ -3640,6 +3640,7 @@
     (pad 1 np_thru_hole circle (at 0 0) (size 3.2 3.2) (drill 3.2) (layers *.Cu *.Mask))
   )
 
+  (gr_line (start 150 40) (end 150 160) (layer Dwgs.User) (width 0.2))
   (gr_line (start 134.993946 159.991091) (end 164.993946 159.991091) (layer Edge.Cuts) (width 0.1))
   (gr_arc (start 164.993946 129.991091) (end 164.993946 159.991091) (angle -90) (layer Edge.Cuts) (width 0.1))
   (gr_arc (start 134.993946 129.991091) (end 104.993946 129.991091) (angle -90) (layer Edge.Cuts) (width 0.1))
