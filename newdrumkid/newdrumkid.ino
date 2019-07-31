@@ -27,7 +27,11 @@ Sample <snare_NUM_CELLS, AUDIO_RATE> snare1(snare_DATA);
 Sample <snare_NUM_CELLS, AUDIO_RATE> snare2(snare_DATA);
 byte beat1[][16] = {  {255,255,0,0,0,0,0,0,255,0,0,0,0,0,0,0,},
                       {255,128,255,128,255,128,255,128,255,128,255,128,255,128,255,128,},
-                      {0,0,0,0,255,0,0,0,0,0,0,0,255,0,0,0,},};
+                      {0,0,0,0,255,0,0,0,0,0,0,0,255,128,64,32,},};
+
+// temp
+int ledPins[] = {2,3,4,5,6};
+int buttonPins[] = {7,8,10,11,12,13};
 
 void setup() {
   startMozzi(CONTROL_RATE);
@@ -42,6 +46,11 @@ void setup() {
   kick2.setEnd(7000);
   play();
   Serial.begin(9600);
+  for(int i=0;i<5;i++) {
+    pinMode(ledPins[i], OUTPUT);
+    pinMode(buttonPins[i], INPUT_PULLUP);
+  }
+  pinMode(buttonPins[5], INPUT);
 }
 
 void loop() {
@@ -91,6 +100,10 @@ void play() {
 }
 
 void updateControl() {
+  bool masterButton = digitalRead(buttonPins[5]);
+  for(int i=0;i<5;i++) {
+    digitalWrite(ledPins[i], (!digitalRead(buttonPins[i])||masterButton));
+  }
   if(schedulerEventDelay.ready()) scheduler();
   for(int i=0;i<numEventDelays;i++) {
     if(eventDelays[i].ready() && delayInUse[i]) {
@@ -105,4 +118,3 @@ void updateControl() {
 int updateAudio() {
   return closedhat1.next() + kick1.next() + snare1.next();
 }
-

@@ -979,7 +979,7 @@ Wire Wire Line
 	7600 1250 7600 1900
 Connection ~ 7600 1900
 Wire Wire Line
-	7600 1900 8600 1900
+	7600 1900 7800 1900
 Wire Wire Line
 	6450 1050 6850 1050
 Wire Wire Line
@@ -1200,4 +1200,10 @@ ANALOG_3
 Wire Wire Line
 	10000 4550 10150 4550
 Connection ~ 10700 4700
+Wire Wire Line
+	7800 1450 7800 1900
+Connection ~ 7800 1450
+Connection ~ 7800 1900
+Wire Wire Line
+	7800 1900 8600 1900
 $EndSCHEMATC
