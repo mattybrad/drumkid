@@ -75,6 +75,8 @@ void scheduleNote(byte channelNumber, int beatNumber, float delayTime) {
 
 void scheduler() {
   while(nextNoteTime < (float) millis() + scheduleAheadTime) {
+    if(currentStep%16==0) digitalWrite(ledPins[currentStep/16], HIGH);
+    else if(currentStep%8==0) digitalWrite(ledPins[currentStep/16], LOW);
     for(int i=0;i<3;i++) {
       if(currentStep%4==0&&beat1[i][currentStep/4]>0) scheduleNote(i, currentStep, nextNoteTime - (float) millis());
       //else if(i==1&&rand(0,4)==0) scheduleNote(i, currentStep, nextNoteTime - (float) millis());
@@ -100,10 +102,10 @@ void play() {
 }
 
 void updateControl() {
-  bool masterButton = digitalRead(buttonPins[5]);
+  /*bool masterButton = digitalRead(buttonPins[5]);
   for(int i=0;i<5;i++) {
     digitalWrite(ledPins[i], (!digitalRead(buttonPins[i])||masterButton));
-  }
+  }*/
   if(schedulerEventDelay.ready()) scheduler();
   for(int i=0;i<numEventDelays;i++) {
     if(eventDelays[i].ready() && delayInUse[i]) {
