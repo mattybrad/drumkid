@@ -59,6 +59,9 @@ byte paramChance = 0;
 byte paramMidpoint = 0;
 byte paramRange = 0;
 byte paramZoom = 0;
+byte paramPitch = 0;
+byte paramCrush = 0;
+byte crushCompensation = 0;
 
 // define samples
 Sample <kick_NUM_CELLS, AUDIO_RATE> kick1(kick_DATA);
@@ -156,7 +159,9 @@ void scheduler() {
         if(currentStep%4==0) {
           byte yesNoRand = rand(0,255);
           if(yesNoRand < paramChance) {
-            scheduleNote(i, currentStep, 64, nextNoteTime - (float) millis());
+            long velocityRand = rand(0,255); // is long necessary?
+            long velocity = paramMidpoint - paramRange/2 + ((velocityRand * paramRange)>>8); // is long necessary?
+            if(velocity > 0) scheduleNote(i, currentStep, velocity, nextNoteTime - (float) millis());
           }
         }
       }
@@ -208,14 +213,16 @@ void updateControl() {
     for(byte i=0;i<numEventDelays;i++) {
       if(eventDelays[i].ready() && delayInUse[i]) {
         delayInUse[i] = false;
-        if(delayChannel[i]==0) {
-          kick1.start();
-        } else if(delayChannel[i]==1) {
-          closedhat1.start();
-        } else if(delayChannel[i]==2) {
-          snare1.start();
+        if(delayVelocity[i] > 8) { // don't bother with very quiet notes
+          if(delayChannel[i]==0) {
+            kick1.start();
+          } else if(delayChannel[i]==1) {
+            closedhat1.start();
+          } else if(delayChannel[i]==2) {
+            snare1.start();
+          }
+          sampleVolumes[delayChannel[i]] = delayVelocity[i];
         }
-        sampleVolumes[delayChannel[i]] = delayVelocity[i];
       }
     }
   }
@@ -262,6 +269,13 @@ void updateControl() {
     paramRange = storedValues[0][2]>>2;
     paramZoom = storedValues[0][3]>>2;
     break;
+
+    case 1:
+    paramPitch = storedValues[1][0]>>2;
+    paramCrush = 7-(storedValues[1][1]>>7);
+    crushCompensation = paramCrush;
+    if(paramCrush >= 6) crushCompensation --;
+    if(paramCrush >= 7) crushCompensation --;
   }
 
   firstLoop = false;
@@ -270,6 +284,7 @@ void updateControl() {
 const byte atten = 9;
 int updateAudio() {
   char asig = ((sampleVolumes[0]*kick1.next())>>atten)+((sampleVolumes[1]*closedhat1.next())>>atten)+((sampleVolumes[2]*snare1.next())>>atten);
+  asig = (asig>>paramCrush)<<crushCompensation;
   return (int) asig;
 }
 
