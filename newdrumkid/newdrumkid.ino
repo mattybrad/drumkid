@@ -271,11 +271,17 @@ void updateControl() {
     break;
 
     case 1:
-    paramPitch = storedValues[1][0]>>2;
+    float newKickFreq = ((float) storedValues[1][0] / 255.0f) * (float) kick_SAMPLERATE / (float) kick_NUM_CELLS;
+    float newHatFreq = ((float) storedValues[1][0] / 255.0f) * (float) closedhat_SAMPLERATE / (float) closedhat_NUM_CELLS;
+    float newSnareFreq = ((float) storedValues[1][0] / 255.0f) * (float) snare_SAMPLERATE / (float) snare_NUM_CELLS;
+    kick1.setFreq(newKickFreq);
+    closedhat1.setFreq(newHatFreq);
+    snare1.setFreq(newSnareFreq);
     paramCrush = 7-(storedValues[1][1]>>7);
     crushCompensation = paramCrush;
     if(paramCrush >= 6) crushCompensation --;
     if(paramCrush >= 7) crushCompensation --;
+    break;
   }
 
   firstLoop = false;
