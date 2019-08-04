@@ -311,4 +311,3 @@ int updateAudio(){
 void loop(){
   audioHook();
 }
-

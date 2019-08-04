@@ -31,14 +31,17 @@ byte numSteps = 4 * 16; // 64 steps = 4/4 time signature, 48 = 3/4 or 6/8, 80 = 
 float nextNoteTime;
 float scheduleAheadTime = 100; // ms
 float lookahead = 25; // ms
-float tempo = 60.0;
+float tempo = 120.0;
 const byte numEventDelays = 20;
 EventDelay schedulerEventDelay;
 EventDelay eventDelays[numEventDelays];
 bool delayInUse[numEventDelays];
 byte delayChannel[numEventDelays];
+byte delayVelocity[numEventDelays];
 byte eventDelayIndex = 0;
 bool beatLedsActive = true;
+bool firstLoop = true;
+byte sampleVolumes[3] = {255,255,255};
 
 // variables relating to knob values
 byte controlSet = 0;
@@ -52,7 +55,10 @@ int storedValues[5][4] = {  {512,512,512,512},    // A
                             {512,512,512,512},};  // Y
 
 // parameters
-byte chance = 0;
+byte paramChance = 0;
+byte paramMidpoint = 0;
+byte paramRange = 0;
+byte paramZoom = 0;
 
 // define samples
 Sample <kick_NUM_CELLS, AUDIO_RATE> kick1(kick_DATA);
@@ -63,8 +69,8 @@ Sample <snare_NUM_CELLS, AUDIO_RATE> snare1(snare_DATA);
 Sample <snare_NUM_CELLS, AUDIO_RATE> snare2(snare_DATA);
 
 byte beat1[][MAX_BEAT_STEPS] = {  {255,255,0,0,0,0,0,0,255,0,0,0,0,0,0,0,255,255,0,0,0,0,0,0,255,0,0,0,0,0,0,0,},
-                      {255,128,255,128,255,128,255,128,255,128,255,128,255,128,255,128,255,128,255,128,255,128,255,128,255,128,255,128,255,128,255,128,},
-                      {0,0,0,0,255,0,0,0,0,0,0,0,255,128,64,32,0,0,0,0,255,0,0,0,0,0,0,0,255,128,64,32,},};
+                                  {255,128,255,128,255,128,255,128,255,128,255,128,255,128,255,128,255,128,255,128,255,128,255,128,255,128,255,128,255,128,255,128,},
+                                  {0,0,0,0,255,0,0,0,0,0,0,0,255,128,64,32,0,0,0,0,255,0,0,0,0,0,0,0,255,128,64,32,},};
 
 // define pins
 byte breadboardLedPins[5] = {2,3,4,5,13};
@@ -103,6 +109,14 @@ void setup() {
   buttonY.attach(buttonPins[4], INPUT_PULLUP);
   buttonZ.attach(buttonPins[5], INPUT_PULLUP);
 
+  for(int i=0;i<20000;i++) {
+    kick1.next();
+    kick2.next();
+    closedhat1.next();
+    closedhat2.next();
+    snare1.next();
+    snare2.next();
+  }
   startupLedSequence();
 }
 
@@ -117,12 +131,13 @@ void nextNote() {
   currentStep = currentStep % numSteps;
 }
 
-void scheduleNote(byte channelNumber, int beatNumber, float delayTime) {
+void scheduleNote(byte channelNumber, byte beatNumber, byte velocity, float delayTime) {
   // schedule a drum hit to occur after [delayTime] milliseconds
   eventDelays[eventDelayIndex].set(delayTime);
   eventDelays[eventDelayIndex].start();
   delayInUse[eventDelayIndex] = true;
   delayChannel[eventDelayIndex] = channelNumber;
+  delayVelocity[eventDelayIndex] = velocity;
   eventDelayIndex = (eventDelayIndex + 1) % numEventDelays; // replace with "find next free slot" function
 }
 
@@ -135,18 +150,16 @@ void scheduler() {
       else if(currentStep%4==0) digitalWrite(ledPins[stepLED], LOW);
     }
     for(byte i=0;i<3;i++) {
-      if(currentStep%4==0&&beat1[i][currentStep/4]>0) scheduleNote(i, currentStep, nextNoteTime - (float) millis());
+      if(currentStep%4==0&&beat1[i][currentStep/4]>0) scheduleNote(i, currentStep, beat1[i][currentStep/4], nextNoteTime - (float) millis());
       else {
         // temp, playing around
         if(currentStep%4==0) {
           byte yesNoRand = rand(0,255);
-          if(yesNoRand < chance) {
-            scheduleNote(i, currentStep, nextNoteTime - (float) millis());
+          if(yesNoRand < paramChance) {
+            scheduleNote(i, currentStep, 64, nextNoteTime - (float) millis());
           }
         }
       }
-      //else if(i==2&&currentStep%2==0&&rand(0,10)==0) scheduleNote(i, currentStep, nextNoteTime - (float) millis());
-      //else if(i==2&&rand(0,40)==0) scheduleNote(i, currentStep, nextNoteTime - (float) millis());
     }
     nextNote();
   }
@@ -195,9 +208,14 @@ void updateControl() {
     for(byte i=0;i<numEventDelays;i++) {
       if(eventDelays[i].ready() && delayInUse[i]) {
         delayInUse[i] = false;
-        if(delayChannel[i]==0) kick1.start();
-        else if(delayChannel[i]==1) closedhat1.start();
-        else if(delayChannel[i]==2) snare1.start();
+        if(delayChannel[i]==0) {
+          kick1.start();
+        } else if(delayChannel[i]==1) {
+          closedhat1.start();
+        } else if(delayChannel[i]==2) {
+          snare1.start();
+        }
+        sampleVolumes[delayChannel[i]] = delayVelocity[i];
       }
     }
   }
@@ -205,11 +223,16 @@ void updateControl() {
   for(int i=0;i<4;i++) {
     analogValues[i] = mozziAnalogRead(i); // read all analog values
   }
-  if(controlSetChanged) {
+  if(controlSetChanged || firstLoop) {
     // "lock" all knobs when control set changes
     for(byte i=0;i<4;i++) {
-      knobLocked[i] = true;
+      knobLocked[i] = !firstLoop;
       initValues[i] = analogValues[i];
+      if(firstLoop) {
+        storedValues[controlSet][i] = analogValues[i];
+        //Serial.println(mozziAnalogRead(i));
+        //Serial.println(storedValues[controlSet][i]);
+      }
     }
   } else {
     // unlock knobs if passing through stored value position
@@ -234,13 +257,19 @@ void updateControl() {
   // do logic based on params
   switch(controlSet) {
     case 0:
-    chance = storedValues[controlSet][0]>>2;
+    paramChance = storedValues[0][0]>>2;
+    paramMidpoint = storedValues[0][1]>>2;
+    paramRange = storedValues[0][2]>>2;
+    paramZoom = storedValues[0][3]>>2;
     break;
   }
+
+  firstLoop = false;
 }
 
+const byte atten = 9;
 int updateAudio() {
-  char asig = (closedhat1.next() + kick1.next() + snare1.next()) >> 1;
+  char asig = ((sampleVolumes[0]*kick1.next())>>atten)+((sampleVolumes[1]*closedhat1.next())>>atten)+((sampleVolumes[2]*snare1.next())>>atten);
   return (int) asig;
 }
 
@@ -248,7 +277,7 @@ void startupLedSequence() {
   byte seq[15] = {0,4,3,1,4,2,0,3,1,0,4,3,0,4,2};
   for(byte i=0; i<15; i++) {
     digitalWrite(ledPins[seq[i]], HIGH);
-    delay(50);
+    delay(25);
     digitalWrite(ledPins[seq[i]], LOW);
   }
 }
