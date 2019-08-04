@@ -13,6 +13,7 @@
 #include "kick.h"
 #include "closedhat.h"
 #include "snare.h"
+#include "click.h"
 
 // define buttons
 Bounce buttonA = Bounce();
@@ -31,7 +32,6 @@ byte numSteps = 4 * 16; // 64 steps = 4/4 time signature, 48 = 3/4 or 6/8, 80 = 
 float nextNoteTime;
 float scheduleAheadTime = 100; // ms
 float lookahead = 25; // ms
-float tempo = 120.0;
 const byte numEventDelays = 20;
 EventDelay schedulerEventDelay;
 EventDelay eventDelays[numEventDelays];
@@ -41,7 +41,7 @@ byte delayVelocity[numEventDelays];
 byte eventDelayIndex = 0;
 bool beatLedsActive = true;
 bool firstLoop = true;
-byte sampleVolumes[3] = {255,255,255};
+byte sampleVolumes[4] = {255,255,255,255};
 
 // variables relating to knob values
 byte controlSet = 0;
@@ -62,18 +62,20 @@ byte paramZoom = 0;
 byte paramPitch = 0;
 byte paramCrush = 0;
 byte crushCompensation = 0;
+int paramSlop = 0;
+float paramTempo = 120.0;
+byte paramTimeSignature = 4;
 
 // define samples
 Sample <kick_NUM_CELLS, AUDIO_RATE> kick1(kick_DATA);
-Sample <kick_NUM_CELLS, AUDIO_RATE> kick2(kick_DATA);
 Sample <closedhat_NUM_CELLS, AUDIO_RATE> closedhat1(closedhat_DATA);
-Sample <closedhat_NUM_CELLS, AUDIO_RATE> closedhat2(closedhat_DATA);
 Sample <snare_NUM_CELLS, AUDIO_RATE> snare1(snare_DATA);
-Sample <snare_NUM_CELLS, AUDIO_RATE> snare2(snare_DATA);
+Sample <click_NUM_CELLS, AUDIO_RATE> click1(click_DATA);
 
 byte beat1[][MAX_BEAT_STEPS] = {  {255,255,0,0,0,0,0,0,255,0,0,0,0,0,0,0,255,255,0,0,0,0,0,0,255,0,0,0,0,0,0,0,},
                                   {255,128,255,128,255,128,255,128,255,128,255,128,255,128,255,128,255,128,255,128,255,128,255,128,255,128,255,128,255,128,255,128,},
-                                  {0,0,0,0,255,0,0,0,0,0,0,0,255,128,64,32,0,0,0,0,255,0,0,0,0,0,0,0,255,128,64,32,},};
+                                  {0,0,0,0,255,0,0,0,0,0,0,0,255,128,64,32,0,0,0,0,255,0,0,0,0,0,0,0,255,128,64,32,},
+                                  {0,128,0,128,0,128,0,128,0,128,0,128,0,128,0,128,0,128,0,128,0,128,0,128,0,128,0,128,0,128,0,128,},};
 
 // define pins
 byte breadboardLedPins[5] = {2,3,4,5,13};
@@ -87,13 +89,10 @@ void setup() {
   startMozzi(CONTROL_RATE);
   randSeed();
   kick1.setFreq((float) kick_SAMPLERATE / (float) kick_NUM_CELLS);
-  kick2.setFreq((float) kick_SAMPLERATE / (float) kick_NUM_CELLS);
   closedhat1.setFreq((float) closedhat_SAMPLERATE / (float) closedhat_NUM_CELLS);
-  closedhat2.setFreq((float) closedhat_SAMPLERATE / (float) closedhat_NUM_CELLS);
   snare1.setFreq((float) snare_SAMPLERATE / (float) snare_NUM_CELLS);
-  snare2.setFreq((float) snare_SAMPLERATE / (float) snare_NUM_CELLS);
+  click1.setFreq((float) click_SAMPLERATE / (float) click_NUM_CELLS);
   kick1.setEnd(7000);
-  kick2.setEnd(7000);
   Serial.begin(9600);
   for(byte i=0;i<5;i++) {
     pinMode(ledPins[i], OUTPUT);
@@ -114,11 +113,8 @@ void setup() {
 
   for(int i=0;i<20000;i++) {
     kick1.next();
-    kick2.next();
     closedhat1.next();
-    closedhat2.next();
     snare1.next();
-    snare2.next();
   }
   startupLedSequence();
 }
@@ -128,7 +124,7 @@ void loop() {
 }
 
 void nextNote() {
-  float msPerBeat = (60.0 / tempo) * 1000.0;
+  float msPerBeat = (60.0 / paramTempo) * 1000.0;
   nextNoteTime += 0.25 * msPerBeat / 4;
   currentStep ++;
   currentStep = currentStep % numSteps;
@@ -152,8 +148,9 @@ void scheduler() {
       if(currentStep%16==0) digitalWrite(ledPins[stepLED], HIGH);
       else if(currentStep%4==0) digitalWrite(ledPins[stepLED], LOW);
     }
-    for(byte i=0;i<3;i++) {
-      if(currentStep%4==0&&beat1[i][currentStep/4]>0) scheduleNote(i, currentStep, beat1[i][currentStep/4], nextNoteTime - (float) millis());
+    for(byte i=0;i<4;i++) {
+      int slopRand = rand(0,paramSlop) - paramSlop / 2;
+      if(currentStep%4==0&&beat1[i][currentStep/4]>0) scheduleNote(i, currentStep, beat1[i][currentStep/4], nextNoteTime + slopRand - (float) millis());
       else {
         // temp, playing around
         if(currentStep%4==0) {
@@ -220,6 +217,8 @@ void updateControl() {
             closedhat1.start();
           } else if(delayChannel[i]==2) {
             snare1.start();
+          } else if(delayChannel[i]==3) {
+            click1.start();
           }
           sampleVolumes[delayChannel[i]] = delayVelocity[i];
         }
@@ -271,17 +270,30 @@ void updateControl() {
     break;
 
     case 1:
-    float newKickFreq = ((float) storedValues[1][0] / 255.0f) * (float) kick_SAMPLERATE / (float) kick_NUM_CELLS;
-    float newHatFreq = ((float) storedValues[1][0] / 255.0f) * (float) closedhat_SAMPLERATE / (float) closedhat_NUM_CELLS;
-    float newSnareFreq = ((float) storedValues[1][0] / 255.0f) * (float) snare_SAMPLERATE / (float) snare_NUM_CELLS;
-    kick1.setFreq(newKickFreq);
-    closedhat1.setFreq(newHatFreq);
-    snare1.setFreq(newSnareFreq);
-    paramCrush = 7-(storedValues[1][1]>>7);
-    crushCompensation = paramCrush;
-    if(paramCrush >= 6) crushCompensation --;
-    if(paramCrush >= 7) crushCompensation --;
+    {
+      //float newKickFreq = ((float) storedValues[1][0] / 255.0f) * (float) kick_SAMPLERATE / (float) kick_NUM_CELLS;
+      float newHatFreq = ((float) storedValues[1][0] / 255.0f) * (float) closedhat_SAMPLERATE / (float) closedhat_NUM_CELLS;
+      float newSnareFreq = ((float) storedValues[1][0] / 255.0f) * (float) snare_SAMPLERATE / (float) snare_NUM_CELLS;
+      float newClickFreq = ((float) storedValues[1][0] / 255.0f) * (float) click_SAMPLERATE / (float) click_NUM_CELLS;
+      //kick1.setFreq(newKickFreq);
+      closedhat1.setFreq(newHatFreq);
+      snare1.setFreq(newSnareFreq);
+      click1.setFreq(newClickFreq);
+      paramCrush = 7-(storedValues[1][1]>>7);
+      crushCompensation = paramCrush;
+      if(paramCrush >= 6) crushCompensation --;
+      if(paramCrush >= 7) crushCompensation --;
+    }
     break;
+
+    case 2:
+    paramSlop = storedValues[2][0]>>2; // between 0ms and 255ms?
+    break;
+
+    case 3:
+    paramTempo = 40.0 + ((float) storedValues[3][0]) / 5.0;
+    paramTimeSignature = (storedValues[3][1]>>7)+1;
+    numSteps = paramTimeSignature * 16;
   }
 
   firstLoop = false;
@@ -289,7 +301,7 @@ void updateControl() {
 
 const byte atten = 9;
 int updateAudio() {
-  char asig = ((sampleVolumes[0]*kick1.next())>>atten)+((sampleVolumes[1]*closedhat1.next())>>atten)+((sampleVolumes[2]*snare1.next())>>atten);
+  char asig = ((sampleVolumes[0]*kick1.next())>>atten)+((sampleVolumes[1]*closedhat1.next())>>atten)+((sampleVolumes[2]*snare1.next())>>atten)+((sampleVolumes[3]*click1.next())>>atten);
   asig = (asig>>paramCrush)<<crushCompensation;
   return (int) asig;
 }
