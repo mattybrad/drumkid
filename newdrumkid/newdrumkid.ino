@@ -31,7 +31,7 @@ byte numSteps = 4 * 16; // 64 steps = 4/4 time signature, 48 = 3/4 or 6/8, 80 = 
 float nextNoteTime;
 float scheduleAheadTime = 100; // ms
 float lookahead = 25; // ms
-float tempo = 140.0;
+float tempo = 60.0;
 const byte numEventDelays = 20;
 EventDelay schedulerEventDelay;
 EventDelay eventDelays[numEventDelays];
@@ -39,9 +39,9 @@ bool delayInUse[numEventDelays];
 byte delayChannel[numEventDelays];
 byte eventDelayIndex = 0;
 bool beatLedsActive = true;
-byte controlSet = 0;
 
 // variables relating to knob values
+byte controlSet = 0;
 bool knobLocked[4] = {true,true,true,true};
 int analogValues[4] = {0,0,0,0};
 int initValues[4] = {0,0,0,0};
@@ -50,6 +50,9 @@ int storedValues[5][4] = {  {512,512,512,512},    // A
                             {512,512,512,512},    // C
                             {512,512,512,512},    // X
                             {512,512,512,512},};  // Y
+
+// parameters
+byte chance = 0;
 
 // define samples
 Sample <kick_NUM_CELLS, AUDIO_RATE> kick1(kick_DATA);
@@ -133,6 +136,15 @@ void scheduler() {
     }
     for(byte i=0;i<3;i++) {
       if(currentStep%4==0&&beat1[i][currentStep/4]>0) scheduleNote(i, currentStep, nextNoteTime - (float) millis());
+      else {
+        // temp, playing around
+        if(currentStep%4==0) {
+          byte yesNoRand = rand(0,255);
+          if(yesNoRand < chance) {
+            scheduleNote(i, currentStep, nextNoteTime - (float) millis());
+          }
+        }
+      }
       //else if(i==2&&currentStep%2==0&&rand(0,10)==0) scheduleNote(i, currentStep, nextNoteTime - (float) millis());
       //else if(i==2&&rand(0,40)==0) scheduleNote(i, currentStep, nextNoteTime - (float) millis());
     }
@@ -217,6 +229,13 @@ void updateControl() {
         storedValues[controlSet][i] = analogValues[i]; // store new analog value if knob active
       }
     }
+  }
+
+  // do logic based on params
+  switch(controlSet) {
+    case 0:
+    chance = storedValues[controlSet][0]>>2;
+    break;
   }
 }
 
