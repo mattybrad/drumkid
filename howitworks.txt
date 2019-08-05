@@ -20,4 +20,5 @@ CLUSTERING - how much the dice rolls favour the quarter notes, 8th notes, etc - 
 DRIFT - this is basically a slowish LFO (0.1Hz or so, but with the frequency itself changing randomly) modulating the CHANCE - turn up the DRIFT to create an organic-sounding beat without having to touch the controls much.
 
 
+SLOP - 
 

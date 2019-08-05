@@ -1,4 +1,4 @@
-#define IS_BREADBOARD true // switch to false if compiling code for PCB
+#define IS_BREADBOARD false // switch to false if compiling code for PCB
 
 // include mozzi library files
 #include <MozziGuts.h>
