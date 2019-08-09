@@ -1,0 +1,24 @@
+DrumKid produces beats based on randomness. Here is how it (currently) does it, although this algorithm(?) is subject to change.
+
+First, there is a defined, basic beat. For this example, let's just use a kick and snare, in 4/4 time, with 16 steps in the bar (4 16th-notes).
+
+KICK:   X------XX-X-----
+SNARE:  ----X-------X---
+
+This pattern will loop regardless, and these notes will always exist (unless we start cutting them out later, but let's keep things simple for now).
+
+Now let's imagine that we very slowly move through the beat, rolling a dice on each step, for both drums. If the dice lands on a 6, then we hit the drum on that step. We don't roll a six very often, so this will just add an occasional extra hit. If we lower our threshold, however, and add an extra hit every time we roll anything over a 3, for instance, we would get a much busier drum beat. This threshold is called CHANCE, and is controlled by a knob on DrumKid.
+
+It's a bit boring to have all the hits the same volume, so let's also introduce some randomness there. Imagine that every time we decide there will be an extra hit, we also roll a dice to decide the velocity. We could be simple and just say that rolling a 1 would give an almost silent hit, while a 6 would produce a very loud hit, but actually we want a bit more control than that. We want to define a MIDPOINT and a RANGE for the velocities. If RANGE is 0, all the extra hits will be at the exact velocity defined by MIDPOINT, but as RANGE increases, the velocity could be anywhere within the range, if that makes sense.
+
+Other possible things to control with knobs:
+
+ZOOM - do we only allow extra hits on the whole notes, or do we also allow them on 16th notes, 32nd notes, 64th notes, etc?
+
+CLUSTERING - how much the dice rolls favour the quarter notes, 8th notes, etc - when CLUSTERING is high, there are lots of random hits on quarter notes, a few on 8th notes, barely any on 16th etc. When low, there is an even spread across time divisions. CLUSTERING is subtler than ZOOM.
+
+DRIFT - this is basically a slowish LFO (0.1Hz or so, but with the frequency itself changing randomly) modulating the CHANCE - turn up the DRIFT to create an organic-sounding beat without having to touch the controls much.
+
+
+SLOP - 
+
