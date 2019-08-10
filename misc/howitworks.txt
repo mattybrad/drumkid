@@ -1,3 +1,5 @@
+THIS FILE IS A WORK IN PROGRESS
+
 DrumKid produces beats based on randomness. Here is how it (currently) does it, although this algorithm(?) is subject to change.
 
 First, there is a defined, basic beat. For this example, let's just use a kick and snare, in 4/4 time, with 16 steps in the bar (4 16th-notes).

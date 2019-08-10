@@ -1,6 +1,7 @@
-#define IS_BREADBOARD false // switch to false if compiling code for PCB
+#define IS_BREADBOARD true // switch to false if compiling code for PCB
 
-// include mozzi library files
+// include mozzi library files - currently requires particular version of mozzi for compatibility:
+// https://github.com/sensorium/Mozzi/archive/e1eba4410200842157763f1471dca34bf4867138.zip
 #include <MozziGuts.h>
 #include <Sample.h>
 #include <EventDelay.h>
@@ -14,6 +15,14 @@
 #include "closedhat.h"
 #include "snare.h"
 #include "click.h"
+
+// define pins
+byte breadboardLedPins[5] = {5,6,7,8,13};
+byte breadboardButtonPins[6] = {2,3,4,10,11,12};
+byte pcbLedPins[5] = {6,5,4,3,2};
+byte pcbButtonPins[6] = {13,12,11,10,8,7};
+byte (&ledPins)[5] = IS_BREADBOARD ? breadboardLedPins : pcbLedPins;
+byte (&buttonPins)[6] = IS_BREADBOARD ? breadboardButtonPins : pcbButtonPins;
 
 // define buttons
 Bounce buttonA = Bounce();
@@ -76,14 +85,6 @@ byte beat1[][MAX_BEAT_STEPS] = {  {255,255,0,0,0,0,0,0,255,0,0,0,0,0,0,0,255,255
                                   {255,128,255,128,255,128,255,128,255,128,255,128,255,128,255,128,255,128,255,128,255,128,255,128,255,128,255,128,255,128,255,128,},
                                   {0,0,0,0,255,0,0,0,0,0,0,0,255,128,64,32,0,0,0,0,255,0,0,0,0,0,0,0,255,128,64,32,},
                                   {0,128,0,128,0,128,0,128,0,128,0,128,0,128,0,128,0,128,0,128,0,128,0,128,0,128,0,128,0,128,0,128,},};
-
-// define pins
-byte breadboardLedPins[5] = {2,3,4,5,13};
-byte breadboardButtonPins[6] = {7,8,10,11,12,6};
-byte pcbLedPins[5] = {6,5,4,3,2};
-byte pcbButtonPins[6] = {13,12,11,10,8,7};
-byte (&ledPins)[5] = IS_BREADBOARD ? breadboardLedPins : pcbLedPins;
-byte (&buttonPins)[6] = IS_BREADBOARD ? breadboardButtonPins : pcbButtonPins;
 
 void setup() {
   startMozzi(CONTROL_RATE);
