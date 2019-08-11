@@ -51,6 +51,7 @@ byte eventDelayIndex = 0;
 bool beatLedsActive = true;
 bool firstLoop = true;
 byte sampleVolumes[4] = {255,255,255,255};
+unsigned long tapTempoTaps[8] = {0,0,0,0,0,0,0,0};
 
 // variables relating to knob values
 byte controlSet = 0;
@@ -199,7 +200,10 @@ void updateControl() {
 
   // switch active set of control knobs if button pressed
   byte prevControlSet = controlSet;
-  if(buttonA.fell()) controlSet = 0;
+  if(buttonA.fell()) {
+    controlSet = 0;
+    doTapTempo();
+  }
   else if(buttonB.fell()) controlSet = 1;
   else if(buttonC.fell()) controlSet = 2;
   else if(buttonX.fell()) controlSet = 3;
@@ -314,5 +318,22 @@ void startupLedSequence() {
     digitalWrite(ledPins[seq[i]], HIGH);
     delay(25);
     digitalWrite(ledPins[seq[i]], LOW);
+  }
+}
+
+void doTapTempo() {
+  unsigned long now = millis();
+  byte numValid = 1;
+  for(int i=7;i>0;i--) {
+    tapTempoTaps[i] = tapTempoTaps[i-1];
+    if(now-tapTempoTaps[i]<5000) numValid ++;
+  }
+  tapTempoTaps[0] = now;
+  unsigned long averageTime = 0;
+  for(int i=1;i<numValid;i++) {
+    averageTime += (tapTempoTaps[i-1]-tapTempoTaps[i])/(numValid-1); // losing some accuracy here, change this code if tap tempo is inaccurate
+  }
+  if(numValid >= 2) {
+    paramTempo = 60000.0 / (float) averageTime;
   }
 }
