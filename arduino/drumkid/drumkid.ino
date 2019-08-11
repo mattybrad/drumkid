@@ -92,10 +92,11 @@ Sample <closedhat_NUM_CELLS, AUDIO_RATE> closedhat1(closedhat_DATA);
 Sample <snare_NUM_CELLS, AUDIO_RATE> snare1(snare_DATA);
 Sample <click_NUM_CELLS, AUDIO_RATE> click1(click_DATA);
 
-byte beat1[][MAX_BEAT_STEPS] = {  {255,255,0,0,0,0,0,0,255,0,0,0,0,0,0,0,255,255,0,0,0,0,0,0,255,0,0,0,0,0,0,0,},
+const byte beat1[NUM_SAMPLES][MAX_BEAT_STEPS] PROGMEM = {  {255,255,0,0,0,0,0,0,255,0,0,0,0,0,0,0,255,255,0,0,0,0,0,0,255,0,0,0,0,0,0,0,},
                                   {255,128,255,128,255,128,255,128,255,128,255,128,255,128,255,128,255,128,255,128,255,128,255,128,255,128,255,128,255,128,255,128,},
                                   {0,0,0,0,255,0,0,0,0,0,0,0,255,128,64,32,0,0,0,0,255,0,0,0,0,0,0,0,255,128,64,32,},
                                   {0,128,128,0,0,0,0,0,0,0,0,0,0,0,0,0,0,128,0,0,0,0,0,0,0,0,0,0,0,0,0,0,},};
+              
 
 void setup() {
   startMozzi(CONTROL_RATE);
@@ -105,7 +106,7 @@ void setup() {
   snare1.setFreq((float) snare_SAMPLERATE / (float) snare_NUM_CELLS);
   click1.setFreq((float) click_SAMPLERATE / (float) click_NUM_CELLS);
   kick1.setEnd(7000);
-  Serial.begin(9600);
+  //Serial.begin(9600);
   for(byte i=0;i<NUM_LEDS;i++) {
     pinMode(ledPins[i], OUTPUT);
   }
@@ -154,6 +155,7 @@ void scheduleNote(byte channelNumber, byte beatNumber, byte velocity, float dela
 }
 
 void scheduler() {
+  byte thisBeatVelocity;
   while(nextNoteTime < (float) millis() + scheduleAheadTime) {
     byte thisStep = currentStep/16;
     byte stepLED = constrain(thisStep, 0, 4);
@@ -163,7 +165,8 @@ void scheduler() {
     }
     for(byte i=0;i<NUM_SAMPLES;i++) {
       int slopRand = rand(0,paramSlop) - paramSlop / 2;
-      if(currentStep%4==0&&beat1[i][currentStep/4]>0) scheduleNote(i, currentStep, beat1[i][currentStep/4], nextNoteTime + slopRand - (float) millis());
+      thisBeatVelocity = pgm_read_byte(&beat1[i][currentStep/4]);
+      if(currentStep%4==0&&thisBeatVelocity>0) scheduleNote(i, currentStep, thisBeatVelocity, nextNoteTime + slopRand - (float) millis());
       else {
         // temp, playing around
         if(currentStep%4==0) {
@@ -241,9 +244,10 @@ void updateControl() {
   bool controlSetChanged = (prevControlSet != controlSet);
   
   if(buttonZ.fell()) toggleSequence();
+  byte i;
   if(sequencePlaying) {
     if(schedulerEventDelay.ready()) scheduler();
-    for(byte i=0;i<numEventDelays;i++) {
+    for(i=0;i<numEventDelays;i++) {
       if(eventDelays[i].ready() && delayInUse[i]) {
         delayInUse[i] = false;
         if(delayVelocity[i] > 8) { // don't bother with very quiet notes
@@ -262,7 +266,7 @@ void updateControl() {
     }
   }
 
-  for(int i=0;i<NUM_KNOBS;i++) {
+  for(i=0;i<NUM_KNOBS;i++) {
     analogValues[i] = mozziAnalogRead(i); // read all analog values
   }
   if(controlSetChanged || firstLoop) {
@@ -278,7 +282,7 @@ void updateControl() {
     }
   } else {
     // unlock knobs if passing through stored value position
-    for(byte i=0;i<NUM_KNOBS;i++) {
+    for(i=0;i<NUM_KNOBS;i++) {
       if(knobLocked[i]) {
         if(initValues[i]<storedValues[controlSet][i]) {
           if(analogValues[i]>=storedValues[controlSet][i]) {
@@ -354,13 +358,14 @@ void startupLedSequence() {
 void doTapTempo() {
   unsigned long now = millis();
   byte numValid = 1;
-  for(int i=7;i>0;i--) {
+  byte i;
+  for(i=7;i>0;i--) {
     if(tapTempoTaps[i-1]-tapTempoTaps[i]<5000) numValid ++; // this part needs some work
     tapTempoTaps[i] = tapTempoTaps[i-1];
   }
   tapTempoTaps[0] = now;
   unsigned long averageTime = 0;
-  for(int i=1;i<numValid;i++) {
+  for(i=1;i<numValid;i++) {
     averageTime += (tapTempoTaps[i-1]-tapTempoTaps[i])/(numValid-1); // losing some accuracy here, change this code if tap tempo is inaccurate
   }
   if(numValid >= 4) {
