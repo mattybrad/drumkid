@@ -66,13 +66,8 @@ bool readyToChooseSaveLocation = false;
 // variables relating to knob values
 byte controlSet = 0;
 bool knobLocked[NUM_KNOBS] = {true,true,true,true};
-int analogValues[NUM_KNOBS] = {0,0,0,0};
-int initValues[NUM_KNOBS] = {0,0,0,0};
-int storedValues[NUM_PARAM_GROUPS][NUM_KNOBS] = { {512,512,512,512},    // A
-                                                  {512,512,512,512},    // B
-                                                  {512,512,512,512},    // C
-                                                  {512,512,512,512},    // X
-                                                  {512,512,512,512},};  // Y
+byte analogValues[NUM_KNOBS] = {0,0,0,0};
+byte initValues[NUM_KNOBS] = {0,0,0,0};
 
 // parameters
 byte paramChance = 0;
@@ -85,13 +80,35 @@ byte crushCompensation = 0;
 int paramSlop = 0;
 float paramTempo = 120.0;
 byte paramTimeSignature = 4;
+#define PARAM_CHANCE 0
+#define PARAM_ZOOM 1
+#define PARAM_MIDPOINT 2
+#define PARAM_RANGE 3
+#define PARAM_PITCH 4
+#define PARAM_CRUSH 5
+#define PARAM_6 6
+#define PARAM_7 7
+#define PARAM_SLOP 8
+#define PARAM_BLEND 9
+#define PARAM_10 10
+#define PARAM_11 11
+#define PARAM_TEMPO 12
+#define PARAM_TIME_SIGNATURE 13
+#define PARAM_14 14
+#define PARAM_15 15
+#define PARAM_16 16
+#define PARAM_17 17
+#define PARAM_18 18
+#define PARAM_19 19
+byte storedValues[20];
 
 // define samples
-Sample <kick_NUM_CELLS, AUDIO_RATE> kick1(kick_DATA);
-Sample <closedhat_NUM_CELLS, AUDIO_RATE> closedhat1(closedhat_DATA);
-Sample <snare_NUM_CELLS, AUDIO_RATE> snare1(snare_DATA);
-Sample <click_NUM_CELLS, AUDIO_RATE> click1(click_DATA);
+Sample <kick_NUM_CELLS, AUDIO_RATE> kick(kick_DATA);
+Sample <closedhat_NUM_CELLS, AUDIO_RATE> closedhat(closedhat_DATA);
+Sample <snare_NUM_CELLS, AUDIO_RATE> snare(snare_DATA);
+Sample <click_NUM_CELLS, AUDIO_RATE> click(click_DATA);
 
+// could just use bools instead of bytes to save space
 const byte beat1[NUM_SAMPLES][MAX_BEAT_STEPS] PROGMEM = {  {255,255,0,0,0,0,0,0,255,0,0,0,0,0,0,0,255,255,0,0,0,0,0,0,255,0,0,0,0,0,0,0,},
                                   {255,128,255,128,255,128,255,128,255,128,255,128,255,128,255,128,255,128,255,128,255,128,255,128,255,128,255,128,255,128,255,128,},
                                   {0,0,0,0,255,0,0,0,0,0,0,0,255,128,64,32,0,0,0,0,255,0,0,0,0,0,0,0,255,128,64,32,},
@@ -101,11 +118,11 @@ const byte beat1[NUM_SAMPLES][MAX_BEAT_STEPS] PROGMEM = {  {255,255,0,0,0,0,0,0,
 void setup() {
   startMozzi(CONTROL_RATE);
   randSeed();
-  kick1.setFreq((float) kick_SAMPLERATE / (float) kick_NUM_CELLS);
-  closedhat1.setFreq((float) closedhat_SAMPLERATE / (float) closedhat_NUM_CELLS);
-  snare1.setFreq((float) snare_SAMPLERATE / (float) snare_NUM_CELLS);
-  click1.setFreq((float) click_SAMPLERATE / (float) click_NUM_CELLS);
-  kick1.setEnd(7000);
+  kick.setFreq((float) kick_SAMPLERATE / (float) kick_NUM_CELLS);
+  closedhat.setFreq((float) closedhat_SAMPLERATE / (float) closedhat_NUM_CELLS);
+  snare.setFreq((float) snare_SAMPLERATE / (float) snare_NUM_CELLS);
+  click.setFreq((float) click_SAMPLERATE / (float) click_NUM_CELLS);
+  kick.setEnd(7000);
   //Serial.begin(9600);
   for(byte i=0;i<NUM_LEDS;i++) {
     pinMode(ledPins[i], OUTPUT);
@@ -125,11 +142,22 @@ void setup() {
   buttonZ.attach(buttonPins[5], INPUT_PULLUP);
 
   for(int i=0;i<20000;i++) {
-    kick1.next();
-    closedhat1.next();
-    snare1.next();
-    click1.next();
+    kick.next();
+    closedhat.next();
+    snare.next();
+    click.next();
   }
+
+  // add more default values here
+  storedValues[PARAM_CRUSH] = 255;
+  storedValues[PARAM_PITCH] = 128;
+  storedValues[PARAM_TIME_SIGNATURE] = 120; // this means 4/4, it's confusing...
+  storedValues[PARAM_TEMPO] = 100; // not BPM!
+
+  for(byte i=0;i<NUM_PARAM_GROUPS;i++) {
+    updateParameters(i);
+  }
+  
   startupLedSequence();
 }
 
@@ -252,13 +280,13 @@ void updateControl() {
         delayInUse[i] = false;
         if(delayVelocity[i] > 8) { // don't bother with very quiet notes
           if(delayChannel[i]==0) {
-            kick1.start();
+            kick.start();
           } else if(delayChannel[i]==1) {
-            closedhat1.start();
+            closedhat.start();
           } else if(delayChannel[i]==2) {
-            snare1.start();
+            snare.start();
           } else if(delayChannel[i]==3) {
-            click1.start();
+            click.start();
           }
           sampleVolumes[delayChannel[i]] = delayVelocity[i];
         }
@@ -267,7 +295,7 @@ void updateControl() {
   }
 
   for(i=0;i<NUM_KNOBS;i++) {
-    analogValues[i] = mozziAnalogRead(i); // read all analog values
+    analogValues[i] = mozziAnalogRead(i)>>2; // read all analog values
   }
   if(controlSetChanged || firstLoop) {
     // "lock" all knobs when control set changes
@@ -275,51 +303,66 @@ void updateControl() {
       knobLocked[i] = !firstLoop;
       initValues[i] = analogValues[i];
       if(firstLoop) {
-        storedValues[controlSet][i] = analogValues[i];
-        //Serial.println(mozziAnalogRead(i));
-        //Serial.println(storedValues[controlSet][i]);
+        //storedValues[NUM_KNOBS*controlSet+i] = analogValues[i];
       }
     }
   } else {
     // unlock knobs if passing through stored value position
-    for(i=0;i<NUM_KNOBS;i++) {
+    /*for(i=0;i<NUM_KNOBS;i++) {
       if(knobLocked[i]) {
-        if(initValues[i]<storedValues[controlSet][i]) {
-          if(analogValues[i]>=storedValues[controlSet][i]) {
+        if(initValues[i]<storedValues[NUM_KNOBS*controlSet+i]) {
+          if(analogValues[i]>=storedValues[NUM_KNOBS*controlSet+i]) {
             knobLocked[i] = false;
           }
         } else {
-          if(analogValues[i]<=storedValues[controlSet][i]) {
+          if(analogValues[i]<=storedValues[NUM_KNOBS*controlSet+i]) {
             knobLocked[i] = false;
           }
         }
       }
       if(!knobLocked[i]) {
-        storedValues[controlSet][i] = analogValues[i]; // store new analog value if knob active
+        storedValues[NUM_KNOBS*controlSet+i] = analogValues[i]; // store new analog value if knob active
+      }
+    }*/
+    for(i=0;i<NUM_KNOBS;i++) {
+      if(knobLocked[i]) {
+        int diff = initValues[i]-analogValues[i];
+        if(diff<-5||diff>5) knobLocked[i] = false;
+      }
+      if(!knobLocked[i]) {
+        storedValues[NUM_KNOBS*controlSet+i] = analogValues[i]; // store new analog value if knob active
       }
     }
   }
 
   // do logic based on params
-  switch(controlSet) {
+  updateParameters(controlSet);
+  
+
+  firstLoop = false;
+}
+
+void updateParameters(byte thisControlSet) {
+  switch(thisControlSet) {
     case 0:
-    paramChance = storedValues[0][0]>>2;
-    paramMidpoint = storedValues[0][1]>>2;
-    paramRange = storedValues[0][2]>>2;
-    paramZoom = storedValues[0][3]>>2;
+    paramChance = storedValues[PARAM_CHANCE];
+    paramMidpoint = storedValues[PARAM_MIDPOINT];
+    paramRange = storedValues[PARAM_RANGE];
+    paramZoom = storedValues[PARAM_ZOOM];
     break;
 
     case 1:
     {
-      //float newKickFreq = ((float) storedValues[1][0] / 255.0f) * (float) kick_SAMPLERATE / (float) kick_NUM_CELLS;
-      float newHatFreq = ((float) storedValues[1][0] / 255.0f) * (float) closedhat_SAMPLERATE / (float) closedhat_NUM_CELLS;
-      float newSnareFreq = ((float) storedValues[1][0] / 255.0f) * (float) snare_SAMPLERATE / (float) snare_NUM_CELLS;
-      float newClickFreq = ((float) storedValues[1][0] / 255.0f) * (float) click_SAMPLERATE / (float) click_NUM_CELLS;
-      //kick1.setFreq(newKickFreq);
-      closedhat1.setFreq(newHatFreq);
-      snare1.setFreq(newSnareFreq);
-      click1.setFreq(newClickFreq);
-      paramCrush = 7-(storedValues[1][1]>>7);
+      //float newKickFreq = ((float) storedValues[PARAM_PITCH] / 63.0f) * (float) kick_SAMPLERATE / (float) kick_NUM_CELLS;
+      float newHatFreq = ((float) storedValues[PARAM_PITCH] / 63.0f) * (float) closedhat_SAMPLERATE / (float) closedhat_NUM_CELLS;
+      float newSnareFreq = ((float) storedValues[PARAM_PITCH] / 63.0f) * (float) snare_SAMPLERATE / (float) snare_NUM_CELLS;
+      float newClickFreq = ((float) storedValues[PARAM_PITCH] / 63.0f) * (float) click_SAMPLERATE / (float) click_NUM_CELLS;
+      //kick.setFreq(newKickFreq);
+      closedhat.setFreq(newHatFreq);
+      snare.setFreq(newSnareFreq);
+      click.setFreq(newClickFreq);
+      // high value = clean (8 bits), low value = dirty (
+      paramCrush = 7-(storedValues[PARAM_CRUSH]>>5);
       crushCompensation = paramCrush;
       if(paramCrush >= 6) crushCompensation --;
       if(paramCrush >= 7) crushCompensation --;
@@ -327,21 +370,19 @@ void updateControl() {
     break;
 
     case 2:
-    paramSlop = storedValues[2][0]>>2; // between 0ms and 255ms?
+    paramSlop = storedValues[PARAM_SLOP]; // between 0ms and 255ms?
     break;
 
     case 3:
-    paramTempo = 40.0 + ((float) storedValues[3][0]) / 5.0;
-    paramTimeSignature = (storedValues[3][1]>>7)+1;
+    paramTempo = 40.0 + ((float) storedValues[PARAM_TEMPO]);
+    paramTimeSignature = (storedValues[PARAM_TIME_SIGNATURE]>>5)+1;
     numSteps = paramTimeSignature * 16;
   }
-
-  firstLoop = false;
 }
 
 const byte atten = 9;
 int updateAudio() {
-  char asig = ((sampleVolumes[0]*kick1.next())>>atten)+((sampleVolumes[1]*closedhat1.next())>>atten)+((sampleVolumes[2]*snare1.next())>>atten)+((sampleVolumes[3]*click1.next())>>atten);
+  char asig = ((sampleVolumes[0]*kick.next())>>atten)+((sampleVolumes[1]*closedhat.next())>>atten)+((sampleVolumes[2]*snare.next())>>atten)+((sampleVolumes[3]*click.next())>>atten);
   asig = (asig>>paramCrush)<<crushCompensation;
   return (int) asig;
 }
