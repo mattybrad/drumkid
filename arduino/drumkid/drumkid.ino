@@ -10,6 +10,9 @@
 // include debouncing library
 #include <Bounce2.h>
 
+// include EEPROM library for saving data
+#include <EEPROM.h>
+
 // include audio data files
 #include "kick.h"
 #include "closedhat.h"
@@ -34,6 +37,11 @@ Bounce buttonZ = Bounce();
 
 #define CONTROL_RATE 256 // tweak this value if performance is bad, must be power of 2 (64, 128, etc)
 #define MAX_BEAT_STEPS 32
+#define NUM_PARAM_GROUPS 5
+#define NUM_KNOBS 4
+#define NUM_LEDS 5
+#define NUM_BUTTONS 6
+#define NUM_SAMPLES 4
 
 bool sequencePlaying = false; // false when stopped, true when playing
 byte currentStep;
@@ -50,19 +58,21 @@ byte delayVelocity[numEventDelays];
 byte eventDelayIndex = 0;
 bool beatLedsActive = true;
 bool firstLoop = true;
-byte sampleVolumes[4] = {255,255,255,255};
+byte sampleVolumes[NUM_SAMPLES] = {255,255,255,255};
 unsigned long tapTempoTaps[8] = {0,0,0,0,0,0,0,0};
+bool readyToSave = true;
+bool readyToChooseSaveLocation = false;
 
 // variables relating to knob values
 byte controlSet = 0;
-bool knobLocked[4] = {true,true,true,true};
-int analogValues[4] = {0,0,0,0};
-int initValues[4] = {0,0,0,0};
-int storedValues[5][4] = {  {512,512,512,512},    // A
-                            {512,512,512,512},    // B
-                            {512,512,512,512},    // C
-                            {512,512,512,512},    // X
-                            {512,512,512,512},};  // Y
+bool knobLocked[NUM_KNOBS] = {true,true,true,true};
+int analogValues[NUM_KNOBS] = {0,0,0,0};
+int initValues[NUM_KNOBS] = {0,0,0,0};
+int storedValues[NUM_PARAM_GROUPS][NUM_KNOBS] = { {512,512,512,512},    // A
+                                                  {512,512,512,512},    // B
+                                                  {512,512,512,512},    // C
+                                                  {512,512,512,512},    // X
+                                                  {512,512,512,512},};  // Y
 
 // parameters
 byte paramChance = 0;
@@ -96,7 +106,7 @@ void setup() {
   click1.setFreq((float) click_SAMPLERATE / (float) click_NUM_CELLS);
   kick1.setEnd(7000);
   Serial.begin(9600);
-  for(byte i=0;i<5;i++) {
+  for(byte i=0;i<NUM_LEDS;i++) {
     pinMode(ledPins[i], OUTPUT);
   }
 
@@ -151,7 +161,7 @@ void scheduler() {
       if(currentStep%16==0) digitalWrite(ledPins[stepLED], HIGH);
       else if(currentStep%4==0) digitalWrite(ledPins[stepLED], LOW);
     }
-    for(byte i=0;i<4;i++) {
+    for(byte i=0;i<NUM_SAMPLES;i++) {
       int slopRand = rand(0,paramSlop) - paramSlop / 2;
       if(currentStep%4==0&&beat1[i][currentStep/4]>0) scheduleNote(i, currentStep, beat1[i][currentStep/4], nextNoteTime + slopRand - (float) millis());
       else {
@@ -172,20 +182,22 @@ void scheduler() {
   schedulerEventDelay.start();
 }
 
-void play() {
-  sequencePlaying = !sequencePlaying;
+void toggleSequence() {
+  if(sequencePlaying) stopSequence();
+  else startSequence();
+}
 
-  if(sequencePlaying) {
-    // start
-    currentStep = 0;
-    nextNoteTime = millis();
-    scheduler();
-  } else {
-    // stop
-    for(byte i=0; i<5; i++) {
-      digitalWrite(ledPins[i], LOW);
-    }
-    // cancel "timeout" somehow..?
+void startSequence() {
+  sequencePlaying = true;
+  currentStep = 0;
+  nextNoteTime = millis();
+  scheduler();
+}
+
+void stopSequence() {
+  sequencePlaying = false;
+  for(byte i=0; i<NUM_LEDS; i++) {
+    digitalWrite(ledPins[i], LOW);
   }
 }
 
@@ -198,19 +210,37 @@ void updateControl() {
   buttonY.update();
   buttonZ.update();
 
+  if(!buttonC.read() && buttonC.duration()>2000) {
+    readyToSave = false;
+    readyToChooseSaveLocation = true;
+  } else {
+    readyToSave = true;
+  }
+
   // switch active set of control knobs if button pressed
   byte prevControlSet = controlSet;
   if(buttonA.fell()) {
-    controlSet = 0;
-    doTapTempo();
+    if(readyToChooseSaveLocation) saveParams(0);
+    else {
+      controlSet = 0;
+      doTapTempo();
+    }
+  } else if(buttonB.fell()) {
+    if(readyToChooseSaveLocation) saveParams(1);
+    else controlSet = 1;
+  } else if(buttonC.fell()) {
+    if(readyToChooseSaveLocation) saveParams(2);
+    else controlSet = 2;
+  } else if(buttonX.fell()) {
+    if(readyToChooseSaveLocation) saveParams(3);
+    else controlSet = 3;
+  } else if(buttonY.fell()) {
+    if(readyToChooseSaveLocation) saveParams(4);
+    else controlSet = 4;
   }
-  else if(buttonB.fell()) controlSet = 1;
-  else if(buttonC.fell()) controlSet = 2;
-  else if(buttonX.fell()) controlSet = 3;
-  else if(buttonY.fell()) controlSet = 4;
   bool controlSetChanged = (prevControlSet != controlSet);
   
-  if(buttonZ.fell()) play();
+  if(buttonZ.fell()) toggleSequence();
   if(sequencePlaying) {
     if(schedulerEventDelay.ready()) scheduler();
     for(byte i=0;i<numEventDelays;i++) {
@@ -232,12 +262,12 @@ void updateControl() {
     }
   }
 
-  for(int i=0;i<4;i++) {
+  for(int i=0;i<NUM_KNOBS;i++) {
     analogValues[i] = mozziAnalogRead(i); // read all analog values
   }
   if(controlSetChanged || firstLoop) {
     // "lock" all knobs when control set changes
-    for(byte i=0;i<4;i++) {
+    for(byte i=0;i<NUM_KNOBS;i++) {
       knobLocked[i] = !firstLoop;
       initValues[i] = analogValues[i];
       if(firstLoop) {
@@ -248,7 +278,7 @@ void updateControl() {
     }
   } else {
     // unlock knobs if passing through stored value position
-    for(byte i=0;i<4;i++) {
+    for(byte i=0;i<NUM_KNOBS;i++) {
       if(knobLocked[i]) {
         if(initValues[i]<storedValues[controlSet][i]) {
           if(analogValues[i]>=storedValues[controlSet][i]) {
@@ -325,15 +355,26 @@ void doTapTempo() {
   unsigned long now = millis();
   byte numValid = 1;
   for(int i=7;i>0;i--) {
+    if(tapTempoTaps[i-1]-tapTempoTaps[i]<5000) numValid ++; // this part needs some work
     tapTempoTaps[i] = tapTempoTaps[i-1];
-    if(now-tapTempoTaps[i]<5000) numValid ++;
   }
   tapTempoTaps[0] = now;
   unsigned long averageTime = 0;
   for(int i=1;i<numValid;i++) {
     averageTime += (tapTempoTaps[i-1]-tapTempoTaps[i])/(numValid-1); // losing some accuracy here, change this code if tap tempo is inaccurate
   }
-  if(numValid >= 2) {
+  if(numValid >= 4) {
     paramTempo = 60000.0 / (float) averageTime;
+  }
+}
+
+void saveParams(byte saveLocation) {
+  readyToChooseSaveLocation = false;
+  for(byte i=0; i<NUM_PARAM_GROUPS; i++) {
+    // for each group of params...
+    for(byte j=0; j<4; j++) {
+      // for each param in the group...
+      //EEPROM.write(
+    }
   }
 }
