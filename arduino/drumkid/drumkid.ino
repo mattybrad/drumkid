@@ -13,6 +13,10 @@
 // include EEPROM library for saving data
 #include <EEPROM.h>
 
+// include/initialise tap tempo library
+#include <ArduinoTapTempo.h>
+ArduinoTapTempo tapTempo;
+
 // include audio data files
 #include "kick.h"
 #include "closedhat.h"
@@ -60,7 +64,6 @@ byte eventDelayIndex = 0;
 bool beatLedsActive = true;
 bool firstLoop = true;
 byte sampleVolumes[NUM_SAMPLES] = {255,255,255,255};
-unsigned long tapTempoTaps[8] = {0,0,0,0,0,0,0,0};
 bool readyToSave = true;
 bool readyToChooseSaveSlot = false;
 bool readyToLoad = true;
@@ -127,7 +130,7 @@ void setup() {
   snare.setFreq((float) snare_SAMPLERATE / (float) snare_NUM_CELLS);
   click.setFreq((float) click_SAMPLERATE / (float) click_NUM_CELLS);
   kick.setEnd(7000);
-  //Serial.begin(9600);
+  Serial.begin(9600);
   for(byte i=0;i<NUM_LEDS;i++) {
     pinMode(ledPins[i], OUTPUT);
   }
@@ -248,27 +251,36 @@ void updateControl() {
   buttonY.update();
   buttonZ.update();
 
-  if(!buttonX.read() && !buttonY.read()) {
+  if(!buttonB.read() && !buttonC.read()) {
     readyToLoad = false;
     readyToSave = false;
     readyToChooseLoadSlot = true;
     readyToChooseSaveSlot = false;
-  } else if(!buttonB.read() && !buttonC.read()) {
+    tapTempo.update(false);
+  } else if(!buttonX.read() && !buttonY.read()) {
     readyToSave = false;
     readyToLoad = false;
     readyToChooseSaveSlot = true;
     readyToChooseLoadSlot = false;
+    tapTempo.update(false);
   } else {
     readyToSave = true;
     readyToLoad = true;
-      // switch active set of control knobs if button pressed
+    if(!readyToChooseLoadSlot&&!readyToChooseSaveSlot) {
+      tapTempo.update(!buttonA.read());
+    } else {
+      tapTempo.update(false);
+    }
+
+    // handle button presses
     byte prevControlSet = controlSet;
     if(buttonA.fell()) {
       if(readyToChooseLoadSlot) loadParams(0);
       else if(readyToChooseSaveSlot) saveParams(0);
       else {
         controlSet = 0;
-        doTapTempo();
+        paramTempo = tapTempo.getBPM();
+        storedValues[PARAM_TEMPO] = paramTempo - 40;
       }
     } else if(buttonB.fell()) {
       if(readyToChooseLoadSlot) loadParams(1);
@@ -397,24 +409,6 @@ void startupLedSequence() {
     digitalWrite(ledPins[seq[i]], HIGH);
     delay(25);
     digitalWrite(ledPins[seq[i]], LOW);
-  }
-}
-
-void doTapTempo() {
-  unsigned long now = millis();
-  byte numValid = 1;
-  byte i;
-  for(i=7;i>0;i--) {
-    if(tapTempoTaps[i-1]-tapTempoTaps[i]<5000) numValid ++; // this part needs some work
-    tapTempoTaps[i] = tapTempoTaps[i-1];
-  }
-  tapTempoTaps[0] = now;
-  unsigned long averageTime = 0;
-  for(i=1;i<numValid;i++) {
-    averageTime += (tapTempoTaps[i-1]-tapTempoTaps[i])/(numValid-1); // losing some accuracy here, change this code if tap tempo is inaccurate
-  }
-  if(numValid >= 4) {
-    paramTempo = 60000.0 / (float) averageTime;
   }
 }
 
