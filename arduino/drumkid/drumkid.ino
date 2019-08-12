@@ -1,11 +1,10 @@
 #define IS_BREADBOARD true // switch to false if compiling code for PCB
 
-// include mozzi library files - currently requires particular version of mozzi for compatibility:
-// https://github.com/sensorium/Mozzi/archive/e1eba4410200842157763f1471dca34bf4867138.zip
-#include <MozziGuts.h>
-#include <Sample.h>
-#include <EventDelay.h>
-#include <mozzi_rand.h>
+// include custom mozzi library files - copied from a specific version of mozzi and tweaked to give extra functionality
+#include "MozziDK/MozziGuts.h"
+#include "MozziDK/Sample.h"
+#include "MozziDK/EventDelay.h"
+#include "MozziDK/mozzi_rand.h"
 
 // include debouncing library
 #include <Bounce2.h>
@@ -158,7 +157,7 @@ void setup() {
 
   // add more default values here
   storedValues[PARAM_CRUSH] = 255;
-  storedValues[PARAM_PITCH] = 128;
+  storedValues[PARAM_PITCH] = 160;
   storedValues[PARAM_TIME_SIGNATURE] = 120; // this means 4/4, it's confusing...
   storedValues[PARAM_TEMPO] = 100; // not BPM!
 
@@ -372,15 +371,21 @@ void updateParameters(byte thisControlSet) {
 
     case 1:
     {
-      float newKickFreq = ((float) storedValues[PARAM_PITCH] / 63.0f) * (float) kick_SAMPLERATE / (float) kick_NUM_CELLS;
-      float newHatFreq = ((float) storedValues[PARAM_PITCH] / 63.0f) * (float) closedhat_SAMPLERATE / (float) closedhat_NUM_CELLS;
-      float newSnareFreq = ((float) storedValues[PARAM_PITCH] / 63.0f) * (float) snare_SAMPLERATE / (float) snare_NUM_CELLS;
-      float newClickFreq = ((float) storedValues[PARAM_PITCH] / 63.0f) * (float) click_SAMPLERATE / (float) click_NUM_CELLS;
+      float thisPitch = fabs((float) storedValues[PARAM_PITCH] * (8.0f/255.0f) - 4.0f);
+      float newKickFreq = thisPitch * (float) kick_SAMPLERATE / (float) kick_NUM_CELLS;
+      float newHatFreq = thisPitch * (float) closedhat_SAMPLERATE / (float) closedhat_NUM_CELLS;
+      float newSnareFreq = thisPitch * (float) snare_SAMPLERATE / (float) snare_NUM_CELLS;
+      float newClickFreq = thisPitch * (float) click_SAMPLERATE / (float) click_NUM_CELLS;
       kick.setFreq(newKickFreq);
       closedhat.setFreq(newHatFreq);
       snare.setFreq(newSnareFreq);
       click.setFreq(newClickFreq);
-      // high value = clean (8 bits), low value = dirty (
+      bool thisDirection = storedValues[PARAM_PITCH] >= 128;
+      kick.setDirection(thisDirection);
+      closedhat.setDirection(thisDirection);
+      snare.setDirection(thisDirection);
+      click.setDirection(thisDirection);
+      // high value = clean (8 bits), low value = dirty (1 bit?)
       paramCrush = 7-(storedValues[PARAM_CRUSH]>>5);
       crushCompensation = paramCrush;
       if(paramCrush >= 6) crushCompensation --;
