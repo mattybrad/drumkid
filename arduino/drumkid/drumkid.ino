@@ -65,6 +65,7 @@ bool readyToSave = true;
 bool readyToChooseSaveSlot = false;
 bool readyToLoad = true;
 bool readyToChooseLoadSlot = false;
+bool newStateLoaded = false;
 
 // variables relating to knob values
 byte controlSet = 0;
@@ -236,6 +237,9 @@ void stopSequence() {
 }
 
 void updateControl() {
+
+  bool controlSetChanged = false;
+  newStateLoaded = false;
   
   buttonA.update();
   buttonB.update();
@@ -244,48 +248,54 @@ void updateControl() {
   buttonY.update();
   buttonZ.update();
 
-  if(!buttonX.read() && buttonX.duration()>1000 && !buttonY.read() && buttonY.duration()>1000) {
+  if(!buttonX.read() && !buttonY.read()) {
     readyToLoad = false;
+    readyToSave = false;
     readyToChooseLoadSlot = true;
     readyToChooseSaveSlot = false;
-  } else if(!buttonB.read() && buttonB.duration()>1000 && !buttonC.read() && buttonC.duration()>1000) {
+  } else if(!buttonB.read() && !buttonC.read()) {
     readyToSave = false;
+    readyToLoad = false;
     readyToChooseSaveSlot = true;
     readyToChooseLoadSlot = false;
   } else {
     readyToSave = true;
     readyToLoad = true;
+      // switch active set of control knobs if button pressed
+    byte prevControlSet = controlSet;
+    if(buttonA.fell()) {
+      if(readyToChooseLoadSlot) loadParams(0);
+      else if(readyToChooseSaveSlot) saveParams(0);
+      else {
+        controlSet = 0;
+        doTapTempo();
+      }
+    } else if(buttonB.fell()) {
+      if(readyToChooseLoadSlot) loadParams(1);
+      else if(readyToChooseSaveSlot) saveParams(1);
+      else controlSet = 1;
+    } else if(buttonC.fell()) {
+      if(readyToChooseLoadSlot) loadParams(2);
+      else if(readyToChooseSaveSlot) saveParams(2);
+      else controlSet = 2;
+    } else if(buttonX.fell()) {
+      if(readyToChooseLoadSlot) loadParams(3);
+      else if(readyToChooseSaveSlot) saveParams(3);
+      else controlSet = 3;
+    } else if(buttonY.fell()) {
+      if(readyToChooseLoadSlot) loadParams(4);
+      else if(readyToChooseSaveSlot) saveParams(4);
+      else controlSet = 4;
+    }
+    controlSetChanged = (prevControlSet != controlSet);
+    
+    if(buttonZ.fell()) {
+      if(readyToChooseLoadSlot) loadParams(5);
+      else if(readyToChooseSaveSlot) saveParams(5);
+      else toggleSequence();
+    }
   }
 
-  // switch active set of control knobs if button pressed
-  byte prevControlSet = controlSet;
-  if(buttonA.fell()) {
-    if(readyToChooseLoadSlot) loadParams(0);
-    else if(readyToChooseSaveSlot) saveParams(0);
-    else {
-      controlSet = 0;
-      doTapTempo();
-    }
-  } else if(buttonB.fell()) {
-    if(readyToChooseLoadSlot) loadParams(1);
-    else if(readyToChooseSaveSlot) saveParams(1);
-    else controlSet = 1;
-  } else if(buttonC.fell()) {
-    if(readyToChooseLoadSlot) loadParams(2);
-    else if(readyToChooseSaveSlot) saveParams(2);
-    else controlSet = 2;
-  } else if(buttonX.fell()) {
-    if(readyToChooseLoadSlot) loadParams(3);
-    else if(readyToChooseSaveSlot) saveParams(3);
-    else controlSet = 3;
-  } else if(buttonY.fell()) {
-    if(readyToChooseLoadSlot) loadParams(4);
-    else if(readyToChooseSaveSlot) saveParams(4);
-    else controlSet = 4;
-  }
-  bool controlSetChanged = (prevControlSet != controlSet);
-  
-  if(buttonZ.fell()) toggleSequence();
   byte i;
   if(sequencePlaying) {
     if(schedulerEventDelay.ready()) scheduler();
@@ -330,9 +340,8 @@ void updateControl() {
   }
 
   // do logic based on params
-  updateParameters(controlSet);
+  if(!newStateLoaded) updateParameters(controlSet);
   
-
   firstLoop = false;
 }
 
@@ -371,6 +380,7 @@ void updateParameters(byte thisControlSet) {
     paramTempo = 40.0 + ((float) storedValues[PARAM_TEMPO]);
     paramTimeSignature = (storedValues[PARAM_TIME_SIGNATURE]>>5)+1;
     numSteps = paramTimeSignature * 16;
+    break;
   }
 }
 
@@ -422,6 +432,7 @@ void saveParams(byte slotNum) {
 
 void loadParams(byte slotNum) {
   readyToChooseLoadSlot = false;
+  newStateLoaded = true;
   for(byte i=0; i<NUM_PARAM_GROUPS*NUM_KNOBS; i++) {
     byte thisValue = EEPROM.read(slotNum*SAVED_STATE_SLOT_BYTES+i);
     storedValues[i] = thisValue;
