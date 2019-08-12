@@ -168,7 +168,7 @@ void setup() {
 
   tapTempo.setMinBPM((float) MIN_TEMPO);
   tapTempo.setMaxBPM((float) (MIN_TEMPO+255));
-  
+
   startupLedSequence();
 }
 
