@@ -22,10 +22,6 @@ ArduinoTapTempo tapTempo;
 #include "closedhat.h"
 #include "snare.h"
 #include "click.h"
-#include "kick_reversed.h"
-#include "closedhat_reversed.h"
-#include "snare_reversed.h"
-#include "click_reversed.h"
 
 // define pins
 byte breadboardLedPins[5] = {5,6,7,8,13};
@@ -119,10 +115,6 @@ Sample <kick_NUM_CELLS, AUDIO_RATE> kick(kick_DATA);
 Sample <closedhat_NUM_CELLS, AUDIO_RATE> closedhat(closedhat_DATA);
 Sample <snare_NUM_CELLS, AUDIO_RATE> snare(snare_DATA);
 Sample <click_NUM_CELLS, AUDIO_RATE> click(click_DATA);
-Sample <kick_reversed_NUM_CELLS, AUDIO_RATE> kick_reversed(kick_DATA);
-Sample <closedhat_reversed_NUM_CELLS, AUDIO_RATE> closedhat_reversed(closedhat_DATA);
-Sample <snare_reversed_NUM_CELLS, AUDIO_RATE> snare_reversed(snare_DATA);
-Sample <click_reversed_NUM_CELLS, AUDIO_RATE> click_reversed(click_DATA);
 
 // could just use bools instead of bytes to save space
 const byte beat1[NUM_SAMPLES][MAX_BEAT_STEPS] PROGMEM = {  {255,255,0,0,0,0,0,0,255,0,0,0,0,0,0,0,255,255,0,0,0,0,0,0,255,0,0,0,0,0,0,0,},
@@ -380,11 +372,11 @@ void updateParameters(byte thisControlSet) {
 
     case 1:
     {
-      //float newKickFreq = ((float) storedValues[PARAM_PITCH] / 63.0f) * (float) kick_SAMPLERATE / (float) kick_NUM_CELLS;
+      float newKickFreq = ((float) storedValues[PARAM_PITCH] / 63.0f) * (float) kick_SAMPLERATE / (float) kick_NUM_CELLS;
       float newHatFreq = ((float) storedValues[PARAM_PITCH] / 63.0f) * (float) closedhat_SAMPLERATE / (float) closedhat_NUM_CELLS;
       float newSnareFreq = ((float) storedValues[PARAM_PITCH] / 63.0f) * (float) snare_SAMPLERATE / (float) snare_NUM_CELLS;
       float newClickFreq = ((float) storedValues[PARAM_PITCH] / 63.0f) * (float) click_SAMPLERATE / (float) click_NUM_CELLS;
-      //kick.setFreq(newKickFreq);
+      kick.setFreq(newKickFreq);
       closedhat.setFreq(newHatFreq);
       snare.setFreq(newSnareFreq);
       click.setFreq(newClickFreq);
