@@ -42,6 +42,7 @@ Bounce buttonZ = Bounce();
 #define NUM_LEDS 5
 #define NUM_BUTTONS 6
 #define NUM_SAMPLES 4
+#define SAVED_STATE_SLOT_BYTES 32
 
 bool sequencePlaying = false; // false when stopped, true when playing
 byte currentStep;
@@ -61,7 +62,9 @@ bool firstLoop = true;
 byte sampleVolumes[NUM_SAMPLES] = {255,255,255,255};
 unsigned long tapTempoTaps[8] = {0,0,0,0,0,0,0,0};
 bool readyToSave = true;
-bool readyToChooseSaveLocation = false;
+bool readyToChooseSaveSlot = false;
+bool readyToLoad = true;
+bool readyToChooseLoadSlot = false;
 
 // variables relating to knob values
 byte controlSet = 0;
@@ -100,7 +103,7 @@ byte paramTimeSignature = 4;
 #define PARAM_17 17
 #define PARAM_18 18
 #define PARAM_19 19
-byte storedValues[20];
+byte storedValues[NUM_PARAM_GROUPS*NUM_KNOBS];
 
 // define samples
 Sample <kick_NUM_CELLS, AUDIO_RATE> kick(kick_DATA);
@@ -241,32 +244,43 @@ void updateControl() {
   buttonY.update();
   buttonZ.update();
 
-  if(!buttonC.read() && buttonC.duration()>2000) {
+  if(!buttonX.read() && buttonX.duration()>1000 && !buttonY.read() && buttonY.duration()>1000) {
+    readyToLoad = false;
+    readyToChooseLoadSlot = true;
+    readyToChooseSaveSlot = false;
+  } else if(!buttonB.read() && buttonB.duration()>1000 && !buttonC.read() && buttonC.duration()>1000) {
     readyToSave = false;
-    readyToChooseSaveLocation = true;
+    readyToChooseSaveSlot = true;
+    readyToChooseLoadSlot = false;
   } else {
     readyToSave = true;
+    readyToLoad = true;
   }
 
   // switch active set of control knobs if button pressed
   byte prevControlSet = controlSet;
   if(buttonA.fell()) {
-    if(readyToChooseSaveLocation) saveParams(0);
+    if(readyToChooseLoadSlot) loadParams(0);
+    else if(readyToChooseSaveSlot) saveParams(0);
     else {
       controlSet = 0;
       doTapTempo();
     }
   } else if(buttonB.fell()) {
-    if(readyToChooseSaveLocation) saveParams(1);
+    if(readyToChooseLoadSlot) loadParams(1);
+    else if(readyToChooseSaveSlot) saveParams(1);
     else controlSet = 1;
   } else if(buttonC.fell()) {
-    if(readyToChooseSaveLocation) saveParams(2);
+    if(readyToChooseLoadSlot) loadParams(2);
+    else if(readyToChooseSaveSlot) saveParams(2);
     else controlSet = 2;
   } else if(buttonX.fell()) {
-    if(readyToChooseSaveLocation) saveParams(3);
+    if(readyToChooseLoadSlot) loadParams(3);
+    else if(readyToChooseSaveSlot) saveParams(3);
     else controlSet = 3;
   } else if(buttonY.fell()) {
-    if(readyToChooseSaveLocation) saveParams(4);
+    if(readyToChooseLoadSlot) loadParams(4);
+    else if(readyToChooseSaveSlot) saveParams(4);
     else controlSet = 4;
   }
   bool controlSetChanged = (prevControlSet != controlSet);
@@ -302,28 +316,8 @@ void updateControl() {
     for(byte i=0;i<NUM_KNOBS;i++) {
       knobLocked[i] = !firstLoop;
       initValues[i] = analogValues[i];
-      if(firstLoop) {
-        //storedValues[NUM_KNOBS*controlSet+i] = analogValues[i];
-      }
     }
   } else {
-    // unlock knobs if passing through stored value position
-    /*for(i=0;i<NUM_KNOBS;i++) {
-      if(knobLocked[i]) {
-        if(initValues[i]<storedValues[NUM_KNOBS*controlSet+i]) {
-          if(analogValues[i]>=storedValues[NUM_KNOBS*controlSet+i]) {
-            knobLocked[i] = false;
-          }
-        } else {
-          if(analogValues[i]<=storedValues[NUM_KNOBS*controlSet+i]) {
-            knobLocked[i] = false;
-          }
-        }
-      }
-      if(!knobLocked[i]) {
-        storedValues[NUM_KNOBS*controlSet+i] = analogValues[i]; // store new analog value if knob active
-      }
-    }*/
     for(i=0;i<NUM_KNOBS;i++) {
       if(knobLocked[i]) {
         int diff = initValues[i]-analogValues[i];
@@ -414,13 +408,25 @@ void doTapTempo() {
   }
 }
 
-void saveParams(byte saveLocation) {
-  readyToChooseSaveLocation = false;
-  for(byte i=0; i<NUM_PARAM_GROUPS; i++) {
-    // for each group of params...
-    for(byte j=0; j<4; j++) {
-      // for each param in the group...
-      //EEPROM.write(
-    }
+void saveParams(byte slotNum) {
+  // 1024 possible byte locations
+  // currently need 20 bytes per saved state
+  // currently planning choice of 6 slots for saved states (1 per button)
+  // need to leave space for some possible extra saved state data
+  // allot 32 bytes per saved state (nice round number), taking up total of 192 bytes
+  readyToChooseSaveSlot = false;
+  for(byte i=0; i<NUM_PARAM_GROUPS*NUM_KNOBS; i++) {
+    EEPROM.write(slotNum*SAVED_STATE_SLOT_BYTES+i, storedValues[i]);
+  }
+}
+
+void loadParams(byte slotNum) {
+  readyToChooseLoadSlot = false;
+  for(byte i=0; i<NUM_PARAM_GROUPS*NUM_KNOBS; i++) {
+    byte thisValue = EEPROM.read(slotNum*SAVED_STATE_SLOT_BYTES+i);
+    storedValues[i] = thisValue;
+  }
+  for(byte i=0;i<NUM_PARAM_GROUPS;i++) {
+    updateParameters(i);
   }
 }
