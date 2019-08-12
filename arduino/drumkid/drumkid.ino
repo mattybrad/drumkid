@@ -47,6 +47,7 @@ Bounce buttonZ = Bounce();
 #define NUM_BUTTONS 6
 #define NUM_SAMPLES 4
 #define SAVED_STATE_SLOT_BYTES 32
+#define MIN_TEMPO 40 // and max tempo is 40+255 (295) for nice easy byte maths
 
 bool sequencePlaying = false; // false when stopped, true when playing
 byte currentStep;
@@ -164,6 +165,9 @@ void setup() {
   for(byte i=0;i<NUM_PARAM_GROUPS;i++) {
     updateParameters(i);
   }
+
+  tapTempo.setMinBPM((float) MIN_TEMPO);
+  tapTempo.setMaxBPM((float) (MIN_TEMPO+255));
   
   startupLedSequence();
 }
@@ -280,7 +284,7 @@ void updateControl() {
       else {
         controlSet = 0;
         paramTempo = tapTempo.getBPM();
-        storedValues[PARAM_TEMPO] = paramTempo - 40;
+        storedValues[PARAM_TEMPO] = paramTempo - MIN_TEMPO;
       }
     } else if(buttonB.fell()) {
       if(readyToChooseLoadSlot) loadParams(1);
@@ -389,7 +393,7 @@ void updateParameters(byte thisControlSet) {
     break;
 
     case 3:
-    paramTempo = 40.0 + ((float) storedValues[PARAM_TEMPO]);
+    paramTempo = (float) MIN_TEMPO + ((float) storedValues[PARAM_TEMPO]);
     paramTimeSignature = (storedValues[PARAM_TIME_SIGNATURE]>>5)+1;
     numSteps = paramTimeSignature * 16;
     break;
