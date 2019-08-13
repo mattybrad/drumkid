@@ -87,7 +87,7 @@ byte paramZoom = 0;
 byte paramPitch = 0;
 byte paramCrush = 0;
 byte paramCrop = 0;
-byte paramGlitch = 0;
+unsigned int paramGlitch = 0;
 byte crushCompensation = 0;
 int paramSlop = 0;
 float paramTempo = 120.0;
@@ -177,6 +177,7 @@ void setup() {
   storedValues[PARAM_DRONE] = 128;
   storedValues[PARAM_DRONE_PITCH] = 128;
   storedValues[PARAM_DRONE_MOD] = 128;
+  storedValues[PARAM_CROP] = 255;
 
   for(byte i=0;i<NUM_PARAM_GROUPS;i++) {
     updateParameters(i);
@@ -326,6 +327,8 @@ void updateControl() {
       else if(readyToChooseSaveSlot) saveParams(5);
       else toggleSequence();
     }
+
+    if(paramGlitch>0) delay((paramGlitch*paramGlitch)>>6);
   }
 
   byte i;
@@ -420,6 +423,9 @@ void updateParameters(byte thisControlSet) {
       closedhat.setStart(!thisDirection ? map(paramCrop,255,0,100,closedhat_NUM_CELLS) : 0);
       snare.setStart(!thisDirection ? map(paramCrop,255,0,100,snare_NUM_CELLS) : 0);
       click.setStart(!thisDirection ? map(paramCrop,255,0,100,click_NUM_CELLS) : 0);
+
+      // experimental glitch effect
+      paramGlitch = storedValues[PARAM_GLITCH];
     }
     break;
 
@@ -458,6 +464,7 @@ void updateParameters(byte thisControlSet) {
 
 const byte atten = 9;
 char d1Next, d2Next;
+byte myGlitch = 0;
 int updateAudio() {
   d1Next = droneOscillator1.next();
   d2Next = droneOscillator2.next();
