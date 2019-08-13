@@ -5,9 +5,9 @@
 #include "MozziDK/Sample.h"
 #include "MozziDK/EventDelay.h"
 #include "MozziDK/mozzi_rand.h"
+#include "MozziDK/mozzi_fixmath.h"
 #include "MozziDK/Oscil.h"
 #include "MozziDK/tables/square_analogue512_int8.h"
-//#include "MozziDK/tables/sin2048_int8.h"
 
 // include debouncing library
 #include <Bounce2.h>
@@ -93,6 +93,8 @@ byte paramTimeSignature = 4;
 byte oscilGain1 = 0;
 byte oscilGain2 = 0;
 float paramDronePitch;
+byte paramDroneMod;
+bool droneMod2Active = false;
 #define PARAM_CHANCE 0
 #define PARAM_ZOOM 1
 #define PARAM_MIDPOINT 2
@@ -110,7 +112,7 @@ float paramDronePitch;
 #define PARAM_14 14
 #define PARAM_15 15
 #define PARAM_16 16
-#define PARAM_17 17
+#define PARAM_DRONE_MOD 17
 #define PARAM_DRONE 18
 #define PARAM_DRONE_PITCH 19
 byte storedValues[NUM_PARAM_GROUPS*NUM_KNOBS];
@@ -170,6 +172,9 @@ void setup() {
   storedValues[PARAM_PITCH] = 160;
   storedValues[PARAM_TIME_SIGNATURE] = 120; // this means 4/4, it's confusing...
   storedValues[PARAM_TEMPO] = 100; // not BPM!
+  storedValues[PARAM_DRONE] = 128;
+  storedValues[PARAM_DRONE_PITCH] = 128;
+  storedValues[PARAM_DRONE_MOD] = 128;
 
   for(byte i=0;i<NUM_PARAM_GROUPS;i++) {
     updateParameters(i);
@@ -421,6 +426,14 @@ void updateParameters(byte thisControlSet) {
     } else {
       oscilGain1 = oscilGain2;
     }
+    // do same thing for drone modulation gains
+    if(storedValues[PARAM_DRONE_MOD] < 128) {
+      droneMod2Active = false;
+      paramDroneMod = constrain(240-2*storedValues[PARAM_DRONE_MOD], 0, 255);
+    } else {
+      droneMod2Active = true;
+      paramDroneMod = constrain(2*storedValues[PARAM_DRONE_MOD]-270, 0, 255);;
+    }
     paramDronePitch = (float) storedValues[PARAM_DRONE_PITCH] * 0.768f + 65.41f; // gives range between "deep C" and "middle C"
     droneOscillator1.setFreq(paramDronePitch);
     droneOscillator2.setFreq(paramDronePitch*1.5f);
@@ -429,9 +442,15 @@ void updateParameters(byte thisControlSet) {
 }
 
 const byte atten = 9;
+char d1Next, d2Next;
 int updateAudio() {
+  d1Next = droneOscillator1.next();
+  d2Next = droneOscillator2.next();
+  char droneSig = ((oscilGain1*d1Next)>>10)+((oscilGain2*d2Next)>>10);
+  char droneModSig = (d1Next>>2)+(droneMod2Active?(d2Next>>2):0);
   char asig = ((sampleVolumes[0]*kick.next())>>atten)+((sampleVolumes[1]*closedhat.next())>>atten)+
-    ((sampleVolumes[2]*snare.next())>>atten)+((sampleVolumes[3]*click.next())>>atten)+((oscilGain1*droneOscillator1.next())>>11)+((oscilGain2*droneOscillator2.next())>>11);
+    ((sampleVolumes[2]*snare.next())>>atten)+((sampleVolumes[3]*click.next())>>atten)+(droneSig>>2);
+  asig = (asig * ((255-paramDroneMod)+((paramDroneMod*droneModSig)>>6)))>>8;
   asig = (asig>>paramCrush)<<crushCompensation;
   return (int) asig;
 }
