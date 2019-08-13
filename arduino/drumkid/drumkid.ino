@@ -86,6 +86,8 @@ byte paramRange = 0;
 byte paramZoom = 0;
 byte paramPitch = 0;
 byte paramCrush = 0;
+byte paramCrop = 0;
+byte paramGlitch = 0;
 byte crushCompensation = 0;
 int paramSlop = 0;
 float paramTempo = 120.0;
@@ -101,8 +103,8 @@ bool droneMod2Active = false;
 #define PARAM_RANGE 3
 #define PARAM_PITCH 4
 #define PARAM_CRUSH 5
-#define PARAM_6 6
-#define PARAM_7 7
+#define PARAM_CROP 6
+#define PARAM_GLITCH 7
 #define PARAM_SLOP 8
 #define PARAM_BLEND 9
 #define PARAM_10 10
@@ -386,6 +388,7 @@ void updateParameters(byte thisControlSet) {
 
     case 1:
     {
+      // pitch alteration
       float thisPitch = fabs((float) storedValues[PARAM_PITCH] * (8.0f/255.0f) - 4.0f);
       float newKickFreq = thisPitch * (float) kick_SAMPLERATE / (float) kick_NUM_CELLS;
       float newHatFreq = thisPitch * (float) closedhat_SAMPLERATE / (float) closedhat_NUM_CELLS;
@@ -400,11 +403,23 @@ void updateParameters(byte thisControlSet) {
       closedhat.setDirection(thisDirection);
       snare.setDirection(thisDirection);
       click.setDirection(thisDirection);
-      // high value = clean (8 bits), low value = dirty (1 bit?)
+      
+      // bit crush! high value = clean (8 bits), low value = dirty (1 bit?)
       paramCrush = 7-(storedValues[PARAM_CRUSH]>>5);
       crushCompensation = paramCrush;
       if(paramCrush >= 6) crushCompensation --;
       if(paramCrush >= 7) crushCompensation --;
+
+      // crop - a basic effect to chop off the end of each sample for a more staccato feel
+      paramCrop = storedValues[PARAM_CROP];
+      kick.setEnd(thisDirection ? map(paramCrop,0,255,100,kick_NUM_CELLS) : kick_NUM_CELLS);
+      closedhat.setEnd(thisDirection ? map(paramCrop,0,255,100,closedhat_NUM_CELLS) : closedhat_NUM_CELLS);
+      snare.setEnd(thisDirection ? map(paramCrop,0,255,100,snare_NUM_CELLS) : snare_NUM_CELLS);
+      click.setEnd(thisDirection ? map(paramCrop,0,255,100,click_NUM_CELLS) : click_NUM_CELLS);
+      kick.setStart(!thisDirection ? map(paramCrop,255,0,100,kick_NUM_CELLS) : 0);
+      closedhat.setStart(!thisDirection ? map(paramCrop,255,0,100,closedhat_NUM_CELLS) : 0);
+      snare.setStart(!thisDirection ? map(paramCrop,255,0,100,snare_NUM_CELLS) : 0);
+      click.setStart(!thisDirection ? map(paramCrop,255,0,100,click_NUM_CELLS) : 0);
     }
     break;
 
