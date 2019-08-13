@@ -5,6 +5,9 @@
 #include "MozziDK/Sample.h"
 #include "MozziDK/EventDelay.h"
 #include "MozziDK/mozzi_rand.h"
+#include "MozziDK/Oscil.h"
+#include "MozziDK/tables/square_analogue512_int8.h"
+//#include "MozziDK/tables/sin2048_int8.h"
 
 // include debouncing library
 #include <Bounce2.h>
@@ -87,6 +90,9 @@ byte crushCompensation = 0;
 int paramSlop = 0;
 float paramTempo = 120.0;
 byte paramTimeSignature = 4;
+byte oscilGain1 = 0;
+byte oscilGain2 = 0;
+float paramDronePitch;
 #define PARAM_CHANCE 0
 #define PARAM_ZOOM 1
 #define PARAM_MIDPOINT 2
@@ -105,8 +111,8 @@ byte paramTimeSignature = 4;
 #define PARAM_15 15
 #define PARAM_16 16
 #define PARAM_17 17
-#define PARAM_18 18
-#define PARAM_19 19
+#define PARAM_DRONE 18
+#define PARAM_DRONE_PITCH 19
 byte storedValues[NUM_PARAM_GROUPS*NUM_KNOBS];
 
 // define samples
@@ -114,6 +120,10 @@ Sample <kick_NUM_CELLS, AUDIO_RATE> kick(kick_DATA);
 Sample <closedhat_NUM_CELLS, AUDIO_RATE> closedhat(closedhat_DATA);
 Sample <snare_NUM_CELLS, AUDIO_RATE> snare(snare_DATA);
 Sample <click_NUM_CELLS, AUDIO_RATE> click(click_DATA);
+
+// define oscillators
+Oscil<SQUARE_ANALOGUE512_NUM_CELLS, AUDIO_RATE> droneOscillator1(SQUARE_ANALOGUE512_DATA);
+Oscil<SQUARE_ANALOGUE512_NUM_CELLS, AUDIO_RATE> droneOscillator2(SQUARE_ANALOGUE512_DATA);
 
 // could just use bools instead of bytes to save space
 const byte beat1[NUM_SAMPLES][MAX_BEAT_STEPS] PROGMEM = {  {255,255,0,0,0,0,0,0,255,0,0,0,0,0,0,0,255,255,0,0,0,0,0,0,255,0,0,0,0,0,0,0,},
@@ -402,12 +412,26 @@ void updateParameters(byte thisControlSet) {
     paramTimeSignature = (storedValues[PARAM_TIME_SIGNATURE]>>5)+1;
     numSteps = paramTimeSignature * 16;
     break;
+
+    case 4:
+    // using values of 270 and 240 (i.e. 255±15) to give a decent "dead zone" in the middle of the knob
+    oscilGain2 = constrain(2*storedValues[PARAM_DRONE]-270, 0, 255);
+    if(storedValues[PARAM_DRONE] < 128) {
+      oscilGain1 = constrain(240-2*storedValues[PARAM_DRONE], 0, 255);
+    } else {
+      oscilGain1 = oscilGain2;
+    }
+    paramDronePitch = (float) storedValues[PARAM_DRONE_PITCH] * 0.768f + 65.41f; // gives range between "deep C" and "middle C"
+    droneOscillator1.setFreq(paramDronePitch);
+    droneOscillator2.setFreq(paramDronePitch*1.5f);
+    break;
   }
 }
 
 const byte atten = 9;
 int updateAudio() {
-  char asig = ((sampleVolumes[0]*kick.next())>>atten)+((sampleVolumes[1]*closedhat.next())>>atten)+((sampleVolumes[2]*snare.next())>>atten)+((sampleVolumes[3]*click.next())>>atten);
+  char asig = ((sampleVolumes[0]*kick.next())>>atten)+((sampleVolumes[1]*closedhat.next())>>atten)+
+    ((sampleVolumes[2]*snare.next())>>atten)+((sampleVolumes[3]*click.next())>>atten)+((oscilGain1*droneOscillator1.next())>>11)+((oscilGain2*droneOscillator2.next())>>11);
   asig = (asig>>paramCrush)<<crushCompensation;
   return (int) asig;
 }
