@@ -43,6 +43,7 @@ Bounce buttonY = Bounce();
 Bounce buttonZ = Bounce();
 
 #define CONTROL_RATE 256 // tweak this value if performance is bad, must be power of 2 (64, 128, etc)
+#define NUM_BEATS 3
 #define MAX_BEAT_STEPS 32
 #define NUM_PARAM_GROUPS 5
 #define NUM_KNOBS 4
@@ -68,6 +69,7 @@ byte delayVelocity[numEventDelays];
 byte eventDelayIndex = 0;
 bool beatLedsActive = true;
 bool firstLoop = true;
+bool secondLoop = false;
 byte sampleVolumes[NUM_SAMPLES_TOTAL];
 bool readyToSave = true;
 bool readyToChooseSaveSlot = false;
@@ -135,7 +137,7 @@ Oscil<SQUARE_ANALOGUE512_NUM_CELLS, AUDIO_RATE> droneOscillator2(SQUARE_ANALOGUE
 
 // could just use bools instead of bytes to save space
 // order of samples: kick, hat, snare, rim, clap
-const byte beats[][NUM_SAMPLES_DEFINED][MAX_BEAT_STEPS] PROGMEM = {
+const byte beats[NUM_BEATS][NUM_SAMPLES_DEFINED][MAX_BEAT_STEPS] PROGMEM = {
   {
     {255,0,0,0,0,0,0,0,255,0,0,0,0,0,0,0,255,0,0,0,0,0,0,0,255,0,0,0,0,0,0,0,},
     {255,0,255,0,255,0,255,0,255,0,255,0,255,0,255,0,255,0,255,0,255,0,255,0,255,0,255,0,255,0,255,0,},
@@ -157,28 +159,7 @@ const byte beats[][NUM_SAMPLES_DEFINED][MAX_BEAT_STEPS] PROGMEM = {
     {0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,},
     {0,0,0,0,255,0,0,0,0,0,0,0,255,0,0,0,0,0,0,0,255,0,0,0,0,0,0,0,255,0,0,0,},
   },
-};
-/*const byte beat1[NUM_SAMPLES_DEFINED][MAX_BEAT_STEPS] PROGMEM = {
-  {255,0,0,0,0,0,0,0,255,0,0,0,0,0,0,0,255,0,0,0,0,0,0,0,255,0,0,0,0,0,0,0,},
-  {255,0,255,0,255,0,255,0,255,0,255,0,255,0,255,0,255,0,255,0,255,0,255,0,255,0,255,0,255,0,255,0,},
-  {0,0,0,0,255,0,0,0,0,0,0,0,255,0,0,0,0,0,0,0,255,0,0,0,0,0,0,0,255,0,0,0,},
-  {0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,},
-  {0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,},
-};
-const byte beat2[NUM_SAMPLES_DEFINED][MAX_BEAT_STEPS] PROGMEM = {
-  {255,0,0,0,0,0,0,0,0,0,255,0,0,0,0,0,255,0,0,0,0,0,0,0,0,0,255,0,0,0,0,0,},
-  {255,0,0,0,255,0,0,0,255,0,0,0,255,0,0,0,255,0,0,0,255,0,0,0,255,0,0,0,255,0,0,0,},
-  {0,0,0,0,255,0,0,0,0,0,0,0,255,0,0,0,0,0,0,0,255,0,0,0,0,0,0,0,255,0,0,0,},
-  {0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,},
-  {0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,},
-};
-const byte beat3[NUM_SAMPLES_DEFINED][MAX_BEAT_STEPS] PROGMEM = {
-  {255,0,0,0,0,0,0,0,255,0,0,0,0,0,0,0,255,0,0,0,0,0,0,0,255,0,0,0,0,0,0,0,},
-  {255,0,255,0,255,0,255,0,255,0,255,0,255,0,255,0,255,0,255,0,255,0,255,0,255,0,255,0,255,0,255,0,},
-  {0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,},
-  {0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,},
-  {0,0,0,0,255,0,0,0,0,0,0,0,255,0,0,0,0,0,0,0,255,0,0,0,0,0,0,0,255,0,0,0,},
-};*/         
+};        
 
 void setup() {
   startMozzi(CONTROL_RATE);
@@ -215,6 +196,9 @@ void setup() {
   }
 
   // add more default values here
+  storedValues[PARAM_CHANCE] = 0;
+  storedValues[PARAM_MIDPOINT] = 128;
+  storedValues[PARAM_RANGE] = 255;
   storedValues[PARAM_CRUSH] = 255;
   storedValues[PARAM_PITCH] = 160;
   storedValues[PARAM_TIME_SIGNATURE] = 120; // this means 4/4, it's confusing...
@@ -266,7 +250,7 @@ void scheduler() {
     }
     for(byte i=0;i<NUM_SAMPLES_TOTAL;i++) {
       int slopRand = rand(0,paramSlop) - paramSlop / 2;
-      thisBeatVelocity = (i<NUM_SAMPLES_DEFINED)?pgm_read_byte(&beats[2][i][currentStep/4]):0;
+      thisBeatVelocity = (i<NUM_SAMPLES_DEFINED)?pgm_read_byte(&beats[paramBeat][i][currentStep/4]):0;
       if(currentStep%4==0&&thisBeatVelocity>0) scheduleNote(i, currentStep, thisBeatVelocity, nextNoteTime + slopRand - (float) millis());
       else {
         // temp, playing around
@@ -409,10 +393,10 @@ void updateControl() {
   for(i=0;i<NUM_KNOBS;i++) {
     analogValues[i] = mozziAnalogRead(i)>>2; // read all analog values
   }
-  if(controlSetChanged || firstLoop) {
+  if(controlSetChanged||secondLoop) {
     // "lock" all knobs when control set changes
+    // also do this on second loop (mozziAnalogRead doesn't work properly on first loop)
     for(byte i=0;i<NUM_KNOBS;i++) {
-      knobLocked[i] = !firstLoop;
       initValues[i] = analogValues[i];
     }
   } else {
@@ -430,7 +414,12 @@ void updateControl() {
   // do logic based on params
   if(!newStateLoaded) updateParameters(controlSet);
   
-  firstLoop = false;
+  if(firstLoop) {
+    firstLoop = false;
+    secondLoop = true;
+  } else {
+    secondLoop = false;
+  }
 }
 
 void updateParameters(byte thisControlSet) {
@@ -492,7 +481,7 @@ void updateParameters(byte thisControlSet) {
     break;
 
     case 3:
-    paramBeat = storedValues[PARAM_BEAT];
+    paramBeat = (NUM_BEATS * (int) storedValues[PARAM_BEAT]) / 256;
     paramTempo = (float) MIN_TEMPO + ((float) storedValues[PARAM_TEMPO]);
     paramTimeSignature = (storedValues[PARAM_TIME_SIGNATURE]>>5)+1;
     numSteps = paramTimeSignature * 16;
