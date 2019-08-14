@@ -227,8 +227,8 @@ void nextNote() {
   float msPerBeat = (60.0 / paramTempo) * 1000.0;
   // swing function - without swing, all beats would 1/16th of a beat (1/64th note)
   // altering swing means odd and even notes treated differently - more "swing" means even notes longer, odd notes shorter
-  float swingTime1 = 0.25 + 0.2 * (float) paramSwing / 255.0;
-  float swingTime2 = 0.2 * (float) (255 - paramSwing) / 255.0;
+  float swingTime1 = 0.25 + 0.25 * (float) paramSwing / 255.0;
+  float swingTime2 = 0.25 * (float) (255 - paramSwing) / 255.0;
   nextNoteTime += ((currentStep/4)%2==0 ? swingTime1 : swingTime2) * msPerBeat / 4;
   currentStep ++;
   currentStep = currentStep % numSteps;
