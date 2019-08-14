@@ -15,8 +15,8 @@
 // include EEPROM library for saving data
 #include <EEPROM.h>
 
-// include/initialise tap tempo library
-#include <ArduinoTapTempo.h>
+// include/initialise tap tempo library - copied into repo for now because I added some functions
+#include "ArduinoTapTempoDK/src/ArduinoTapTempo.cpp"
 ArduinoTapTempo tapTempo;
 
 // include audio data files
@@ -52,7 +52,12 @@ Bounce buttonZ = Bounce();
 #define NUM_SAMPLES_TOTAL 5 // total number of samples including those only triggered by chance
 #define NUM_SAMPLES_DEFINED 5 // number of samples defined in the preset drumbeats (kick, hat, snare, rim, clap)
 #define SAVED_STATE_SLOT_BYTES 32
-#define MIN_TEMPO 40 // and max tempo is 40+255 (295) for nice easy byte maths
+#define MIN_TEMPO 40
+#define MAX_TEMPO 295
+
+#if MIN_TEMPO + 255 != MAX_TEMPO
+#error "Tempo must have a range of exactly 255 otherwise I'll have to write more code"
+#endif
 
 bool sequencePlaying = false; // false when stopped, true when playing
 byte currentStep;
@@ -96,7 +101,6 @@ byte crushCompensation = 0;
 int paramSlop = 0;
 byte paramSwing = 0;
 byte paramBeat = 0;
-float paramTempo = 120.0;
 byte paramTimeSignature = 4;
 byte oscilGain1 = 0;
 byte oscilGain2 = 0;
@@ -203,7 +207,7 @@ void setup() {
   storedValues[PARAM_CRUSH] = 255;
   storedValues[PARAM_PITCH] = 160;
   storedValues[PARAM_TIME_SIGNATURE] = 120; // this means 4/4, it's confusing...
-  storedValues[PARAM_TEMPO] = 100; // not BPM!
+  storedValues[PARAM_TEMPO] = 100 - MIN_TEMPO; // not BPM!
   storedValues[PARAM_DRONE] = 128;
   storedValues[PARAM_DRONE_PITCH] = 128;
   storedValues[PARAM_DRONE_MOD] = 128;
@@ -214,7 +218,7 @@ void setup() {
   }
 
   tapTempo.setMinBPM((float) MIN_TEMPO);
-  tapTempo.setMaxBPM((float) (MIN_TEMPO+255));
+  tapTempo.setMaxBPM((float) MAX_TEMPO);
 
   startupLedSequence();
 }
@@ -224,7 +228,7 @@ void loop() {
 }
 
 void nextNote() {
-  float msPerBeat = (60.0 / paramTempo) * 1000.0;
+  float msPerBeat = tapTempo.getBeatLength();
   // swing function - without swing, all beats would 1/16th of a beat (1/64th note)
   // altering swing means odd and even notes treated differently - more "swing" means even notes longer, odd notes shorter
   float swingTime1 = 0.25 + 0.25 * (float) paramSwing / 255.0;
@@ -337,8 +341,7 @@ void updateControl() {
       else if(readyToChooseSaveSlot) saveParams(0);
       else {
         controlSet = 0;
-        paramTempo = tapTempo.getBPM();
-        storedValues[PARAM_TEMPO] = paramTempo - MIN_TEMPO;
+        storedValues[PARAM_TEMPO] = tapTempo.getBPM() - MIN_TEMPO;
       }
     } else if(buttonB.fell()) {
       if(readyToChooseLoadSlot) loadParams(1);
@@ -497,7 +500,7 @@ void updateParameters(byte thisControlSet) {
 
     case 3:
     paramBeat = (NUM_BEATS * (int) storedValues[PARAM_BEAT]) / 256;
-    paramTempo = (float) MIN_TEMPO + ((float) storedValues[PARAM_TEMPO]);
+    tapTempo.setBPM((float) MIN_TEMPO + ((float) storedValues[PARAM_TEMPO]));
     paramTimeSignature = (storedValues[PARAM_TIME_SIGNATURE]>>5)+1;
     numSteps = paramTimeSignature * 16;
     break;
