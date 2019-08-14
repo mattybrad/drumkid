@@ -357,7 +357,12 @@ void updateControl() {
       else toggleSequence();
     }
 
-    if(paramGlitch>0) delay((paramGlitch*paramGlitch)>>6);
+    // messing everything up to make a glitchy effect
+    if(paramGlitch>0) {
+      byte minDelay = paramGlitch/4;
+      byte maxDelay = (paramGlitch*paramGlitch)>>6;
+      delay(rand(minDelay, maxDelay));
+    }
   }
 
   byte i;
@@ -397,6 +402,7 @@ void updateControl() {
     // "lock" all knobs when control set changes
     // also do this on second loop (mozziAnalogRead doesn't work properly on first loop)
     for(byte i=0;i<NUM_KNOBS;i++) {
+      knobLocked[i] = true;
       initValues[i] = analogValues[i];
     }
   } else {
