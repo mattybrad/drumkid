@@ -244,7 +244,10 @@ void scheduleNote(byte channelNumber, byte beatNumber, byte velocity, float dela
   eventDelayIndex = (eventDelayIndex + 1) % numEventDelays; // replace with "find next free slot" function
 }
 
+byte zoomValues[] = {64,32,16,8,4,2,1};
 void scheduler() {
+  byte zoomValueIndex = map(paramZoom,0,256,0,7);
+  byte zoomValue = zoomValues[zoomValueIndex];
   byte thisBeatVelocity;
   while(nextNoteTime < (float) millis() + scheduleAheadTime) {
     byte thisStep = currentStep/16;
@@ -259,11 +262,11 @@ void scheduler() {
       if(currentStep%4==0&&thisBeatVelocity>0) scheduleNote(i, currentStep, thisBeatVelocity, nextNoteTime + slopRand - (float) millis());
       else {
         // temp, playing around
-        if(currentStep%4==0) {
+        if(currentStep%zoomValue==0) {
           byte yesNoRand = rand(0,255);
           if(yesNoRand < paramChance) {
-            long velocityRand = rand(0,255); // is long necessary?
-            long velocity = paramMidpoint - paramRange/2 + ((velocityRand * paramRange)>>8); // is long necessary?
+            int velocityRand = rand(0,255);
+            int velocity = paramMidpoint - paramRange/2 + ((velocityRand * paramRange)>>8);
             if(velocity > 0) scheduleNote(i, currentStep, velocity, nextNoteTime - (float) millis());
           }
         }
