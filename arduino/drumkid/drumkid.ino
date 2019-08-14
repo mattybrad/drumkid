@@ -23,7 +23,8 @@ ArduinoTapTempo tapTempo;
 #include "kick.h"
 #include "closedhat.h"
 #include "snare.h"
-#include "click.h"
+#include "rim.h"
+#include "clap.h"
 
 // define pins
 byte breadboardLedPins[5] = {5,6,7,8,13};
@@ -47,7 +48,8 @@ Bounce buttonZ = Bounce();
 #define NUM_KNOBS 4
 #define NUM_LEDS 5
 #define NUM_BUTTONS 6
-#define NUM_SAMPLES 4
+#define NUM_SAMPLES_TOTAL 5 // total number of samples including those only triggered by chance
+#define NUM_SAMPLES_DEFINED 5 // number of samples defined in the preset drumbeats (kick, hat, snare, rim, clap)
 #define SAVED_STATE_SLOT_BYTES 32
 #define MIN_TEMPO 40 // and max tempo is 40+255 (295) for nice easy byte maths
 
@@ -66,7 +68,7 @@ byte delayVelocity[numEventDelays];
 byte eventDelayIndex = 0;
 bool beatLedsActive = true;
 bool firstLoop = true;
-byte sampleVolumes[NUM_SAMPLES] = {255,255,255,255};
+byte sampleVolumes[NUM_SAMPLES_TOTAL];
 bool readyToSave = true;
 bool readyToChooseSaveSlot = false;
 bool readyToLoad = true;
@@ -90,6 +92,7 @@ byte paramCrop = 0;
 unsigned int paramGlitch = 0;
 byte crushCompensation = 0;
 int paramSlop = 0;
+byte paramBeat = 0;
 float paramTempo = 120.0;
 byte paramTimeSignature = 4;
 byte oscilGain1 = 0;
@@ -109,9 +112,9 @@ bool droneMod2Active = false;
 #define PARAM_BLEND 9
 #define PARAM_10 10
 #define PARAM_11 11
-#define PARAM_TEMPO 12
-#define PARAM_TIME_SIGNATURE 13
-#define PARAM_14 14
+#define PARAM_BEAT 12
+#define PARAM_TEMPO 13
+#define PARAM_TIME_SIGNATURE 14
 #define PARAM_15 15
 #define PARAM_16 16
 #define PARAM_DRONE_MOD 17
@@ -123,22 +126,36 @@ byte storedValues[NUM_PARAM_GROUPS*NUM_KNOBS];
 Sample <kick_NUM_CELLS, AUDIO_RATE> kick(kick_DATA);
 Sample <closedhat_NUM_CELLS, AUDIO_RATE> closedhat(closedhat_DATA);
 Sample <snare_NUM_CELLS, AUDIO_RATE> snare(snare_DATA);
-Sample <click_NUM_CELLS, AUDIO_RATE> click(click_DATA);
+Sample <rim_NUM_CELLS, AUDIO_RATE> rim(rim_DATA);
+Sample <clap_NUM_CELLS, AUDIO_RATE> clap(clap_DATA);
 
 // define oscillators
 Oscil<SQUARE_ANALOGUE512_NUM_CELLS, AUDIO_RATE> droneOscillator1(SQUARE_ANALOGUE512_DATA);
 Oscil<SQUARE_ANALOGUE512_NUM_CELLS, AUDIO_RATE> droneOscillator2(SQUARE_ANALOGUE512_DATA);
 
 // could just use bools instead of bytes to save space
-const byte beat2[NUM_SAMPLES][MAX_BEAT_STEPS] PROGMEM = {  {255,0,0,0,0,0,0,0,0,0,255,0,0,0,0,0,255,0,0,0,0,0,0,0,0,0,255,0,0,0,0,0,},
-                                  {255,0,0,0,255,0,0,0,255,0,0,0,255,0,0,0,255,0,0,0,255,0,0,0,255,0,0,0,255,0,0,0,},
-                                  {0,0,0,0,255,0,0,0,0,0,0,0,255,0,0,0,0,0,0,0,255,0,0,0,0,0,0,0,255,0,0,0,},
-                                  {0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,},};
-const byte beat1[NUM_SAMPLES][MAX_BEAT_STEPS] PROGMEM = {  {255,0,0,0,0,0,0,0,255,0,0,0,0,0,0,0,255,0,0,0,0,0,0,0,255,0,0,0,0,0,0,0,},
-                                  {255,0,255,0,255,0,255,0,255,0,255,0,255,0,255,0,255,0,255,0,255,0,255,0,255,0,255,0,255,0,255,0,},
-                                  {0,0,0,0,255,0,0,0,0,0,0,0,255,0,0,0,0,0,0,0,255,0,0,0,0,0,0,0,255,0,0,0,},
-                                  {0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,},};
-              
+// order of samples: kick, hat, snare
+const byte beat1[NUM_SAMPLES_DEFINED][MAX_BEAT_STEPS] PROGMEM = {
+  {255,0,0,0,0,0,0,0,255,0,0,0,0,0,0,0,255,0,0,0,0,0,0,0,255,0,0,0,0,0,0,0,},
+  {255,0,255,0,255,0,255,0,255,0,255,0,255,0,255,0,255,0,255,0,255,0,255,0,255,0,255,0,255,0,255,0,},
+  {0,0,0,0,255,0,0,0,0,0,0,0,255,0,0,0,0,0,0,0,255,0,0,0,0,0,0,0,255,0,0,0,},
+  {0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,},
+  {0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,},
+};
+const byte beat2[NUM_SAMPLES_DEFINED][MAX_BEAT_STEPS] PROGMEM = {
+  {255,0,0,0,0,0,0,0,0,0,255,0,0,0,0,0,255,0,0,0,0,0,0,0,0,0,255,0,0,0,0,0,},
+  {255,0,0,0,255,0,0,0,255,0,0,0,255,0,0,0,255,0,0,0,255,0,0,0,255,0,0,0,255,0,0,0,},
+  {0,0,0,0,255,0,0,0,0,0,0,0,255,0,0,0,0,0,0,0,255,0,0,0,0,0,0,0,255,0,0,0,},
+  {0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,},
+  {0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,},
+};
+const byte beat3[NUM_SAMPLES_DEFINED][MAX_BEAT_STEPS] PROGMEM = {
+  {255,0,0,0,0,0,0,0,255,0,0,0,0,0,0,0,255,0,0,0,0,0,0,0,255,0,0,0,0,0,0,0,},
+  {255,0,255,0,255,0,255,0,255,0,255,0,255,0,255,0,255,0,255,0,255,0,255,0,255,0,255,0,255,0,255,0,},
+  {0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,},
+  {0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,},
+  {0,0,0,0,255,0,0,0,0,0,0,0,255,0,0,0,0,0,0,0,255,0,0,0,0,0,0,0,255,0,0,0,},
+};           
 
 void setup() {
   startMozzi(CONTROL_RATE);
@@ -146,8 +163,8 @@ void setup() {
   kick.setFreq((float) kick_SAMPLERATE / (float) kick_NUM_CELLS);
   closedhat.setFreq((float) closedhat_SAMPLERATE / (float) closedhat_NUM_CELLS);
   snare.setFreq((float) snare_SAMPLERATE / (float) snare_NUM_CELLS);
-  click.setFreq((float) click_SAMPLERATE / (float) click_NUM_CELLS);
-  kick.setEnd(7000);
+  rim.setFreq((float) rim_SAMPLERATE / (float) rim_NUM_CELLS);
+  clap.setFreq((float) clap_SAMPLERATE / (float) clap_NUM_CELLS);
   Serial.begin(9600);
   for(byte i=0;i<NUM_LEDS;i++) {
     pinMode(ledPins[i], OUTPUT);
@@ -170,7 +187,8 @@ void setup() {
     kick.next();
     closedhat.next();
     snare.next();
-    click.next();
+    rim.next();
+    clap.next();
   }
 
   // add more default values here
@@ -223,9 +241,9 @@ void scheduler() {
       if(currentStep%16==0) digitalWrite(ledPins[stepLED], HIGH);
       else if(currentStep%4==0) digitalWrite(ledPins[stepLED], LOW);
     }
-    for(byte i=0;i<NUM_SAMPLES;i++) {
+    for(byte i=0;i<NUM_SAMPLES_TOTAL;i++) {
       int slopRand = rand(0,paramSlop) - paramSlop / 2;
-      thisBeatVelocity = pgm_read_byte(&beat1[i][currentStep/4]);
+      thisBeatVelocity = (i<NUM_SAMPLES_DEFINED)?pgm_read_byte(&beat1[i][currentStep/4]):0;
       if(currentStep%4==0&&thisBeatVelocity>0) scheduleNote(i, currentStep, thisBeatVelocity, nextNoteTime + slopRand - (float) millis());
       else {
         // temp, playing around
@@ -342,14 +360,22 @@ void updateControl() {
       if(eventDelays[i].ready() && delayInUse[i]) {
         delayInUse[i] = false;
         if(delayVelocity[i] > 8) { // don't bother with very quiet notes
-          if(delayChannel[i]==0) {
+          switch(delayChannel[i]) {
+            case 0:
             kick.start();
-          } else if(delayChannel[i]==1) {
+            break;
+            case 1:
             closedhat.start();
-          } else if(delayChannel[i]==2) {
+            break;
+            case 2:
             snare.start();
-          } else if(delayChannel[i]==3) {
-            click.start();
+            break;
+            case 3:
+            rim.start();
+            break;
+            case 4:
+            clap.start();
+            break;
           }
           sampleVolumes[delayChannel[i]] = delayVelocity[i];
         }
@@ -395,21 +421,24 @@ void updateParameters(byte thisControlSet) {
 
     case 1:
     {
-      // pitch alteration
+      // pitch alteration (could do this is a more efficient way to reduce RAM usage)
       float thisPitch = fabs((float) storedValues[PARAM_PITCH] * (8.0f/255.0f) - 4.0f);
       float newKickFreq = thisPitch * (float) kick_SAMPLERATE / (float) kick_NUM_CELLS;
       float newHatFreq = thisPitch * (float) closedhat_SAMPLERATE / (float) closedhat_NUM_CELLS;
       float newSnareFreq = thisPitch * (float) snare_SAMPLERATE / (float) snare_NUM_CELLS;
-      float newClickFreq = thisPitch * (float) click_SAMPLERATE / (float) click_NUM_CELLS;
+      float newRimFreq = thisPitch * (float) rim_SAMPLERATE / (float) rim_NUM_CELLS;
+      float newClapFreq = thisPitch * (float) clap_SAMPLERATE / (float) clap_NUM_CELLS;
       kick.setFreq(newKickFreq);
       closedhat.setFreq(newHatFreq);
       snare.setFreq(newSnareFreq);
-      click.setFreq(newClickFreq);
+      rim.setFreq(newRimFreq);
+      clap.setFreq(newClapFreq);
       bool thisDirection = storedValues[PARAM_PITCH] >= 128;
       kick.setDirection(thisDirection);
       closedhat.setDirection(thisDirection);
       snare.setDirection(thisDirection);
-      click.setDirection(thisDirection);
+      rim.setDirection(thisDirection);
+      clap.setDirection(thisDirection);
       
       // bit crush! high value = clean (8 bits), low value = dirty (1 bit?)
       paramCrush = 7-(storedValues[PARAM_CRUSH]>>5);
@@ -422,11 +451,13 @@ void updateParameters(byte thisControlSet) {
       kick.setEnd(thisDirection ? map(paramCrop,0,255,100,kick_NUM_CELLS) : kick_NUM_CELLS);
       closedhat.setEnd(thisDirection ? map(paramCrop,0,255,100,closedhat_NUM_CELLS) : closedhat_NUM_CELLS);
       snare.setEnd(thisDirection ? map(paramCrop,0,255,100,snare_NUM_CELLS) : snare_NUM_CELLS);
-      click.setEnd(thisDirection ? map(paramCrop,0,255,100,click_NUM_CELLS) : click_NUM_CELLS);
+      rim.setEnd(thisDirection ? map(paramCrop,0,255,100,rim_NUM_CELLS) : rim_NUM_CELLS);
+      clap.setEnd(thisDirection ? map(paramCrop,0,255,100,clap_NUM_CELLS) : clap_NUM_CELLS);
       kick.setStart(!thisDirection ? map(paramCrop,255,0,100,kick_NUM_CELLS) : 0);
       closedhat.setStart(!thisDirection ? map(paramCrop,255,0,100,closedhat_NUM_CELLS) : 0);
       snare.setStart(!thisDirection ? map(paramCrop,255,0,100,snare_NUM_CELLS) : 0);
-      click.setStart(!thisDirection ? map(paramCrop,255,0,100,click_NUM_CELLS) : 0);
+      rim.setStart(!thisDirection ? map(paramCrop,255,0,100,rim_NUM_CELLS) : 0);
+      clap.setStart(!thisDirection ? map(paramCrop,255,0,100,clap_NUM_CELLS) : 0);
 
       // experimental glitch effect
       paramGlitch = storedValues[PARAM_GLITCH];
@@ -438,6 +469,7 @@ void updateParameters(byte thisControlSet) {
     break;
 
     case 3:
+    paramBeat = storedValues[PARAM_BEAT];
     paramTempo = (float) MIN_TEMPO + ((float) storedValues[PARAM_TEMPO]);
     paramTimeSignature = (storedValues[PARAM_TIME_SIGNATURE]>>5)+1;
     numSteps = paramTimeSignature * 16;
@@ -466,16 +498,19 @@ void updateParameters(byte thisControlSet) {
   }
 }
 
-const byte atten = 9;
+const byte atten = 10;
 char d1Next, d2Next;
-byte myGlitch = 0;
 int updateAudio() {
   d1Next = droneOscillator1.next();
   d2Next = droneOscillator2.next();
-  char droneSig = ((oscilGain1*d1Next)>>10)+((oscilGain2*d2Next)>>10);
+  char droneSig = ((oscilGain1*d1Next)>>10)+((oscilGain2*d2Next)>>11);
   char droneModSig = (d1Next>>2)+(droneMod2Active?(d2Next>>2):0);
-  char asig = ((sampleVolumes[0]*kick.next())>>atten)+((sampleVolumes[1]*closedhat.next())>>atten)+
-    ((sampleVolumes[2]*snare.next())>>atten)+((sampleVolumes[3]*click.next())>>atten)+(droneSig>>2);
+  char asig = ((sampleVolumes[0]*kick.next())>>atten)+
+    ((sampleVolumes[1]*closedhat.next())>>atten)+
+    ((sampleVolumes[2]*snare.next())>>atten)+
+    ((sampleVolumes[3]*rim.next())>>atten)+
+    ((sampleVolumes[4]*clap.next())>>atten)+
+    (droneSig>>2);
   asig = (asig * ((255-paramDroneMod)+((paramDroneMod*droneModSig)>>6)))>>8;
   asig = (asig>>paramCrush)<<crushCompensation;
   return (int) asig;
