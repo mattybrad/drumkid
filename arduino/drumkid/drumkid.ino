@@ -134,8 +134,31 @@ Oscil<SQUARE_ANALOGUE512_NUM_CELLS, AUDIO_RATE> droneOscillator1(SQUARE_ANALOGUE
 Oscil<SQUARE_ANALOGUE512_NUM_CELLS, AUDIO_RATE> droneOscillator2(SQUARE_ANALOGUE512_DATA);
 
 // could just use bools instead of bytes to save space
-// order of samples: kick, hat, snare
-const byte beat1[NUM_SAMPLES_DEFINED][MAX_BEAT_STEPS] PROGMEM = {
+// order of samples: kick, hat, snare, rim, clap
+const byte beats[][NUM_SAMPLES_DEFINED][MAX_BEAT_STEPS] PROGMEM = {
+  {
+    {255,0,0,0,0,0,0,0,255,0,0,0,0,0,0,0,255,0,0,0,0,0,0,0,255,0,0,0,0,0,0,0,},
+    {255,0,255,0,255,0,255,0,255,0,255,0,255,0,255,0,255,0,255,0,255,0,255,0,255,0,255,0,255,0,255,0,},
+    {0,0,0,0,255,0,0,0,0,0,0,0,255,0,0,0,0,0,0,0,255,0,0,0,0,0,0,0,255,0,0,0,},
+    {0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,},
+    {0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,},
+  },
+  {
+    {255,0,0,0,0,0,0,0,0,0,255,0,0,0,0,0,255,0,0,0,0,0,0,0,0,0,255,0,0,0,0,0,},
+    {255,0,0,0,255,0,0,0,255,0,0,0,255,0,0,0,255,0,0,0,255,0,0,0,255,0,0,0,255,0,0,0,},
+    {0,0,0,0,255,0,0,0,0,0,0,0,255,0,0,0,0,0,0,0,255,0,0,0,0,0,0,0,255,0,0,0,},
+    {0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,},
+    {0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,},
+  },
+  {
+    {255,0,0,0,255,0,0,0,255,0,0,0,255,0,0,0,255,0,0,0,255,0,0,0,255,0,0,0,255,0,0,0,},
+    {0,0,255,0,0,0,255,0,0,0,255,0,0,0,255,0,0,0,255,0,0,0,255,0,0,0,255,0,0,0,255,0,},
+    {0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,},
+    {0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,},
+    {0,0,0,0,255,0,0,0,0,0,0,0,255,0,0,0,0,0,0,0,255,0,0,0,0,0,0,0,255,0,0,0,},
+  },
+};
+/*const byte beat1[NUM_SAMPLES_DEFINED][MAX_BEAT_STEPS] PROGMEM = {
   {255,0,0,0,0,0,0,0,255,0,0,0,0,0,0,0,255,0,0,0,0,0,0,0,255,0,0,0,0,0,0,0,},
   {255,0,255,0,255,0,255,0,255,0,255,0,255,0,255,0,255,0,255,0,255,0,255,0,255,0,255,0,255,0,255,0,},
   {0,0,0,0,255,0,0,0,0,0,0,0,255,0,0,0,0,0,0,0,255,0,0,0,0,0,0,0,255,0,0,0,},
@@ -155,7 +178,7 @@ const byte beat3[NUM_SAMPLES_DEFINED][MAX_BEAT_STEPS] PROGMEM = {
   {0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,},
   {0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,},
   {0,0,0,0,255,0,0,0,0,0,0,0,255,0,0,0,0,0,0,0,255,0,0,0,0,0,0,0,255,0,0,0,},
-};           
+};*/         
 
 void setup() {
   startMozzi(CONTROL_RATE);
@@ -243,7 +266,7 @@ void scheduler() {
     }
     for(byte i=0;i<NUM_SAMPLES_TOTAL;i++) {
       int slopRand = rand(0,paramSlop) - paramSlop / 2;
-      thisBeatVelocity = (i<NUM_SAMPLES_DEFINED)?pgm_read_byte(&beat1[i][currentStep/4]):0;
+      thisBeatVelocity = (i<NUM_SAMPLES_DEFINED)?pgm_read_byte(&beats[2][i][currentStep/4]):0;
       if(currentStep%4==0&&thisBeatVelocity>0) scheduleNote(i, currentStep, thisBeatVelocity, nextNoteTime + slopRand - (float) millis());
       else {
         // temp, playing around
@@ -498,12 +521,12 @@ void updateParameters(byte thisControlSet) {
   }
 }
 
-const byte atten = 10;
+const byte atten = 9;
 char d1Next, d2Next;
 int updateAudio() {
   d1Next = droneOscillator1.next();
   d2Next = droneOscillator2.next();
-  char droneSig = ((oscilGain1*d1Next)>>10)+((oscilGain2*d2Next)>>11);
+  char droneSig = ((oscilGain1*d1Next)>>10)+((oscilGain2*d2Next)>>10);
   char droneModSig = (d1Next>>2)+(droneMod2Active?(d2Next>>2):0);
   char asig = ((sampleVolumes[0]*kick.next())>>atten)+
     ((sampleVolumes[1]*closedhat.next())>>atten)+
