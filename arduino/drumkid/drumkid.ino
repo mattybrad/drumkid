@@ -94,6 +94,7 @@ byte paramCrop = 0;
 unsigned int paramGlitch = 0;
 byte crushCompensation = 0;
 int paramSlop = 0;
+byte paramSwing = 0;
 byte paramBeat = 0;
 float paramTempo = 120.0;
 byte paramTimeSignature = 4;
@@ -111,7 +112,7 @@ bool droneMod2Active = false;
 #define PARAM_CROP 6
 #define PARAM_GLITCH 7
 #define PARAM_SLOP 8
-#define PARAM_BLEND 9
+#define PARAM_SWING 9
 #define PARAM_10 10
 #define PARAM_11 11
 #define PARAM_BEAT 12
@@ -224,7 +225,11 @@ void loop() {
 
 void nextNote() {
   float msPerBeat = (60.0 / paramTempo) * 1000.0;
-  nextNoteTime += 0.25 * msPerBeat / 4;
+  // swing function - without swing, all beats would 1/16th of a beat (1/64th note)
+  // altering swing means odd and even notes treated differently - more "swing" means even notes longer, odd notes shorter
+  float swingTime1 = 0.25 + 0.2 * (float) paramSwing / 255.0;
+  float swingTime2 = 0.2 * (float) (255 - paramSwing) / 255.0;
+  nextNoteTime += ((currentStep/4)%2==0 ? swingTime1 : swingTime2) * msPerBeat / 4;
   currentStep ++;
   currentStep = currentStep % numSteps;
 }
@@ -484,6 +489,7 @@ void updateParameters(byte thisControlSet) {
 
     case 2:
     paramSlop = storedValues[PARAM_SLOP]; // between 0ms and 255ms?
+    paramSwing = storedValues[PARAM_SWING];
     break;
 
     case 3:
