@@ -29,7 +29,7 @@ ArduinoTapTempo tapTempo;
 #include "closedhat.h"
 #include "snare.h"
 #include "rim.h"
-#include "claves.h"
+#include "tom.h"
 
 // define pins
 byte breadboardLedPins[5] = {5,6,7,8,13};
@@ -55,7 +55,7 @@ Bounce buttonZ = Bounce();
 #define NUM_LEDS 5
 #define NUM_BUTTONS 6
 #define NUM_SAMPLES_TOTAL 5 // total number of samples including those only triggered by chance
-#define NUM_SAMPLES_DEFINED 5 // number of samples defined in the preset drumbeats (kick, hat, snare, rim, claves)
+#define NUM_SAMPLES_DEFINED 5 // number of samples defined in the preset drumbeats (kick, hat, snare, rim, tom)
 #define SAVED_STATE_SLOT_BYTES 32
 #define MIN_TEMPO 40
 #define MAX_TEMPO 295
@@ -129,8 +129,8 @@ bool droneMod2Active = false;
 #define PARAM_BEAT 12
 #define PARAM_TEMPO 13
 #define PARAM_TIME_SIGNATURE 14
-#define PARAM_15 15
-#define PARAM_16 16
+#define PARAM_DRIFT 15
+#define PARAM_DROP 16
 #define PARAM_DRONE_MOD 17
 #define PARAM_DRONE 18
 #define PARAM_DRONE_PITCH 19
@@ -141,14 +141,14 @@ Sample <kick_NUM_CELLS, AUDIO_RATE> kick(kick_DATA);
 Sample <closedhat_NUM_CELLS, AUDIO_RATE> closedhat(closedhat_DATA);
 Sample <snare_NUM_CELLS, AUDIO_RATE> snare(snare_DATA);
 Sample <rim_NUM_CELLS, AUDIO_RATE> rim(rim_DATA);
-Sample <claves_NUM_CELLS, AUDIO_RATE> claves(claves_DATA);
+Sample <tom_NUM_CELLS, AUDIO_RATE> tom(tom_DATA);
 
 // define oscillators
 Oscil<SQUARE_ANALOGUE512_NUM_CELLS, AUDIO_RATE> droneOscillator1(SQUARE_ANALOGUE512_DATA);
 Oscil<SQUARE_ANALOGUE512_NUM_CELLS, AUDIO_RATE> droneOscillator2(SQUARE_ANALOGUE512_DATA);
 
 // could just use bools instead of bytes to save space
-// order of samples: kick, hat, snare, rim, claves
+// order of samples: kick, hat, snare, rim, tom
 const byte beats[NUM_BEATS][NUM_SAMPLES_DEFINED][MAX_BEAT_STEPS] PROGMEM = {
   {
     {255,0,0,0,0,0,0,0,255,0,0,0,0,0,0,0,255,0,0,0,0,0,0,0,255,0,0,0,0,0,0,0,},
@@ -180,7 +180,7 @@ void setup() {
   closedhat.setFreq((float) closedhat_SAMPLERATE / (float) closedhat_NUM_CELLS);
   snare.setFreq((float) snare_SAMPLERATE / (float) snare_NUM_CELLS);
   rim.setFreq((float) rim_SAMPLERATE / (float) rim_NUM_CELLS);
-  claves.setFreq((float) claves_SAMPLERATE / (float) claves_NUM_CELLS);
+  tom.setFreq((float) tom_SAMPLERATE / (float) tom_NUM_CELLS);
   #if DEBUGGING
   Serial.begin(9600);
   #endif
@@ -206,7 +206,7 @@ void setup() {
     closedhat.next();
     snare.next();
     rim.next();
-    claves.next();
+    tom.next();
   }
 
   // add more default values here
@@ -411,7 +411,7 @@ void updateControl() {
             rim.start();
             break;
             case 4:
-            claves.start();
+            tom.start();
             break;
           }
           sampleVolumes[delayChannel[i]] = delayVelocity[i];
@@ -477,18 +477,18 @@ void updateParameters(byte thisControlSet) {
       float newHatFreq = thisPitch * (float) closedhat_SAMPLERATE / (float) closedhat_NUM_CELLS;
       float newSnareFreq = thisPitch * (float) snare_SAMPLERATE / (float) snare_NUM_CELLS;
       float newRimFreq = thisPitch * (float) rim_SAMPLERATE / (float) rim_NUM_CELLS;
-      float newClavesFreq = thisPitch * (float) claves_SAMPLERATE / (float) claves_NUM_CELLS;
+      float newtomFreq = thisPitch * (float) tom_SAMPLERATE / (float) tom_NUM_CELLS;
       kick.setFreq(newKickFreq);
       closedhat.setFreq(newHatFreq);
       snare.setFreq(newSnareFreq);
       rim.setFreq(newRimFreq);
-      claves.setFreq(newClavesFreq);
+      tom.setFreq(newtomFreq);
       bool thisDirection = storedValues[PARAM_PITCH] >= 128;
       kick.setDirection(thisDirection);
       closedhat.setDirection(thisDirection);
       snare.setDirection(thisDirection);
       rim.setDirection(thisDirection);
-      claves.setDirection(thisDirection);
+      tom.setDirection(thisDirection);
       
       // bit crush! high value = clean (8 bits), low value = dirty (1 bit?)
       paramCrush = 7-(storedValues[PARAM_CRUSH]>>5);
@@ -502,12 +502,12 @@ void updateParameters(byte thisControlSet) {
       closedhat.setEnd(thisDirection ? map(paramCrop,0,255,100,closedhat_NUM_CELLS) : closedhat_NUM_CELLS);
       snare.setEnd(thisDirection ? map(paramCrop,0,255,100,snare_NUM_CELLS) : snare_NUM_CELLS);
       rim.setEnd(thisDirection ? map(paramCrop,0,255,100,rim_NUM_CELLS) : rim_NUM_CELLS);
-      claves.setEnd(thisDirection ? map(paramCrop,0,255,100,claves_NUM_CELLS) : claves_NUM_CELLS);
+      tom.setEnd(thisDirection ? map(paramCrop,0,255,100,tom_NUM_CELLS) : tom_NUM_CELLS);
       kick.setStart(!thisDirection ? map(paramCrop,255,0,100,kick_NUM_CELLS) : 0);
       closedhat.setStart(!thisDirection ? map(paramCrop,255,0,100,closedhat_NUM_CELLS) : 0);
       snare.setStart(!thisDirection ? map(paramCrop,255,0,100,snare_NUM_CELLS) : 0);
       rim.setStart(!thisDirection ? map(paramCrop,255,0,100,rim_NUM_CELLS) : 0);
-      claves.setStart(!thisDirection ? map(paramCrop,255,0,100,claves_NUM_CELLS) : 0);
+      tom.setStart(!thisDirection ? map(paramCrop,255,0,100,tom_NUM_CELLS) : 0);
 
       // experimental glitch effect
       paramGlitch = storedValues[PARAM_GLITCH];
@@ -562,7 +562,7 @@ int updateAudio() {
     ((sampleVolumes[1]*closedhat.next())>>atten)+
     ((sampleVolumes[2]*snare.next())>>atten)+
     ((sampleVolumes[3]*rim.next())>>atten)+
-    ((sampleVolumes[4]*claves.next())>>atten)+
+    ((sampleVolumes[4]*tom.next())>>atten)+
     (droneSig>>2);
   asig = (asig * ((255-paramDroneMod)+((paramDroneMod*droneModSig)>>6)))>>8;
   asig = (asig>>paramCrush)<<crushCompensation;
