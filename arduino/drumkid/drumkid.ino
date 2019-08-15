@@ -65,7 +65,7 @@ byte numSteps = 4 * 16; // 64 steps = 4/4 time signature, 48 = 3/4 or 6/8, 80 = 
 float nextNoteTime;
 float scheduleAheadTime = 100; // ms
 float lookahead = 25; // ms
-const byte numEventDelays = 20;
+const byte numEventDelays = 25;
 EventDelay schedulerEventDelay;
 EventDelay eventDelays[numEventDelays];
 bool delayInUse[numEventDelays];
@@ -89,21 +89,23 @@ byte analogValues[NUM_KNOBS] = {0,0,0,0};
 byte initValues[NUM_KNOBS] = {0,0,0,0};
 
 // parameters
-byte paramChance = 0;
-byte paramMidpoint = 0;
-byte paramRange = 0;
-byte paramZoom = 0;
-byte paramPitch = 0;
-byte paramCrush = 0;
-byte paramCrop = 0;
-unsigned int paramGlitch = 0;
-byte crushCompensation = 0;
-int paramSlop = 0;
-byte paramSwing = 0;
-byte paramBeat = 0;
-byte paramTimeSignature = 4;
-byte oscilGain1 = 0;
-byte oscilGain2 = 0;
+byte paramChance;
+byte paramMidpoint;
+byte paramRange;
+byte paramZoom;
+byte paramPitch;
+byte paramCrush;
+byte paramCrop;
+unsigned int paramGlitch;
+byte crushCompensation;
+int paramSlop;
+byte paramSwing;
+byte paramDelayMix;
+unsigned int paramDelayTime;
+byte paramBeat;
+byte paramTimeSignature;
+byte oscilGain1;
+byte oscilGain2;
 float paramDronePitch;
 byte paramDroneMod;
 bool droneMod2Active = false;
@@ -117,8 +119,8 @@ bool droneMod2Active = false;
 #define PARAM_GLITCH 7
 #define PARAM_SLOP 8
 #define PARAM_SWING 9
-#define PARAM_10 10
-#define PARAM_11 11
+#define PARAM_DELAY_TIME 10
+#define PARAM_DELAY_MIX 11
 #define PARAM_BEAT 12
 #define PARAM_TEMPO 13
 #define PARAM_TIME_SIGNATURE 14
@@ -202,6 +204,7 @@ void setup() {
 
   // add more default values here
   storedValues[PARAM_CHANCE] = 0;
+  storedValues[PARAM_ZOOM] = 150;
   storedValues[PARAM_MIDPOINT] = 128;
   storedValues[PARAM_RANGE] = 255;
   storedValues[PARAM_CRUSH] = 255;
@@ -240,12 +243,15 @@ void nextNote() {
 
 void scheduleNote(byte channelNumber, byte beatNumber, byte velocity, float delayTime) {
   // schedule a drum hit to occur after [delayTime] milliseconds
-  eventDelays[eventDelayIndex].set(delayTime);
-  eventDelays[eventDelayIndex].start();
-  delayInUse[eventDelayIndex] = true;
-  delayChannel[eventDelayIndex] = channelNumber;
-  delayVelocity[eventDelayIndex] = velocity;
-  eventDelayIndex = (eventDelayIndex + 1) % numEventDelays; // replace with "find next free slot" function
+
+  for(byte i=0; i<paramDelayMix+1; i++) {
+    eventDelays[eventDelayIndex].set(delayTime + i*paramDelayTime);
+    eventDelays[eventDelayIndex].start();
+    delayInUse[eventDelayIndex] = true;
+    delayChannel[eventDelayIndex] = channelNumber;
+    delayVelocity[eventDelayIndex] = velocity >> i;
+    eventDelayIndex = (eventDelayIndex + 1) % numEventDelays; // replace with "find next free slot" function
+  }
 }
 
 byte zoomValues[] = {64,32,16,8,4,2,1};
@@ -265,7 +271,7 @@ void scheduler() {
       thisBeatVelocity = (i<NUM_SAMPLES_DEFINED)?pgm_read_byte(&beats[paramBeat][i][currentStep/4]):0;
       if(currentStep%4==0&&thisBeatVelocity>0) scheduleNote(i, currentStep, thisBeatVelocity, nextNoteTime + slopRand - (float) millis());
       else {
-        // temp, playing around
+        // generate random hits (unless subdivision is smaller than zoom value)
         if(currentStep%zoomValue==0) {
           byte yesNoRand = rand(0,255);
           if(yesNoRand < paramChance) {
@@ -496,6 +502,8 @@ void updateParameters(byte thisControlSet) {
     case 2:
     paramSlop = storedValues[PARAM_SLOP]; // between 0ms and 255ms?
     paramSwing = storedValues[PARAM_SWING];
+    paramDelayMix = map(storedValues[PARAM_DELAY_MIX],0,256,0,4);
+    paramDelayTime = map(storedValues[PARAM_DELAY_TIME],0,255,25,1000);
     break;
 
     case 3:
