@@ -1,4 +1,9 @@
-#define IS_BREADBOARD true // switch to false if compiling code for PCB
+#define DEBUGGING false
+#define BREADBOARD true // switch to false if compiling code for PCB
+
+#if DEBUGGING
+#include <MemoryFree.h>
+#endif
 
 // include custom mozzi library files - copied from a specific version of mozzi and tweaked to give extra functionality
 #include "MozziDK/MozziGuts.h"
@@ -24,15 +29,15 @@ ArduinoTapTempo tapTempo;
 #include "closedhat.h"
 #include "snare.h"
 #include "rim.h"
-#include "clap.h"
+#include "claves.h"
 
 // define pins
 byte breadboardLedPins[5] = {5,6,7,8,13};
 byte breadboardButtonPins[6] = {2,3,4,10,11,12};
 byte pcbLedPins[5] = {6,5,4,3,2};
 byte pcbButtonPins[6] = {13,12,11,10,8,7};
-byte (&ledPins)[5] = IS_BREADBOARD ? breadboardLedPins : pcbLedPins;
-byte (&buttonPins)[6] = IS_BREADBOARD ? breadboardButtonPins : pcbButtonPins;
+byte (&ledPins)[5] = BREADBOARD ? breadboardLedPins : pcbLedPins;
+byte (&buttonPins)[6] = BREADBOARD ? breadboardButtonPins : pcbButtonPins;
 
 // define buttons
 Bounce buttonA = Bounce();
@@ -50,10 +55,13 @@ Bounce buttonZ = Bounce();
 #define NUM_LEDS 5
 #define NUM_BUTTONS 6
 #define NUM_SAMPLES_TOTAL 5 // total number of samples including those only triggered by chance
-#define NUM_SAMPLES_DEFINED 5 // number of samples defined in the preset drumbeats (kick, hat, snare, rim, clap)
+#define NUM_SAMPLES_DEFINED 5 // number of samples defined in the preset drumbeats (kick, hat, snare, rim, claves)
 #define SAVED_STATE_SLOT_BYTES 32
 #define MIN_TEMPO 40
 #define MAX_TEMPO 295
+#define NUM_EVENT_DELAYS 40 // total number of "events" (scheduled hits) that can be held in memory - reduce if having memory/performance issues
+const float scheduleAheadTime = 100; // ms
+const float lookahead = 25; // ms
 
 #if MIN_TEMPO + 255 != MAX_TEMPO
 #error "Tempo must have a range of exactly 255 otherwise I'll have to write more code"
@@ -61,16 +69,13 @@ Bounce buttonZ = Bounce();
 
 bool sequencePlaying = false; // false when stopped, true when playing
 byte currentStep;
-byte numSteps = 4 * 16; // 64 steps = 4/4 time signature, 48 = 3/4 or 6/8, 80 = 5/4, 112 = 7/8 etc
+byte numSteps;
 float nextNoteTime;
-float scheduleAheadTime = 100; // ms
-float lookahead = 25; // ms
-const byte numEventDelays = 25;
 EventDelay schedulerEventDelay;
-EventDelay eventDelays[numEventDelays];
-bool delayInUse[numEventDelays];
-byte delayChannel[numEventDelays];
-byte delayVelocity[numEventDelays];
+EventDelay eventDelays[NUM_EVENT_DELAYS];
+bool delayInUse[NUM_EVENT_DELAYS];
+byte delayChannel[NUM_EVENT_DELAYS];
+byte delayVelocity[NUM_EVENT_DELAYS];
 byte eventDelayIndex = 0;
 bool beatLedsActive = true;
 bool firstLoop = true;
@@ -136,14 +141,14 @@ Sample <kick_NUM_CELLS, AUDIO_RATE> kick(kick_DATA);
 Sample <closedhat_NUM_CELLS, AUDIO_RATE> closedhat(closedhat_DATA);
 Sample <snare_NUM_CELLS, AUDIO_RATE> snare(snare_DATA);
 Sample <rim_NUM_CELLS, AUDIO_RATE> rim(rim_DATA);
-Sample <clap_NUM_CELLS, AUDIO_RATE> clap(clap_DATA);
+Sample <claves_NUM_CELLS, AUDIO_RATE> claves(claves_DATA);
 
 // define oscillators
 Oscil<SQUARE_ANALOGUE512_NUM_CELLS, AUDIO_RATE> droneOscillator1(SQUARE_ANALOGUE512_DATA);
 Oscil<SQUARE_ANALOGUE512_NUM_CELLS, AUDIO_RATE> droneOscillator2(SQUARE_ANALOGUE512_DATA);
 
 // could just use bools instead of bytes to save space
-// order of samples: kick, hat, snare, rim, clap
+// order of samples: kick, hat, snare, rim, claves
 const byte beats[NUM_BEATS][NUM_SAMPLES_DEFINED][MAX_BEAT_STEPS] PROGMEM = {
   {
     {255,0,0,0,0,0,0,0,255,0,0,0,0,0,0,0,255,0,0,0,0,0,0,0,255,0,0,0,0,0,0,0,},
@@ -175,8 +180,10 @@ void setup() {
   closedhat.setFreq((float) closedhat_SAMPLERATE / (float) closedhat_NUM_CELLS);
   snare.setFreq((float) snare_SAMPLERATE / (float) snare_NUM_CELLS);
   rim.setFreq((float) rim_SAMPLERATE / (float) rim_NUM_CELLS);
-  clap.setFreq((float) clap_SAMPLERATE / (float) clap_NUM_CELLS);
+  claves.setFreq((float) claves_SAMPLERATE / (float) claves_NUM_CELLS);
+  #if DEBUGGING
   Serial.begin(9600);
+  #endif
   for(byte i=0;i<NUM_LEDS;i++) {
     pinMode(ledPins[i], OUTPUT);
   }
@@ -199,7 +206,7 @@ void setup() {
     closedhat.next();
     snare.next();
     rim.next();
-    clap.next();
+    claves.next();
   }
 
   // add more default values here
@@ -243,14 +250,16 @@ void nextNote() {
 
 void scheduleNote(byte channelNumber, byte beatNumber, byte velocity, float delayTime) {
   // schedule a drum hit to occur after [delayTime] milliseconds
-
+  int slopRand;
+  
   for(byte i=0; i<paramDelayMix+1; i++) {
-    eventDelays[eventDelayIndex].set(delayTime + i*paramDelayTime);
+    slopRand = rand(0,paramSlop) - paramSlop / 2;
+    eventDelays[eventDelayIndex].set(delayTime + i*paramDelayTime + slopRand);
     eventDelays[eventDelayIndex].start();
     delayInUse[eventDelayIndex] = true;
     delayChannel[eventDelayIndex] = channelNumber;
     delayVelocity[eventDelayIndex] = velocity >> i;
-    eventDelayIndex = (eventDelayIndex + 1) % numEventDelays; // replace with "find next free slot" function
+    eventDelayIndex = (eventDelayIndex + 1) % NUM_EVENT_DELAYS; // replace with "find next free slot" function
   }
 }
 
@@ -267,9 +276,8 @@ void scheduler() {
       else if(currentStep%4==0) digitalWrite(ledPins[stepLED], LOW);
     }
     for(byte i=0;i<NUM_SAMPLES_TOTAL;i++) {
-      int slopRand = rand(0,paramSlop) - paramSlop / 2;
       thisBeatVelocity = (i<NUM_SAMPLES_DEFINED)?pgm_read_byte(&beats[paramBeat][i][currentStep/4]):0;
-      if(currentStep%4==0&&thisBeatVelocity>0) scheduleNote(i, currentStep, thisBeatVelocity, nextNoteTime + slopRand - (float) millis());
+      if(currentStep%4==0&&thisBeatVelocity>0) scheduleNote(i, currentStep, thisBeatVelocity, nextNoteTime - (float) millis());
       else {
         // generate random hits (unless subdivision is smaller than zoom value)
         if(currentStep%zoomValue==0) {
@@ -385,7 +393,7 @@ void updateControl() {
   byte i;
   if(sequencePlaying) {
     if(schedulerEventDelay.ready()) scheduler();
-    for(i=0;i<numEventDelays;i++) {
+    for(i=0;i<NUM_EVENT_DELAYS;i++) {
       if(eventDelays[i].ready() && delayInUse[i]) {
         delayInUse[i] = false;
         if(delayVelocity[i] > 8) { // don't bother with very quiet notes
@@ -403,7 +411,7 @@ void updateControl() {
             rim.start();
             break;
             case 4:
-            clap.start();
+            claves.start();
             break;
           }
           sampleVolumes[delayChannel[i]] = delayVelocity[i];
@@ -443,6 +451,13 @@ void updateControl() {
   } else {
     secondLoop = false;
   }
+
+  #if DEBUGGING
+  if(currentStep==0) {
+    Serial.print("freeMemory()=");
+    Serial.println(freeMemory());
+  }
+  #endif
 }
 
 void updateParameters(byte thisControlSet) {
@@ -462,18 +477,18 @@ void updateParameters(byte thisControlSet) {
       float newHatFreq = thisPitch * (float) closedhat_SAMPLERATE / (float) closedhat_NUM_CELLS;
       float newSnareFreq = thisPitch * (float) snare_SAMPLERATE / (float) snare_NUM_CELLS;
       float newRimFreq = thisPitch * (float) rim_SAMPLERATE / (float) rim_NUM_CELLS;
-      float newClapFreq = thisPitch * (float) clap_SAMPLERATE / (float) clap_NUM_CELLS;
+      float newClavesFreq = thisPitch * (float) claves_SAMPLERATE / (float) claves_NUM_CELLS;
       kick.setFreq(newKickFreq);
       closedhat.setFreq(newHatFreq);
       snare.setFreq(newSnareFreq);
       rim.setFreq(newRimFreq);
-      clap.setFreq(newClapFreq);
+      claves.setFreq(newClavesFreq);
       bool thisDirection = storedValues[PARAM_PITCH] >= 128;
       kick.setDirection(thisDirection);
       closedhat.setDirection(thisDirection);
       snare.setDirection(thisDirection);
       rim.setDirection(thisDirection);
-      clap.setDirection(thisDirection);
+      claves.setDirection(thisDirection);
       
       // bit crush! high value = clean (8 bits), low value = dirty (1 bit?)
       paramCrush = 7-(storedValues[PARAM_CRUSH]>>5);
@@ -487,12 +502,12 @@ void updateParameters(byte thisControlSet) {
       closedhat.setEnd(thisDirection ? map(paramCrop,0,255,100,closedhat_NUM_CELLS) : closedhat_NUM_CELLS);
       snare.setEnd(thisDirection ? map(paramCrop,0,255,100,snare_NUM_CELLS) : snare_NUM_CELLS);
       rim.setEnd(thisDirection ? map(paramCrop,0,255,100,rim_NUM_CELLS) : rim_NUM_CELLS);
-      clap.setEnd(thisDirection ? map(paramCrop,0,255,100,clap_NUM_CELLS) : clap_NUM_CELLS);
+      claves.setEnd(thisDirection ? map(paramCrop,0,255,100,claves_NUM_CELLS) : claves_NUM_CELLS);
       kick.setStart(!thisDirection ? map(paramCrop,255,0,100,kick_NUM_CELLS) : 0);
       closedhat.setStart(!thisDirection ? map(paramCrop,255,0,100,closedhat_NUM_CELLS) : 0);
       snare.setStart(!thisDirection ? map(paramCrop,255,0,100,snare_NUM_CELLS) : 0);
       rim.setStart(!thisDirection ? map(paramCrop,255,0,100,rim_NUM_CELLS) : 0);
-      clap.setStart(!thisDirection ? map(paramCrop,255,0,100,clap_NUM_CELLS) : 0);
+      claves.setStart(!thisDirection ? map(paramCrop,255,0,100,claves_NUM_CELLS) : 0);
 
       // experimental glitch effect
       paramGlitch = storedValues[PARAM_GLITCH];
@@ -547,7 +562,7 @@ int updateAudio() {
     ((sampleVolumes[1]*closedhat.next())>>atten)+
     ((sampleVolumes[2]*snare.next())>>atten)+
     ((sampleVolumes[3]*rim.next())>>atten)+
-    ((sampleVolumes[4]*clap.next())>>atten)+
+    ((sampleVolumes[4]*claves.next())>>atten)+
     (droneSig>>2);
   asig = (asig * ((255-paramDroneMod)+((paramDroneMod*droneModSig)>>6)))>>8;
   asig = (asig>>paramCrush)<<crushCompensation;
