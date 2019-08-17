@@ -20,7 +20,7 @@
 // include EEPROM library for saving data
 #include <EEPROM.h>
 
-// include/initialise tap tempo library - copied into repo for now because I added some functions
+// include/initialise tadp tempo library - copied into repo for now because I added some functions
 #include "ArduinoTapTempoDK/src/ArduinoTapTempo.cpp"
 ArduinoTapTempo tapTempo;
 
@@ -34,8 +34,10 @@ ArduinoTapTempo tapTempo;
 // define pins
 byte breadboardLedPins[5] = {5,6,7,8,13};
 byte breadboardButtonPins[6] = {2,3,4,10,11,12};
+byte breadboardAnalogPins[4] = {0,1,2,3};
 byte pcbLedPins[5] = {6,5,4,3,2};
 byte pcbButtonPins[6] = {13,12,11,10,8,7};
+byte pcbAnalogPins[4] = {3,2,1,0};
 byte (&ledPins)[5] = BREADBOARD ? breadboardLedPins : pcbLedPins;
 byte (&buttonPins)[6] = BREADBOARD ? breadboardButtonPins : pcbButtonPins;
 
@@ -109,6 +111,8 @@ byte paramDelayMix;
 unsigned int paramDelayTime;
 byte paramBeat;
 byte paramTimeSignature;
+byte paramDrift;
+byte paramDrop;
 byte oscilGain1;
 byte oscilGain2;
 float paramDronePitch;
@@ -421,7 +425,15 @@ void updateControl() {
   }
 
   for(i=0;i<NUM_KNOBS;i++) {
-    analogValues[i] = mozziAnalogRead(i)>>2; // read all analog values
+    if(firstLoop) {
+      byte dummyReading = mozziAnalogRead(breadboardAnalogPins[i]);
+    } else {
+      if(BREADBOARD) {
+        analogValues[i] = mozziAnalogRead(breadboardAnalogPins[i])>>2;
+      } else {
+        analogValues[i] = 255 - (mozziAnalogRead(pcbAnalogPins[i])>>2);
+      }
+    }
   }
   if(controlSetChanged||secondLoop) {
     // "lock" all knobs when control set changes
@@ -526,9 +538,11 @@ void updateParameters(byte thisControlSet) {
     tapTempo.setBPM((float) MIN_TEMPO + ((float) storedValues[PARAM_TEMPO]));
     paramTimeSignature = (storedValues[PARAM_TIME_SIGNATURE]>>5)+1;
     numSteps = paramTimeSignature * 16;
+    paramDrift = storedValues[PARAM_DRIFT];
     break;
 
     case 4:
+    paramDrop = storedValues[PARAM_DROP];
     // using values of 270 and 240 (i.e. 255±15) to give a decent "dead zone" in the middle of the knob
     oscilGain2 = constrain(2*storedValues[PARAM_DRONE]-270, 0, 255);
     if(storedValues[PARAM_DRONE] < 128) {

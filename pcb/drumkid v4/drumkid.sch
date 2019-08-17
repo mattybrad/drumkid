@@ -1,14 +1,14 @@
 EESchema Schematic File Version 4
-LIBS:drumkid v3-cache
+LIBS:drumkid-cache
 EELAYER 26 0
 EELAYER END
 $Descr A4 11693 8268
 encoding utf-8
 Sheet 1 1
-Title ""
+Title "DrumKid"
 Date ""
-Rev ""
-Comp ""
+Rev "v4"
+Comp "by Matt Bradshaw"
 Comment1 ""
 Comment2 ""
 Comment3 ""
@@ -1206,4 +1206,8 @@ Connection ~ 7800 1450
 Connection ~ 7800 1900
 Wire Wire Line
 	7800 1900 8600 1900
+Text Notes 7150 2200 0    50   ~ 0
+N.B. Pin 4 of LM386 needs to be\nmanually connected to ground\n(connection missing in PCB v4)
+Text Notes 600  4450 0    50   ~ 0
+N.B. I left space for six decoupling capacitors\n(three for each pair of power/ground pins)\nbut final design only required C4 (100nF)
 $EndSCHEMATC
