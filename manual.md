@@ -47,6 +47,38 @@ You can try out each parameter by starting a rhythm (using the Z button), then s
 
 **Zoom** - Chooses which subdivision of the beat should be affected by the randomly generated extra hits. When zoom is at zero, beats will only be generated for “whole notes” (i.e. the first beat of the bar). Higher values will affect half notes, quarter notes, eighth notes, and so on. A medium value is a good place to start for zoom, but turning it up can make a beat or fill sound more “urgent”.
 
-**Range** - This is the range of velocities which will be assigned to the random hits. For all the random hits to have the same velocity as each other, keep this value at zero. For a wide range of velocities, turn this up high.
+**Range** - This is the range of velocities which will be assigned to the random hits, and works in conjunction with "midpoint" (see below). For all the random hits to have the same velocity as each other, keep this value at zero. For a wide range of velocities, turn this up high.
 
-**Midpoint** - This is
+**Midpoint** - This is the average velocity of the randomly generated hits, and works in conjuction with "range". If you put this up to maximum and have range set at zero, all the randomly generated hits will be at max velocity. If you have this set in the middle with range set to max, you will get a wide range of velocities, from zero to max. Try keeping midpoint at a constant low-to-medium setting to add a bustling undercurrent to your beat, or turn it up briefly to create a drum fill.
+
+**Pitch** - Alters the playback speed of the samples. Will play samples backwards if you turn the knob below halfway.
+
+**Crush** - Reduces the number of bits used to calculate the audio output, creating a digital distortion effect. Higher values are clean, lower values are more distorted (fewer bits).
+
+**Crop** - Crops the end of the samples, creating a staccato effect. Lower values are more cropped.
+
+**Glitch** - Introduces a blocking delay into the audio processing code, causing a broken/glitchy sound. Beware that this has some knock-on drawbacks such as flickering LEDs and less responsive buttons!
+
+**Slop** - Shifts the timing of each drum hit by a random amount, creating a "random quantize" effect. When at zero, the beat should be perfectly in time, while higher values will sound looser or messier.
+
+**Swing** - Alters the ratio of time between even and odd beats, creating a shuffle/swing feel at certain values. When at zero, the beat will play as normal ("straight").
+
+**Delay time** - Controls the length of time of the simple echo/delay effect. Note that the delay acts on the note generation code, rather than the audio (which would require too much memory), so the effect acts slightly differently to a standard audio delay effect (e.g. altering the delay time while the delay is turned on won't make a particularly cool sound!).
+
+**Delay mix** - Controls the mix of the echo/delay effect. At zero, no echoes will be heard, a slightly higher value will give a single "slapback" echo, and turning the knob higher still will give up to three echoes.
+
+**Beat** - Chooses between a series of basic underlying drum patterns.
+
+**Tempo** - Alters the tempo (BPM) of the beat. Will override any tempo previously set using the tap tempo function.
+
+**Time signature** - Alters the time signature of the beat, i.e. the number of steps in the pattern. Minimum is one beat, maximum is eight beats, with more common values (3/4, 4/4, 5/4, etc) in between.
+
+**Drift** - NOT CURRENTLY IMPLEMENTED
+
+**Drop** - NOT CURRENTLY IMPLEMENTED
+
+**Drone modulation** - DrumKid generates a drone which can be used to modulate the audio signal from the drums, creating a robotic effect. When set at halfway, no effect is heard. Turning the knob to the left modulates the drums with a single drone, while turning it to the right modulates the drums with two tones, a fifth apart. Turning the knob all the way left or right creates an extreme effect, while values closer to halfway will be more subtle.
+
+**Drone mix** - Controls the amount of the raw drone signal added to the mix. As with the modulation effect, turning to the left adds a single tone, while turning to the right adds two tones, a fifth apart. A halfway value mutes the drone.
+
+**Drone pitch** - Controls the pitch of the drones (both the single and fifth tones).
