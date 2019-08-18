@@ -1,11 +1,14 @@
 #define DEBUGGING false
 #define BREADBOARD true // switch to false if compiling code for PCB
 
+// when in debugging mode you can see the current memory usage
+// you'll need to download and install this library from https://github.com/McNeight/MemoryFree
 #if DEBUGGING
 #include <MemoryFree.h>
 #endif
 
-// include custom mozzi library files - copied from a specific version of mozzi and tweaked to give extra functionality
+// include custom Mozzi library files - copied from a specific version of Mozzi and tweaked to give extra functionality
+// original Mozzi library found at https://github.com/sensorium/Mozzi
 #include "MozziDK/MozziGuts.h"
 #include "MozziDK/Sample.h"
 #include "MozziDK/EventDelay.h"
@@ -20,7 +23,8 @@
 // include EEPROM library for saving data
 #include <EEPROM.h>
 
-// include/initialise tadp tempo library - copied into repo for now because I added some functions
+// include/initialise tap tempo library - copied into repo for now because I added some functions
+// original ArduinoTapTempo library found at https://github.com/dxinteractive/ArduinoTapTempo
 #include "ArduinoTapTempoDK/src/ArduinoTapTempo.cpp"
 ArduinoTapTempo tapTempo;
 
