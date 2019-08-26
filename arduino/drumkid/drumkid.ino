@@ -1,4 +1,4 @@
-#define DEBUGGING false
+#define DEBUGGING true
 #define BREADBOARD true // switch to false if compiling code for PCB
 
 // when in debugging mode you can see the current memory usage

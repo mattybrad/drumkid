@@ -1209,5 +1209,5 @@ Wire Wire Line
 Text Notes 7150 2200 0    50   ~ 0
 N.B. Pin 4 of LM386 needs to be\nmanually connected to ground\n(connection missing in PCB v4)
 Text Notes 600  4450 0    50   ~ 0
-N.B. I left space for six decoupling capacitors\n(three for each pair of power/ground pins)\nbut final design only required C4 (100nF)
+N.B. I left space for six decoupling capacitors\nin case they were needed (three for each pair\nof power/ground pins) but final design only\nrequired C4 (100nF).
 $EndSCHEMATC
