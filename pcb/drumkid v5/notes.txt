@@ -1,0 +1,14 @@
+Things to add/change in V5 PCB:
+- actually ground amp properly
+- less weird power switch
+- don't make all knobs backwards
+- silkscreen button info? save, load, tap, start/stop?
+- white space (silkscreen) for serial number
+- component values visible on silkscreen
+- more logical component layout to prevent routing nightmares
+- MIDI output space?
+- PCB battery snaps?
+- enclosed case?
+- capacitors tucked away somehow
+- power LED?
+- bigger mounting holes for pots
