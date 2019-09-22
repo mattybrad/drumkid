@@ -1,7 +1,7 @@
 Things to add/change in V5 PCB:
-- actually ground amp properly
+- actually ground amp properly DONE
 - less weird power switch
-- don't make all knobs backwards
+- don't make all knobs backwards DONE
 - silkscreen button info? save, load, tap, start/stop?
 - white space (silkscreen) for serial number
 - component values visible on silkscreen
@@ -12,3 +12,4 @@ Things to add/change in V5 PCB:
 - capacitors tucked away somehow
 - power LED?
 - bigger mounting holes for pots
+- insanely bright LEDs

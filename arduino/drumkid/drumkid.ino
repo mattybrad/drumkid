@@ -1,5 +1,5 @@
-#define DEBUGGING true
-#define BREADBOARD true // switch to false if compiling code for PCB
+#define DEBUGGING false
+#define BREADBOARD false // switch to false if compiling code for PCB
 
 // when in debugging mode you can see the current memory usage
 // you'll need to download and install this library from https://github.com/McNeight/MemoryFree
