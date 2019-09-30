@@ -443,7 +443,7 @@ U 1 1 5CC57515
 P 10300 3050
 F 0 "RV2" H 10230 3004 50  0000 R CNN
 F 1 "R_POT" H 10230 3095 50  0000 R CNN
-F 2 "Potentiometer_THT:Potentiometer_Alps_RK09K_Single_Vertical" H 10300 3050 50  0001 C CNN
+F 2 "drumkidcustom:Potentiometer_Alps_RK09K_Single_Vertical" H 10300 3050 50  0001 C CNN
 F 3 "~" H 10300 3050 50  0001 C CNN
 	1    10300 3050
 	-1   0    0    1   
@@ -454,7 +454,7 @@ U 1 1 5CC5765B
 P 10300 3550
 F 0 "RV3" H 10230 3504 50  0000 R CNN
 F 1 "R_POT" H 10230 3595 50  0000 R CNN
-F 2 "Potentiometer_THT:Potentiometer_Alps_RK09K_Single_Vertical" H 10300 3550 50  0001 C CNN
+F 2 "drumkidcustom:Potentiometer_Alps_RK09K_Single_Vertical" H 10300 3550 50  0001 C CNN
 F 3 "~" H 10300 3550 50  0001 C CNN
 	1    10300 3550
 	-1   0    0    1   
@@ -465,7 +465,7 @@ U 1 1 5CC5771D
 P 10300 4050
 F 0 "RV4" H 10230 4004 50  0000 R CNN
 F 1 "R_POT" H 10230 4095 50  0000 R CNN
-F 2 "Potentiometer_THT:Potentiometer_Alps_RK09K_Single_Vertical" H 10300 4050 50  0001 C CNN
+F 2 "drumkidcustom:Potentiometer_Alps_RK09K_Single_Vertical" H 10300 4050 50  0001 C CNN
 F 3 "~" H 10300 4050 50  0001 C CNN
 	1    10300 4050
 	-1   0    0    1   
@@ -908,7 +908,7 @@ U 1 1 5CD6A7C0
 P 6450 850
 F 0 "RV1" V 6243 850 50  0000 C CNN
 F 1 "10k" V 6334 850 50  0000 C CNN
-F 2 "Potentiometer_THT:Potentiometer_Alps_RK09K_Single_Vertical" H 6450 850 50  0001 C CNN
+F 2 "drumkidcustom:Potentiometer_Alps_RK09K_Single_Vertical" H 6450 850 50  0001 C CNN
 F 3 "~" H 6450 850 50  0001 C CNN
 	1    6450 850 
 	0    -1   -1   0   
@@ -932,7 +932,7 @@ U 1 1 5D14F5F2
 P 10300 4550
 F 0 "RV5" H 10230 4504 50  0000 R CNN
 F 1 "R_POT" H 10230 4595 50  0000 R CNN
-F 2 "Potentiometer_THT:Potentiometer_Alps_RK09K_Single_Vertical" H 10300 4550 50  0001 C CNN
+F 2 "drumkidcustom:Potentiometer_Alps_RK09K_Single_Vertical" H 10300 4550 50  0001 C CNN
 F 3 "~" H 10300 4550 50  0001 C CNN
 	1    10300 4550
 	-1   0    0    1   
@@ -982,12 +982,12 @@ Connection ~ 6950 1900
 Wire Wire Line
 	6950 1900 7150 1900
 $Comp
-L Connector:Conn_01x02_Female J?
+L Connector:Conn_01x02_Female J1
 U 1 1 5D8A22D2
 P 3500 5400
-F 0 "J?" H 3527 5376 50  0000 L CNN
+F 0 "J1" H 3527 5376 50  0000 L CNN
 F 1 "Conn_01x02_Female" H 3527 5285 50  0000 L CNN
-F 2 "" H 3500 5400 50  0001 C CNN
+F 2 "Connector_PinHeader_2.54mm:PinHeader_1x02_P2.54mm_Vertical" H 3500 5400 50  0001 C CNN
 F 3 "~" H 3500 5400 50  0001 C CNN
 	1    3500 5400
 	1    0    0    -1  
@@ -997,56 +997,56 @@ Wire Wire Line
 Wire Wire Line
 	3100 5500 3100 5700
 $Comp
-L Device:R R?
+L Device:R R1
 U 1 1 5D8A7D99
 P 4650 850
-F 0 "R?" V 4443 850 50  0000 C CNN
+F 0 "R1" V 4443 850 50  0000 C CNN
 F 1 "220" V 4534 850 50  0000 C CNN
-F 2 "" V 4580 850 50  0001 C CNN
+F 2 "Resistor_THT:R_Axial_DIN0207_L6.3mm_D2.5mm_P10.16mm_Horizontal" V 4580 850 50  0001 C CNN
 F 3 "~" H 4650 850 50  0001 C CNN
 	1    4650 850 
 	0    1    1    0   
 $EndComp
 $Comp
-L Device:R R?
+L Device:R R8
 U 1 1 5D8A7E6C
 P 5450 850
-F 0 "R?" V 5243 850 50  0000 C CNN
+F 0 "R8" V 5243 850 50  0000 C CNN
 F 1 "680" V 5334 850 50  0000 C CNN
-F 2 "" V 5380 850 50  0001 C CNN
+F 2 "Resistor_THT:R_Axial_DIN0207_L6.3mm_D2.5mm_P10.16mm_Horizontal" V 5380 850 50  0001 C CNN
 F 3 "~" H 5450 850 50  0001 C CNN
 	1    5450 850 
 	0    1    1    0   
 $EndComp
 $Comp
-L Device:R R?
+L Device:R R12
 U 1 1 5D8A7F2E
 P 5850 850
-F 0 "R?" V 5643 850 50  0000 C CNN
+F 0 "R12" V 5643 850 50  0000 C CNN
 F 1 "680" V 5734 850 50  0000 C CNN
-F 2 "" V 5780 850 50  0001 C CNN
+F 2 "Resistor_THT:R_Axial_DIN0207_L6.3mm_D2.5mm_P10.16mm_Horizontal" V 5780 850 50  0001 C CNN
 F 3 "~" H 5850 850 50  0001 C CNN
 	1    5850 850 
 	0    1    1    0   
 $EndComp
 $Comp
-L Device:C C?
+L Device:C C1
 U 1 1 5D8A800B
 P 4850 1150
-F 0 "C?" H 4965 1196 50  0000 L CNN
+F 0 "C1" H 4965 1196 50  0000 L CNN
 F 1 "220nF" H 4965 1105 50  0000 L CNN
-F 2 "" H 4888 1000 50  0001 C CNN
+F 2 "Capacitor_THT:C_Disc_D3.4mm_W2.1mm_P2.50mm" H 4888 1000 50  0001 C CNN
 F 3 "~" H 4850 1150 50  0001 C CNN
 	1    4850 1150
 	1    0    0    -1  
 $EndComp
 $Comp
-L Device:C C?
+L Device:C C3
 U 1 1 5D8BB366
 P 5650 1150
-F 0 "C?" H 5765 1196 50  0000 L CNN
+F 0 "C3" H 5765 1196 50  0000 L CNN
 F 1 "1nF" H 5765 1105 50  0000 L CNN
-F 2 "" H 5688 1000 50  0001 C CNN
+F 2 "Capacitor_THT:C_Disc_D3.4mm_W2.1mm_P2.50mm" H 5688 1000 50  0001 C CNN
 F 3 "~" H 5650 1150 50  0001 C CNN
 	1    5650 1150
 	1    0    0    -1  
@@ -1054,23 +1054,23 @@ $EndComp
 Wire Wire Line
 	6000 850  6050 850 
 $Comp
-L Device:C C?
+L Device:C C7
 U 1 1 5D8C53A5
 P 6050 1150
-F 0 "C?" H 6165 1196 50  0000 L CNN
+F 0 "C7" H 6165 1196 50  0000 L CNN
 F 1 "220nF" H 6165 1105 50  0000 L CNN
-F 2 "" H 6088 1000 50  0001 C CNN
+F 2 "Capacitor_THT:C_Disc_D3.4mm_W2.1mm_P2.50mm" H 6088 1000 50  0001 C CNN
 F 3 "~" H 6050 1150 50  0001 C CNN
 	1    6050 1150
 	1    0    0    -1  
 $EndComp
 $Comp
-L Device:C C?
+L Device:C C2
 U 1 1 5D8C5552
 P 5250 1150
-F 0 "C?" H 5365 1196 50  0000 L CNN
+F 0 "C2" H 5365 1196 50  0000 L CNN
 F 1 "220nF" H 5365 1105 50  0000 L CNN
-F 2 "" H 5288 1000 50  0001 C CNN
+F 2 "Capacitor_THT:C_Disc_D3.4mm_W2.1mm_P2.50mm" H 5288 1000 50  0001 C CNN
 F 3 "~" H 5250 1150 50  0001 C CNN
 	1    5250 1150
 	1    0    0    -1  
@@ -1082,12 +1082,12 @@ Wire Wire Line
 Wire Wire Line
 	6050 1450 6050 1300
 $Comp
-L Device:R R?
+L Device:R R13
 U 1 1 5D8CABE9
 P 6050 1650
-F 0 "R?" H 6120 1696 50  0000 L CNN
+F 0 "R13" H 6120 1696 50  0000 L CNN
 F 1 "330" H 6120 1605 50  0000 L CNN
-F 2 "" V 5980 1650 50  0001 C CNN
+F 2 "Resistor_THT:R_Axial_DIN0207_L6.3mm_D2.5mm_P10.16mm_Horizontal" V 5980 1650 50  0001 C CNN
 F 3 "~" H 6050 1650 50  0001 C CNN
 	1    6050 1650
 	1    0    0    -1  
@@ -1122,7 +1122,7 @@ Connection ~ 5250 850
 Wire Wire Line
 	4850 1300 4850 1900
 Wire Wire Line
-	4850 1900 5650 1900
+	4850 1900 5300 1900
 Connection ~ 4850 1900
 Wire Wire Line
 	5650 1000 5650 850 
@@ -1134,4 +1134,18 @@ Wire Wire Line
 Connection ~ 6050 850 
 Wire Wire Line
 	6050 850  6300 850 
+$Comp
+L power:PWR_FLAG #FLG0101
+U 1 1 5D8894D3
+P 5300 1900
+F 0 "#FLG0101" H 5300 1975 50  0001 C CNN
+F 1 "PWR_FLAG" H 5300 2074 50  0000 C CNN
+F 2 "" H 5300 1900 50  0001 C CNN
+F 3 "~" H 5300 1900 50  0001 C CNN
+	1    5300 1900
+	1    0    0    -1  
+$EndComp
+Connection ~ 5300 1900
+Wire Wire Line
+	5300 1900 5650 1900
 $EndSCHEMATC
