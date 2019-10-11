@@ -1,11 +1,14 @@
 #define DEBUGGING false
-#define BREADBOARD false // switch to false if compiling code for PCB
+#define BREADBOARD true // switch to false if compiling code for PCB
 
 // when in debugging mode you can see the current memory usage
 // you'll need to download and install this library from https://github.com/McNeight/MemoryFree
 #if DEBUGGING
 #include <MemoryFree.h>
 #endif
+
+// include MIDI library
+//#include <MIDI.h>
 
 // include custom Mozzi library files - copied from a specific version of Mozzi and tweaked to give extra functionality
 // original Mozzi library found at https://github.com/sensorium/Mozzi
@@ -15,7 +18,8 @@
 #include "MozziDK/mozzi_rand.h"
 #include "MozziDK/mozzi_fixmath.h"
 #include "MozziDK/Oscil.h"
-#include "MozziDK/tables/square_analogue512_int8.h"
+#include "MozziDK/tables/saw256_int8.h"
+#include "MozziDK/mozzi_midi.h"
 
 // include debouncing library
 #include <Bounce2.h>
@@ -72,6 +76,9 @@ const float lookahead = 25; // ms
 #if MIN_TEMPO + 255 != MAX_TEMPO
 #error "Tempo must have a range of exactly 255 otherwise I'll have to write more code"
 #endif
+
+// initialise MIDI
+//MIDI_CREATE_DEFAULT_INSTANCE();
 
 bool sequencePlaying = false; // false when stopped, true when playing
 byte currentStep;
@@ -152,8 +159,8 @@ Sample <rim_NUM_CELLS, AUDIO_RATE> rim(rim_DATA);
 Sample <tom_NUM_CELLS, AUDIO_RATE> tom(tom_DATA);
 
 // define oscillators
-Oscil<SQUARE_ANALOGUE512_NUM_CELLS, AUDIO_RATE> droneOscillator1(SQUARE_ANALOGUE512_DATA);
-Oscil<SQUARE_ANALOGUE512_NUM_CELLS, AUDIO_RATE> droneOscillator2(SQUARE_ANALOGUE512_DATA);
+Oscil<SAW256_NUM_CELLS, AUDIO_RATE> droneOscillator1(SAW256_DATA);
+Oscil<SAW256_NUM_CELLS, AUDIO_RATE> droneOscillator2(SAW256_DATA);
 
 // could just use bools instead of bytes to save space
 // order of samples: kick, hat, snare, rim, tom
@@ -191,6 +198,9 @@ void setup() {
   tom.setFreq((float) tom_SAMPLERATE / (float) tom_NUM_CELLS);
   #if DEBUGGING
   Serial.begin(9600);
+  #else
+  //MIDI.begin(MIDI_CHANNEL_OMNI);
+  Serial.begin(31250);
   #endif
   for(byte i=0;i<NUM_LEDS;i++) {
     pinMode(ledPins[i], OUTPUT);
@@ -280,8 +290,11 @@ void scheduler() {
     byte thisStep = currentStep/16;
     byte stepLED = constrain(thisStep, 0, 4);
     if(beatLedsActive) {
-      if(currentStep%16==0) digitalWrite(ledPins[stepLED], HIGH);
-      else if(currentStep%4==0) digitalWrite(ledPins[stepLED], LOW);
+      if(currentStep%16==0) {
+        digitalWrite(ledPins[stepLED], HIGH);
+      } else if(currentStep%4==0) {
+        digitalWrite(ledPins[stepLED], LOW);
+      }
     }
     for(byte i=0;i<NUM_SAMPLES_TOTAL;i++) {
       thisBeatVelocity = (i<NUM_SAMPLES_DEFINED)?pgm_read_byte(&beats[paramBeat][i][currentStep/4]):0;
@@ -408,18 +421,23 @@ void updateControl() {
           switch(delayChannel[i]) {
             case 0:
             kick.start();
+            sendMidiNote(36,delayVelocity[i]>>1);
             break;
             case 1:
             closedhat.start();
+            sendMidiNote(42,delayVelocity[i]>>1);
             break;
             case 2:
             snare.start();
+            sendMidiNote(38,delayVelocity[i]>>1);
             break;
             case 3:
             rim.start();
+            sendMidiNote(37,delayVelocity[i]>>1);
             break;
             case 4:
             tom.start();
+            sendMidiNote(43,delayVelocity[i]>>1);
             break;
           }
           sampleVolumes[delayChannel[i]] = delayVelocity[i];
@@ -618,4 +636,10 @@ void loadParams(byte slotNum) {
   for(byte i=0;i<NUM_PARAM_GROUPS;i++) {
     updateParameters(i);
   }
+}
+
+void sendMidiNote(byte note, byte vel) {
+  Serial.write(0x90);
+  Serial.write(note);
+  Serial.write(vel);
 }
