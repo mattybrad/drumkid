@@ -7,9 +7,6 @@
 #include <MemoryFree.h>
 #endif
 
-// include MIDI library
-//#include <MIDI.h>
-
 // include custom Mozzi library files - copied from a specific version of Mozzi and tweaked to give extra functionality
 // original Mozzi library found at https://github.com/sensorium/Mozzi
 #include "MozziDK/MozziGuts.h"
@@ -19,7 +16,6 @@
 #include "MozziDK/mozzi_fixmath.h"
 #include "MozziDK/Oscil.h"
 #include "MozziDK/tables/saw256_int8.h"
-#include "MozziDK/mozzi_midi.h"
 
 // include debouncing library
 #include <Bounce2.h>
@@ -69,7 +65,7 @@ Bounce buttonZ = Bounce();
 #define SAVED_STATE_SLOT_BYTES 32
 #define MIN_TEMPO 40
 #define MAX_TEMPO 295
-#define NUM_EVENT_DELAYS 40 // total number of "events" (scheduled hits) that can be held in memory - reduce if having memory/performance issues
+#define NUM_EVENT_DELAYS 35 // total number of "events" (scheduled hits) that can be held in memory - reduce if having memory/performance issues
 const float scheduleAheadTime = 100; // ms
 const float lookahead = 25; // ms
 
@@ -77,15 +73,13 @@ const float lookahead = 25; // ms
 #error "Tempo must have a range of exactly 255 otherwise I'll have to write more code"
 #endif
 
-// initialise MIDI
-//MIDI_CREATE_DEFAULT_INSTANCE();
-
 bool sequencePlaying = false; // false when stopped, true when playing
 byte currentStep;
 byte numSteps;
 float nextNoteTime;
 EventDelay schedulerEventDelay;
 EventDelay eventDelays[NUM_EVENT_DELAYS];
+EventDelay noteOffDelays[NUM_SAMPLES_TOTAL];
 bool delayInUse[NUM_EVENT_DELAYS];
 byte delayChannel[NUM_EVENT_DELAYS];
 byte delayVelocity[NUM_EVENT_DELAYS];
@@ -94,6 +88,7 @@ bool beatLedsActive = true;
 bool firstLoop = true;
 bool secondLoop = false;
 byte sampleVolumes[NUM_SAMPLES_TOTAL];
+bool noteDown[NUM_SAMPLES_TOTAL];
 bool readyToSave = true;
 bool readyToChooseSaveSlot = false;
 bool readyToLoad = true;
@@ -186,7 +181,9 @@ const byte beats[NUM_BEATS][NUM_SAMPLES_DEFINED][MAX_BEAT_STEPS] PROGMEM = {
     {0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,},
     {0,0,0,0,255,0,0,0,0,0,0,0,255,0,0,0,0,0,0,0,255,0,0,0,0,0,0,0,255,0,0,0,},
   },
-};        
+};  
+
+byte midiNotes[NUM_SAMPLES_TOTAL] = {36,42,38,37,43};
 
 void setup() {
   startMozzi(CONTROL_RATE);
@@ -199,7 +196,6 @@ void setup() {
   #if DEBUGGING
   Serial.begin(9600);
   #else
-  //MIDI.begin(MIDI_CHANNEL_OMNI);
   Serial.begin(31250);
   #endif
   for(byte i=0;i<NUM_LEDS;i++) {
@@ -410,34 +406,38 @@ void updateControl() {
       delay(rand(minDelay, maxDelay));
     }
   }
-
+  
   byte i;
+  for(i=0;i<NUM_SAMPLES_TOTAL;i++) {
+    if(noteOffDelays[i].ready() && noteDown[i]) {
+      noteDown[i] = false;
+      Serial.write(0x90);
+      Serial.write(midiNotes[i]);
+      Serial.write(0x00);
+    }
+  }
   if(sequencePlaying) {
     if(schedulerEventDelay.ready()) scheduler();
     for(i=0;i<NUM_EVENT_DELAYS;i++) {
       if(eventDelays[i].ready() && delayInUse[i]) {
         delayInUse[i] = false;
         if(delayVelocity[i] > 8) { // don't bother with very quiet notes
+          triggerNote(delayChannel[i], delayVelocity[i]>>1);
           switch(delayChannel[i]) {
             case 0:
             kick.start();
-            sendMidiNote(36,delayVelocity[i]>>1);
             break;
             case 1:
             closedhat.start();
-            sendMidiNote(42,delayVelocity[i]>>1);
             break;
             case 2:
             snare.start();
-            sendMidiNote(38,delayVelocity[i]>>1);
             break;
             case 3:
             rim.start();
-            sendMidiNote(37,delayVelocity[i]>>1);
             break;
             case 4:
             tom.start();
-            sendMidiNote(43,delayVelocity[i]>>1);
             break;
           }
           sampleVolumes[delayChannel[i]] = delayVelocity[i];
@@ -638,8 +638,16 @@ void loadParams(byte slotNum) {
   }
 }
 
-void sendMidiNote(byte note, byte vel) {
+void triggerNote(byte i, byte vel) {
+  if(noteDown[i]) {
+    Serial.write(0x90);
+    Serial.write(midiNotes[i]);
+    Serial.write(0x00);
+  }
+  noteDown[i] = true;
   Serial.write(0x90);
-  Serial.write(note);
+  Serial.write(midiNotes[i]);
   Serial.write(vel);
+  noteOffDelays[i].set(50);
+  noteOffDelays[i].start();
 }
