@@ -65,7 +65,7 @@ Bounce buttonZ = Bounce();
 #define SAVED_STATE_SLOT_BYTES 32
 #define MIN_TEMPO 40
 #define MAX_TEMPO 295
-#define NUM_EVENT_DELAYS 35 // total number of "events" (scheduled hits) that can be held in memory - reduce if having memory/performance issues
+#define NUM_EVENT_DELAYS 32 // total number of "events" (scheduled hits) that can be held in memory - reduce if having memory/performance issues
 const float scheduleAheadTime = 100; // ms
 const float lookahead = 25; // ms
 
@@ -146,6 +146,12 @@ bool droneMod2Active = false;
 #define PARAM_DRONE_PITCH 19
 byte storedValues[NUM_PARAM_GROUPS*NUM_KNOBS];
 
+EventDelay syncDelaysA[3];
+EventDelay syncDelaysB[3];
+bool useSyncDelaysA = true;
+byte syncDelayIndexA = 0;
+byte syncDelayIndexB = 0;
+
 // define samples
 Sample <kick_NUM_CELLS, AUDIO_RATE> kick(kick_DATA);
 Sample <closedhat_NUM_CELLS, AUDIO_RATE> closedhat(closedhat_DATA);
@@ -197,6 +203,7 @@ void setup() {
   Serial.begin(9600);
   #else
   Serial.begin(31250);
+  //Serial.begin(9600);
   #endif
   for(byte i=0;i<NUM_LEDS;i++) {
     pinMode(ledPins[i], OUTPUT);
@@ -249,6 +256,45 @@ void setup() {
 
 void loop() {
   audioHook();
+  if(sequencePlaying) {
+    if(useSyncDelaysA) {
+      if(syncDelaysA[syncDelayIndexA].ready()) {
+        //syncDelaysA[syncDelayIndexA].set(millis()+1000);
+        //Serial.print("A");
+        //Serial.println(syncDelayIndexA);
+        Serial.write(0xF8);
+        /*Serial.write(0x90);
+        Serial.write(40+syncDelayIndexA);
+        Serial.write(0x00);
+        Serial.write(0x90);
+        Serial.write(40+syncDelayIndexA);
+        Serial.write(100);*/
+        syncDelayIndexA ++;
+        if(syncDelayIndexA == 3) {
+          syncDelayIndexA = 0;
+          useSyncDelaysA = false;
+        }
+      }
+    } else {
+      if(syncDelaysB[syncDelayIndexB].ready()) {
+        //syncDelaysB[syncDelayIndexB].set(millis()+1000);
+        //Serial.print("B");
+        //Serial.println(syncDelayIndexB);
+        Serial.write(0xF8);
+        /*Serial.write(0x90);
+        Serial.write(44+syncDelayIndexB);
+        Serial.write(0x00);
+        Serial.write(0x90);
+        Serial.write(44+syncDelayIndexB);
+        Serial.write(100);*/
+        syncDelayIndexB ++;
+        if(syncDelayIndexB == 3) {
+          syncDelayIndexB = 0;
+          useSyncDelaysA = true;
+        }
+      }
+    }
+  }
 }
 
 void nextNote() {
@@ -283,8 +329,19 @@ void scheduler() {
   byte zoomValue = zoomValues[zoomValueIndex];
   byte thisBeatVelocity;
   while(nextNoteTime < (float) millis() + scheduleAheadTime) {
-    byte thisStep = currentStep/16;
+    byte thisStep = currentStep/16; // used for LED stuff
     byte stepLED = constrain(thisStep, 0, 4);
+    if(currentStep%2==0) {
+      for(byte i=0; i<3; i++) {
+        if(useSyncDelaysA) {
+          syncDelaysB[i].set(nextNoteTime - (float) millis() + i*tapTempo.getBeatLength()/24.0);
+          syncDelaysB[i].start();
+        } else {
+          syncDelaysA[i].set(nextNoteTime - (float) millis() + i*tapTempo.getBeatLength()/24.0);
+          syncDelaysA[i].start();
+        }
+      }
+    }
     if(beatLedsActive) {
       if(currentStep%16==0) {
         digitalWrite(ledPins[stepLED], HIGH);
@@ -319,6 +376,7 @@ void toggleSequence() {
 }
 
 void startSequence() {
+  Serial.write(0xFA);
   sequencePlaying = true;
   currentStep = 0;
   nextNoteTime = millis();
@@ -326,6 +384,7 @@ void startSequence() {
 }
 
 void stopSequence() {
+  Serial.write(0xFC);
   sequencePlaying = false;
   for(byte i=0; i<NUM_LEDS; i++) {
     digitalWrite(ledPins[i], LOW);
@@ -411,12 +470,13 @@ void updateControl() {
   for(i=0;i<NUM_SAMPLES_TOTAL;i++) {
     if(noteOffDelays[i].ready() && noteDown[i]) {
       noteDown[i] = false;
-      Serial.write(0x90);
+      /*Serial.write(0x90);
       Serial.write(midiNotes[i]);
-      Serial.write(0x00);
+      Serial.write(0x00);*/
     }
   }
   if(sequencePlaying) {
+    
     if(schedulerEventDelay.ready()) scheduler();
     for(i=0;i<NUM_EVENT_DELAYS;i++) {
       if(eventDelays[i].ready() && delayInUse[i]) {
@@ -640,14 +700,14 @@ void loadParams(byte slotNum) {
 
 void triggerNote(byte i, byte vel) {
   if(noteDown[i]) {
-    Serial.write(0x90);
+    /*Serial.write(0x90);
     Serial.write(midiNotes[i]);
-    Serial.write(0x00);
+    Serial.write(0x00);*/
   }
   noteDown[i] = true;
-  Serial.write(0x90);
+  /*Serial.write(0x90);
   Serial.write(midiNotes[i]);
-  Serial.write(vel);
+  Serial.write(vel);*/
   noteOffDelays[i].set(50);
   noteOffDelays[i].start();
 }

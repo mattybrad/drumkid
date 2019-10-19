@@ -5,4 +5,5 @@
   (lib (name adafruit)(type Legacy)(uri C:/Users/Matt/Downloads/Adafruit-Eagle-Library.kicad-master/Adafruit-Eagle-Library.kicad-master/adafruit.mod)(options "")(descr ""))
   (lib (name headphone)(type KiCad)(uri "C:/projects/drumkid/pcb/drumkid v1/headphone.pretty")(options "")(descr ""))
   (lib (name drumkidcustom)(type KiCad)(uri ${KIPRJMOD}/drumkidcustom.pretty)(options "")(descr ""))
+  (lib (name Eurocad)(type KiCad)(uri ${KIPRJMOD}/eurocad-master/Eurocad.pretty)(options "")(descr ""))
 )
