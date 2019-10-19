@@ -954,7 +954,7 @@ Wire Wire Line
 Connection ~ 7000 1450
 Connection ~ 7000 1900
 Wire Wire Line
-	7000 1900 7800 1900
+	7000 1900 7150 1900
 Connection ~ 10000 3900
 Wire Wire Line
 	9500 2400 10000 2400
@@ -1347,4 +1347,41 @@ Wire Wire Line
 Connection ~ 6800 5750
 Wire Wire Line
 	6800 5750 6800 4500
+$Comp
+L Device:LED D?
+U 1 1 5DBB8A3C
+P 6850 2500
+F 0 "D?" H 6842 2245 50  0000 C CNN
+F 1 "LED" H 6842 2336 50  0000 C CNN
+F 2 "LED_THT:LED_D5.0mm" H 6850 2500 50  0001 C CNN
+F 3 "~" H 6850 2500 50  0001 C CNN
+	1    6850 2500
+	-1   0    0    1   
+$EndComp
+$Comp
+L Device:R R?
+U 1 1 5DBB8B2A
+P 6450 2500
+F 0 "R?" V 6243 2500 50  0000 C CNN
+F 1 "220" V 6334 2500 50  0000 C CNN
+F 2 "Resistor_THT:R_Axial_DIN0207_L6.3mm_D2.5mm_P10.16mm_Horizontal" V 6380 2500 50  0001 C CNN
+F 3 "~" H 6450 2500 50  0001 C CNN
+	1    6450 2500
+	0    1    1    0   
+$EndComp
+Wire Wire Line
+	7000 2500 7150 2500
+Wire Wire Line
+	7150 2500 7150 1900
+Connection ~ 7150 1900
+Wire Wire Line
+	7150 1900 7800 1900
+Wire Wire Line
+	6150 2500 6300 2500
+Connection ~ 6150 2500
+Wire Wire Line
+	6600 2500 6700 2500
+NoConn ~ 3100 7200
+NoConn ~ 3400 6900
+NoConn ~ 2800 6900
 $EndSCHEMATC
