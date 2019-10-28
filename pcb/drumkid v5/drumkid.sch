@@ -56,7 +56,7 @@ U 1 1 5CC2645C
 P 4200 3400
 F 0 "BT1" H 4308 3446 50  0000 L CNN
 F 1 "Battery" H 4308 3355 50  0000 L CNN
-F 2 "Connector_PinHeader_2.54mm:PinHeader_1x02_P2.54mm_Vertical" V 4200 3460 50  0001 C CNN
+F 2 "Connector_Wire:SolderWirePad_1x02_P5.08mm_Drill1.5mm" V 4200 3460 50  0001 C CNN
 F 3 "~" V 4200 3460 50  0001 C CNN
 	1    4200 3400
 	1    0    0    -1  
@@ -1348,10 +1348,10 @@ Connection ~ 6800 5750
 Wire Wire Line
 	6800 5750 6800 4500
 $Comp
-L Device:LED D?
+L Device:LED D7
 U 1 1 5DBB8A3C
 P 6850 2500
-F 0 "D?" H 6842 2245 50  0000 C CNN
+F 0 "D7" H 6842 2245 50  0000 C CNN
 F 1 "LED" H 6842 2336 50  0000 C CNN
 F 2 "LED_THT:LED_D5.0mm" H 6850 2500 50  0001 C CNN
 F 3 "~" H 6850 2500 50  0001 C CNN
@@ -1359,10 +1359,10 @@ F 3 "~" H 6850 2500 50  0001 C CNN
 	-1   0    0    1   
 $EndComp
 $Comp
-L Device:R R?
+L Device:R R19
 U 1 1 5DBB8B2A
 P 6450 2500
-F 0 "R?" V 6243 2500 50  0000 C CNN
+F 0 "R19" V 6243 2500 50  0000 C CNN
 F 1 "220" V 6334 2500 50  0000 C CNN
 F 2 "Resistor_THT:R_Axial_DIN0207_L6.3mm_D2.5mm_P10.16mm_Horizontal" V 6380 2500 50  0001 C CNN
 F 3 "~" H 6450 2500 50  0001 C CNN
@@ -1384,4 +1384,70 @@ Wire Wire Line
 NoConn ~ 3100 7200
 NoConn ~ 3400 6900
 NoConn ~ 2800 6900
+$Comp
+L Mechanical:MountingHole H1
+U 1 1 5DB7E4A0
+P 1000 800
+F 0 "H1" H 1100 846 50  0000 L CNN
+F 1 "MountingHole" H 1100 755 50  0000 L CNN
+F 2 "MountingHole:MountingHole_3.2mm_M3" H 1000 800 50  0001 C CNN
+F 3 "~" H 1000 800 50  0001 C CNN
+	1    1000 800 
+	1    0    0    -1  
+$EndComp
+$Comp
+L Mechanical:MountingHole H2
+U 1 1 5DB7E63A
+P 1000 1000
+F 0 "H2" H 1100 1046 50  0000 L CNN
+F 1 "MountingHole" H 1100 955 50  0000 L CNN
+F 2 "MountingHole:MountingHole_3.2mm_M3" H 1000 1000 50  0001 C CNN
+F 3 "~" H 1000 1000 50  0001 C CNN
+	1    1000 1000
+	1    0    0    -1  
+$EndComp
+$Comp
+L Mechanical:MountingHole H3
+U 1 1 5DB7E762
+P 1000 1200
+F 0 "H3" H 1100 1246 50  0000 L CNN
+F 1 "MountingHole" H 1100 1155 50  0000 L CNN
+F 2 "MountingHole:MountingHole_3.2mm_M3" H 1000 1200 50  0001 C CNN
+F 3 "~" H 1000 1200 50  0001 C CNN
+	1    1000 1200
+	1    0    0    -1  
+$EndComp
+$Comp
+L Mechanical:MountingHole H4
+U 1 1 5DB7E7F8
+P 1000 1400
+F 0 "H4" H 1100 1446 50  0000 L CNN
+F 1 "MountingHole" H 1100 1355 50  0000 L CNN
+F 2 "MountingHole:MountingHole_3.2mm_M3" H 1000 1400 50  0001 C CNN
+F 3 "~" H 1000 1400 50  0001 C CNN
+	1    1000 1400
+	1    0    0    -1  
+$EndComp
+$Comp
+L Mechanical:MountingHole H5
+U 1 1 5DB7E890
+P 1000 1600
+F 0 "H5" H 1100 1646 50  0000 L CNN
+F 1 "MountingHole" H 1100 1555 50  0000 L CNN
+F 2 "MountingHole:MountingHole_3.2mm_M3" H 1000 1600 50  0001 C CNN
+F 3 "~" H 1000 1600 50  0001 C CNN
+	1    1000 1600
+	1    0    0    -1  
+$EndComp
+$Comp
+L Mechanical:MountingHole H6
+U 1 1 5DB7E92E
+P 1000 1800
+F 0 "H6" H 1100 1846 50  0000 L CNN
+F 1 "MountingHole" H 1100 1755 50  0000 L CNN
+F 2 "MountingHole:MountingHole_3.2mm_M3" H 1000 1800 50  0001 C CNN
+F 3 "~" H 1000 1800 50  0001 C CNN
+	1    1000 1800
+	1    0    0    -1  
+$EndComp
 $EndSCHEMATC
