@@ -521,7 +521,6 @@ Wire Wire Line
 	9200 3050 9350 3050
 Wire Wire Line
 	9200 3550 9350 3550
-NoConn ~ 4600 2700
 $Comp
 L Connector:AudioJack3_Ground_Switch J9
 U 1 1 5CC95FE7
@@ -913,14 +912,9 @@ F 3 "~" H 5650 850 50  0001 C CNN
 	1    5650 850 
 	0    -1   -1   0   
 $EndComp
-Wire Wire Line
-	4600 2500 4900 2500
 Connection ~ 5200 2500
-Connection ~ 4900 2500
 Wire Wire Line
 	4900 2500 5200 2500
-Wire Wire Line
-	4200 2600 4200 3200
 Wire Wire Line
 	4200 3600 4200 5700
 Wire Wire Line
@@ -1450,4 +1444,32 @@ F 3 "~" H 1000 1800 50  0001 C CNN
 	1    1000 1800
 	1    0    0    -1  
 $EndComp
+$Comp
+L Mechanical:MountingHole H7
+U 1 1 5DB7F9BD
+P 1000 2200
+F 0 "H7" H 1100 2246 50  0000 L CNN
+F 1 "MountingHole" H 1100 2155 50  0000 L CNN
+F 2 "MountingHole:MountingHole_3.2mm_M3" H 1000 2200 50  0001 C CNN
+F 3 "~" H 1000 2200 50  0001 C CNN
+	1    1000 2200
+	1    0    0    -1  
+$EndComp
+$Comp
+L Mechanical:MountingHole H8
+U 1 1 5DB7FA6B
+P 1000 2400
+F 0 "H8" H 1100 2446 50  0000 L CNN
+F 1 "MountingHole" H 1100 2355 50  0000 L CNN
+F 2 "MountingHole:MountingHole_3.2mm_M3" H 1000 2400 50  0001 C CNN
+F 3 "~" H 1000 2400 50  0001 C CNN
+	1    1000 2400
+	1    0    0    -1  
+$EndComp
+Wire Wire Line
+	4200 2600 4200 3200
+Connection ~ 4900 2500
+Wire Wire Line
+	4600 2500 4900 2500
+NoConn ~ 4600 2700
 $EndSCHEMATC
