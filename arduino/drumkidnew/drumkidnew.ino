@@ -75,7 +75,8 @@ byte numSteps;
 bool beatLedsActive = true;
 bool firstLoop = true;
 bool secondLoop = false;
-byte sampleVolumes[NUM_SAMPLES_TOTAL];
+byte sampleVolumes[NUM_SAMPLES_TOTAL] = {255,255,255,255,255}; // temp
+byte midiNotes[NUM_SAMPLES_TOTAL] = {36,42,38,37,47};
 bool noteDown[NUM_SAMPLES_TOTAL];
 bool readyToSave = true;
 bool readyToChooseSaveSlot = false;
@@ -174,10 +175,18 @@ const byte beats[NUM_BEATS][NUM_SAMPLES_DEFINED][MAX_BEAT_STEPS] = {
 
 float nextPulseTime = 0;
 int pulseNum = 0;
+float tempSlop = 0.0;
 
 void setup() {
   startMozzi(CONTROL_RATE);
   randSeed();
+
+  kick.setFreq((float) kick_SAMPLERATE / (float) kick_NUM_CELLS);
+  closedhat.setFreq((float) closedhat_SAMPLERATE / (float) closedhat_NUM_CELLS);
+  snare.setFreq((float) snare_SAMPLERATE / (float) snare_NUM_CELLS);
+  rim.setFreq((float) rim_SAMPLERATE / (float) rim_NUM_CELLS);
+  tom.setFreq((float) tom_SAMPLERATE / (float) tom_NUM_CELLS);
+  
   #if DEBUGGING
   Serial.begin(9600);
   #else
@@ -209,6 +218,8 @@ void setup() {
     tom.next();
   }
 
+  droneOscillator1.setFreq(110);
+
   // add more default values here
   storedValues[PARAM_CHANCE] = 0;
   storedValues[PARAM_ZOOM] = 150;
@@ -233,8 +244,27 @@ void setup() {
   startupLedSequence();
 }
 
+bool syncReceived = false;
+byte thisMidiByte;
 void loop() {
   audioHook();
+  while(Serial.available()) {
+    thisMidiByte = Serial.read();
+    if(thisMidiByte==0x90) playMidiNote(midiNotes[4]);
+    else if(thisMidiByte==0xF8) {
+      syncReceived = true;
+      if(sequencePlaying) {
+        if(pulseNum%3==0) {
+          triggerNotes();
+        }
+        if(pulseNum%3==1) cancelMidiNotes();
+        if(pulseNum%24==0) digitalWrite(ledPins[3],HIGH);
+        else digitalWrite(ledPins[3],LOW);
+        //nextPulseTime = nextPulseTime + msPerPulse;
+        pulseNum = (pulseNum + 1) % 24;
+      }
+    }
+  }
 }
 
 void toggleSequence() {
@@ -331,14 +361,16 @@ void updateControl() {
     }
   }
   
-  if(sequencePlaying) {
+  if(sequencePlaying&&!syncReceived) {
     byte tempoReading = mozziAnalogRead(breadboardAnalogPins[0])>>2;
     tapTempo.setBPM((float) MIN_TEMPO + ((float) tempoReading));
     float msPerPulse = tapTempo.getBeatLength() / 24.0;
     if(millis()>=nextPulseTime) {
-      if(pulseNum==0) playTestNote();
-      Serial.write(0xF8);
-      if(pulseNum%3==0) triggerNotes();
+      Serial.write(0xF8); // MIDI clock continue
+      if(pulseNum%3==0) {
+        triggerNotes();
+      }
+      if(pulseNum%3==1) cancelMidiNotes();
       if(pulseNum%24==0) digitalWrite(ledPins[3],HIGH);
       else digitalWrite(ledPins[3],LOW);
       nextPulseTime = nextPulseTime + msPerPulse;
@@ -350,12 +382,45 @@ void updateControl() {
 void triggerNotes() {
   byte i;
   for(i=0; i<NUM_SAMPLES_TOTAL; i++) {
-    if(beats[0][i][pulseNum/3]>0) playMidiNote(40+5*i);
+    if(beats[0][i][pulseNum/3]>0) playMidiNote(midiNotes[i]);
+    if(beats[0][i][pulseNum/3]>8) { // don't bother with very quiet notes
+      switch(i) {
+        case 0:
+        kick.start();
+        break;
+        case 1:
+        closedhat.start();
+        break;
+        case 2:
+        snare.start();
+        break;
+        case 3:
+        rim.start();
+        break;
+        case 4:
+        tom.start();
+        break;
+      }
+    }
   }
 }
 
+const byte atten = 9;
+char d1Next, d2Next;
 int updateAudio() {
-  return 0;
+  d1Next = droneOscillator1.next();
+  d2Next = droneOscillator2.next();
+  char droneSig = ((oscilGain1*d1Next)>>10)+((oscilGain2*d2Next)>>10);
+  char droneModSig = (d1Next>>2)+(droneMod2Active?(d2Next>>2):0);
+  char asig = ((sampleVolumes[0]*kick.next())>>atten)+
+    ((sampleVolumes[1]*closedhat.next())>>atten)+
+    ((sampleVolumes[2]*snare.next())>>atten)+
+    ((sampleVolumes[3]*rim.next())>>atten)+
+    ((sampleVolumes[4]*tom.next())>>atten)+
+    (droneSig>>2);
+  asig = (asig * ((255-paramDroneMod)+((paramDroneMod*droneModSig)>>6)))>>8;
+  asig = (asig>>paramCrush)<<crushCompensation;
+  return (int) asig;
 }
 
 void startupLedSequence() {
@@ -367,21 +432,18 @@ void startupLedSequence() {
   }
 }
 
+void cancelMidiNotes() {
+  byte i;
+  for(i=0; i<NUM_SAMPLES_TOTAL; i++) {
+    Serial.write(0x90);
+    Serial.write(midiNotes[i]);
+    Serial.write(0x00);
+  }
+}
+
 void playMidiNote(byte noteNum) {
   Serial.write(0x90);
   Serial.write(noteNum);
-  Serial.write(0x00);
-  Serial.write(0x90);
-  Serial.write(noteNum);
-  Serial.write(100);
-}
-
-void playTestNote() {
-  Serial.write(0x90);
-  Serial.write(50);
-  Serial.write(0x00);
-  Serial.write(0x90);
-  Serial.write(50);
   Serial.write(100);
 }
 
