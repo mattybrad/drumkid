@@ -1,7 +1,0 @@
-(fp_lib_table
-  (lib (name SamacSys_Parts)(type KiCad)(uri C:/projects/libraryloader/SamacSys_Parts.pretty)(options "")(descr ""))
-  (lib (name MAX756)(type Legacy)(uri C:/Users/Matt/Downloads/MAX756/MAX756.mod)(options "")(descr ""))
-  (lib (name softtactile)(type KiCad)(uri C:/projects/drumkidmozzi/pcb/drumkid/softtactile.pretty)(options "")(descr ""))
-  (lib (name adafruit)(type Legacy)(uri C:/Users/Matt/Downloads/Adafruit-Eagle-Library.kicad-master/Adafruit-Eagle-Library.kicad-master/adafruit.mod)(options "")(descr "")(disabled))
-  (lib (name headphone)(type KiCad)(uri C:/projects/drumkidmozzi/pcb/drumkid/headphone.pretty)(options "")(descr ""))
-)
