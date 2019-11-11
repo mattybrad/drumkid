@@ -71,7 +71,7 @@ Bounce buttonZ = Bounce();
 #endif
 
 bool sequencePlaying = false; // false when stopped, true when playing
-byte numSteps;
+byte numSteps = 32;
 bool beatLedsActive = true;
 bool firstLoop = true;
 bool secondLoop = false;
@@ -151,11 +151,11 @@ Oscil<SAW256_NUM_CELLS, AUDIO_RATE> droneOscillator2(SAW256_DATA);
 // USE PROGMEM LATER TO REDUCE SIZE
 const byte beats[NUM_BEATS][NUM_SAMPLES_DEFINED][MAX_BEAT_STEPS] = {
   {
-    {255,0,0,0,0,0,0,0,255,0,0,0,0,0,0,0,255,0,0,0,0,0,0,0,255,0,0,0,0,0,0,0,},
+    {255,0,0,0,0,0,0,0,255,0,0,0,0,0,255,0,255,0,0,0,0,0,0,0,255,0,0,0,0,0,0,0,},
     {255,0,255,0,255,0,255,0,255,0,255,0,255,0,255,0,255,0,255,0,255,0,255,0,255,0,255,0,255,0,255,0,},
-    {0,0,0,0,255,0,0,0,0,0,0,0,255,0,0,0,0,0,0,0,255,0,0,0,0,0,0,0,255,0,0,0,},
-    {0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,},
-    {0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,},
+    {0,0,0,0,255,0,0,0,0,0,0,0,255,0,0,0,0,0,0,255,255,0,0,0,0,0,0,0,255,0,0,0,},
+    {0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,255,255,255,255,},
+    {0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,255,0,255,0,255,0,255,0,},
   },
   {
     {255,0,0,0,0,0,0,0,0,0,255,0,0,0,0,0,255,0,0,0,0,0,0,0,0,0,255,0,0,0,0,0,},
@@ -175,6 +175,7 @@ const byte beats[NUM_BEATS][NUM_SAMPLES_DEFINED][MAX_BEAT_STEPS] = {
 
 float nextPulseTime = 0;
 int pulseNum = 0;
+byte stepNum = 0;
 float tempSlop = 0.0;
 
 void setup() {
@@ -258,8 +259,8 @@ void loop() {
           triggerNotes();
         }
         if(pulseNum%3==1) cancelMidiNotes();
-        if(pulseNum%24==0) digitalWrite(ledPins[3],HIGH);
-        else digitalWrite(ledPins[3],LOW);
+        //if(pulseNum%24==0) digitalWrite(ledPins[3],HIGH);
+        //else digitalWrite(ledPins[3],LOW);
         //nextPulseTime = nextPulseTime + msPerPulse;
         pulseNum = (pulseNum + 1) % 24;
       }
@@ -270,7 +271,6 @@ void loop() {
 void toggleSequence() {
   if(sequencePlaying) stopSequence();
   else startSequence();
-  digitalWrite(ledPins[1],sequencePlaying);
 }
 
 void startSequence() {
@@ -278,6 +278,7 @@ void startSequence() {
   sequencePlaying = true;
   nextPulseTime = millis();
   pulseNum = 0;
+  stepNum = 0;
 }
 
 void stopSequence() {
@@ -347,7 +348,6 @@ void updateControl() {
     controlSetChanged = (prevControlSet != controlSet);
     
     if(buttonZ.fell()) {
-      digitalWrite(ledPins[0],HIGH);
       if(readyToChooseLoadSlot) loadParams(5);
       else if(readyToChooseSaveSlot) saveParams(5);
       else toggleSequence();
@@ -362,17 +362,19 @@ void updateControl() {
   }
   
   if(sequencePlaying&&!syncReceived) {
-    byte tempoReading = mozziAnalogRead(breadboardAnalogPins[0])>>2;
-    tapTempo.setBPM((float) MIN_TEMPO + ((float) tempoReading));
+    //byte tempoReading = mozziAnalogRead(breadboardAnalogPins[0])>>2;
+    //tapTempo.setBPM((float) MIN_TEMPO + ((float) tempoReading));
     float msPerPulse = tapTempo.getBeatLength() / 24.0;
     if(millis()>=nextPulseTime) {
       Serial.write(0xF8); // MIDI clock continue
       if(pulseNum%3==0) {
         triggerNotes();
+        stepNum ++;
+        if(stepNum >= numSteps) stepNum = 0;
       }
       if(pulseNum%3==1) cancelMidiNotes();
-      if(pulseNum%24==0) digitalWrite(ledPins[3],HIGH);
-      else digitalWrite(ledPins[3],LOW);
+      if(pulseNum%24==0) digitalWrite(ledPins[stepNum/8],HIGH);
+      else if(pulseNum%24==2) digitalWrite(ledPins[stepNum/8],LOW);
       nextPulseTime = nextPulseTime + msPerPulse;
       pulseNum = (pulseNum + 1) % 24;
     }
@@ -382,8 +384,8 @@ void updateControl() {
 void triggerNotes() {
   byte i;
   for(i=0; i<NUM_SAMPLES_TOTAL; i++) {
-    if(beats[0][i][pulseNum/3]>0) playMidiNote(midiNotes[i]);
-    if(beats[0][i][pulseNum/3]>8) { // don't bother with very quiet notes
+    if(beats[0][i][stepNum]>0) playMidiNote(midiNotes[i]);
+    if(beats[0][i][stepNum]>8) { // don't bother with very quiet notes
       switch(i) {
         case 0:
         kick.start();
@@ -427,7 +429,7 @@ void startupLedSequence() {
   byte seq[15] = {0,1,2,3,4,3,2,1,0,1,2,3,4,3,2};
   for(byte i=0; i<15; i++) {
     digitalWrite(ledPins[seq[i]], HIGH);
-    delay(100);
+    delay(30);
     digitalWrite(ledPins[seq[i]], LOW);
   }
 }
