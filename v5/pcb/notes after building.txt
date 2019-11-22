@@ -1,0 +1,14 @@
+PROBLEMS WITH V5:
+midi input causes buzz
+	- 470uF decoupler on opto?
+something not quite right about audio output, too bright? check
+power LED not connected to, well, power
+no labels for ICs
+LEDs still slightly too bright?
+labels for battery pos/neg
+silkscreen guide for led mounting
+
+SOLUTIONS!
+C3 and C7 were switched
+1000uF cap on opto power largely solves noise
+could also try 470uF on opto AND amp AND maybe atmega
