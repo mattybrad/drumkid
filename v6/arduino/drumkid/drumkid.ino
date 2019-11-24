@@ -236,7 +236,7 @@ void setup() {
   storedValues[PARAM_CROP] = 255;
 
   for(byte i=0;i<NUM_PARAM_GROUPS;i++) {
-    //updateParameters(i);
+    updateParameters(i);
   }
 
   tapTempo.setMinBPM((float) MIN_TEMPO);
@@ -294,7 +294,7 @@ void stopSequence() {
 }
 
 void updateControl() {
-
+  byte i;
   bool controlSetChanged = false;
   newStateLoaded = false;
   
@@ -386,6 +386,118 @@ void updateControl() {
       pulseNum = (pulseNum + 1) % 24;
     }
   }
+
+  for(i=0;i<NUM_KNOBS;i++) {
+    if(firstLoop) {
+      byte dummyReading = mozziAnalogRead(breadboardAnalogPins[i]);
+    } else {
+      if(BREADBOARD) {
+        analogValues[i] = mozziAnalogRead(breadboardAnalogPins[i])>>2;
+      } else {
+        analogValues[i] = 255 - (mozziAnalogRead(pcbAnalogPins[i])>>2);
+      }
+    }
+  }
+  if(controlSetChanged||secondLoop) {
+    // "lock" all knobs when control set changes
+    // also do this on second loop (mozziAnalogRead doesn't work properly on first loop)
+    for(byte i=0;i<NUM_KNOBS;i++) {
+      knobLocked[i] = true;
+      initValues[i] = analogValues[i];
+    }
+  } else {
+    for(i=0;i<NUM_KNOBS;i++) {
+      if(knobLocked[i]) {
+        int diff = initValues[i]-analogValues[i];
+        if(diff<-5||diff>5) knobLocked[i] = false;
+      }
+      if(!knobLocked[i]) {
+        storedValues[NUM_KNOBS*controlSet+i] = analogValues[i]; // store new analog value if knob active
+      }
+    }
+  }
+
+  // do logic based on params
+  if(!newStateLoaded) updateParameters(controlSet);
+  
+  if(firstLoop) {
+    firstLoop = false;
+    secondLoop = true;
+  } else {
+    secondLoop = false;
+  }
+}
+
+void updateParameters(byte thisControlSet) {
+  switch(thisControlSet) {
+    case 0:
+    break;
+    case 1:
+    {
+      // pitch alteration (could do this is a more efficient way to reduce RAM usage)
+      float thisPitch = fabs((float) storedValues[PARAM_PITCH] * (8.0f/255.0f) - 4.0f);
+      float newKickFreq = thisPitch * (float) kick_SAMPLERATE / (float) kick_NUM_CELLS;
+      float newHatFreq = thisPitch * (float) closedhat_SAMPLERATE / (float) closedhat_NUM_CELLS;
+      float newSnareFreq = thisPitch * (float) snare_SAMPLERATE / (float) snare_NUM_CELLS;
+      float newRimFreq = thisPitch * (float) rim_SAMPLERATE / (float) rim_NUM_CELLS;
+      float newtomFreq = thisPitch * (float) tom_SAMPLERATE / (float) tom_NUM_CELLS;
+      kick.setFreq(newKickFreq);
+      closedhat.setFreq(newHatFreq);
+      snare.setFreq(newSnareFreq);
+      rim.setFreq(newRimFreq);
+      tom.setFreq(newtomFreq);
+      bool thisDirection = storedValues[PARAM_PITCH] >= 128;
+      kick.setDirection(thisDirection);
+      closedhat.setDirection(thisDirection);
+      snare.setDirection(thisDirection);
+      rim.setDirection(thisDirection);
+      tom.setDirection(thisDirection);
+      
+      // bit crush! high value = clean (8 bits), low value = dirty (1 bit?)
+      paramCrush = 7-(storedValues[PARAM_CRUSH]>>5);
+      crushCompensation = paramCrush;
+      if(paramCrush >= 6) crushCompensation --;
+      if(paramCrush >= 7) crushCompensation --;
+
+      // crop - a basic effect to chop off the end of each sample for a more staccato feel
+      paramCrop = storedValues[PARAM_CROP];
+      kick.setEnd(thisDirection ? map(paramCrop,0,255,100,kick_NUM_CELLS) : kick_NUM_CELLS);
+      closedhat.setEnd(thisDirection ? map(paramCrop,0,255,100,closedhat_NUM_CELLS) : closedhat_NUM_CELLS);
+      snare.setEnd(thisDirection ? map(paramCrop,0,255,100,snare_NUM_CELLS) : snare_NUM_CELLS);
+      rim.setEnd(thisDirection ? map(paramCrop,0,255,100,rim_NUM_CELLS) : rim_NUM_CELLS);
+      tom.setEnd(thisDirection ? map(paramCrop,0,255,100,tom_NUM_CELLS) : tom_NUM_CELLS);
+      kick.setStart(!thisDirection ? map(paramCrop,255,0,100,kick_NUM_CELLS) : 0);
+      closedhat.setStart(!thisDirection ? map(paramCrop,255,0,100,closedhat_NUM_CELLS) : 0);
+      snare.setStart(!thisDirection ? map(paramCrop,255,0,100,snare_NUM_CELLS) : 0);
+      rim.setStart(!thisDirection ? map(paramCrop,255,0,100,rim_NUM_CELLS) : 0);
+      tom.setStart(!thisDirection ? map(paramCrop,255,0,100,tom_NUM_CELLS) : 0);
+      
+      // experimental glitch effect
+      paramGlitch = storedValues[PARAM_GLITCH];
+    }
+    break;
+    case 4:
+    paramDrop = storedValues[PARAM_DROP];
+    // using values of 270 and 240 (i.e. 255±15) to give a decent "dead zone" in the middle of the knob
+    oscilGain2 = constrain(2*storedValues[PARAM_DRONE]-270, 0, 255);
+    if(storedValues[PARAM_DRONE] < 128) {
+      oscilGain1 = constrain(240-2*storedValues[PARAM_DRONE], 0, 255);
+    } else {
+      oscilGain1 = oscilGain2;
+    }
+    // do same thing for drone modulation gains
+    if(storedValues[PARAM_DRONE_MOD] < 128) {
+      droneMod2Active = false;
+      paramDroneMod = constrain(240-2*storedValues[PARAM_DRONE_MOD], 0, 255);
+    } else {
+      droneMod2Active = true;
+      paramDroneMod = constrain(2*storedValues[PARAM_DRONE_MOD]-270, 0, 255);;
+    }
+    paramDronePitch = (float) storedValues[PARAM_DRONE_PITCH] * 0.768f + 65.41f; // gives range between "deep C" and "middle C"
+    droneOscillator1.setFreq(paramDronePitch);
+    droneOscillator2.setFreq(paramDronePitch*1.5f);
+    break;
+  }
 }
 
 void triggerNotes() {
@@ -476,6 +588,6 @@ void loadParams(byte slotNum) {
     storedValues[i] = thisValue;
   }
   for(byte i=0;i<NUM_PARAM_GROUPS;i++) {
-    //updateParameters(i);
+    updateParameters(i);
   }
 }

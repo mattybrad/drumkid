@@ -1,0 +1,27 @@
+checklist of features to (re-)add
+
+chance
+zoom
+range
+midpoint
+pitch (done)
+crush (done)
+crop (done)
+glitch (done)
+slop
+swing
+delay_time
+delay_mix
+beat
+tempo
+beats/bar
+drift
+drop
+drone_mod (done)
+drone_mix (done)
+drone_pitch (done)
+go/stop (DONE!)
+save
+load
+midi in
+midi out
