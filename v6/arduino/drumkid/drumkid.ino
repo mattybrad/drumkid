@@ -71,7 +71,7 @@ Bounce buttonZ = Bounce();
 #endif
 
 bool sequencePlaying = false; // false when stopped, true when playing
-byte numSteps = 32;
+byte numSteps;
 bool beatLedsActive = true;
 bool firstLoop = true;
 bool secondLoop = false;
@@ -152,7 +152,7 @@ Oscil<SAW256_NUM_CELLS, AUDIO_RATE> droneOscillator2(SAW256_DATA);
 const byte beats[NUM_BEATS][NUM_SAMPLES_DEFINED][MAX_BEAT_STEPS] = {
   {
     {255,0,0,0,0,0,0,0,255,0,0,0,0,0,255,0,255,0,0,0,0,0,0,0,255,0,0,0,0,0,0,0,},
-    {255,0,255,0,255,0,255,0,255,0,255,0,255,0,255,0,255,0,255,0,255,0,255,0,255,0,255,0,255,0,255,0,},
+    {255,0,255,0,255,0,255,0,255,0,255,255,255,255,255,0,255,0,255,0,255,0,255,0,255,0,255,0,255,0,255,0,},
     {0,0,0,0,255,0,0,0,0,0,0,0,255,0,0,0,0,0,0,255,255,0,0,0,0,0,0,0,255,0,0,0,},
     {0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,255,255,255,255,},
     {0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,255,0,255,0,255,0,255,0,},
@@ -176,7 +176,7 @@ const byte beats[NUM_BEATS][NUM_SAMPLES_DEFINED][MAX_BEAT_STEPS] = {
 float nextPulseTime = 0;
 int pulseNum = 0;
 byte stepNum = 0;
-float tempSlop = 0.0;
+byte tempSlop = 0;
 
 void setup() {
   startMozzi(CONTROL_RATE);
@@ -260,12 +260,12 @@ void loop() {
     } else if(thisMidiByte==0xF8) {
       syncReceived = true;
       if(sequencePlaying) {
-        if(pulseNum%3==0) {
+        if(pulseNum%6==0) {
           triggerNotes();
           stepNum ++;
           if(stepNum >= numSteps) stepNum = 0;
         }
-        if(pulseNum%3==1) cancelMidiNotes();
+        if(pulseNum%6==1) cancelMidiNotes();
         //if(pulseNum%24==0) digitalWrite(ledPins[3],HIGH);
         //else digitalWrite(ledPins[3],LOW);
         //nextPulseTime = nextPulseTime + msPerPulse;
@@ -374,14 +374,17 @@ void updateControl() {
     float msPerPulse = tapTempo.getBeatLength() / 24.0;
     if(millis()>=nextPulseTime) {
       Serial.write(0xF8); // MIDI clock continue
-      if(pulseNum%3==0) {
+      if(pulseNum%24==0) digitalWrite(ledPins[stepNum/4],HIGH);
+      else if(pulseNum%24==2) digitalWrite(ledPins[stepNum/4],LOW);
+      if(pulseNum%6==tempSlop) {
         triggerNotes();
+      }
+      if(pulseNum%6==5) {
         stepNum ++;
         if(stepNum >= numSteps) stepNum = 0;
+        tempSlop = rand(0,2);
       }
-      if(pulseNum%3==1) cancelMidiNotes();
-      if(pulseNum%24==0) digitalWrite(ledPins[stepNum/8],HIGH);
-      else if(pulseNum%24==2) digitalWrite(ledPins[stepNum/8],LOW);
+      //if(pulseNum%6==1) cancelMidiNotes();
       nextPulseTime = nextPulseTime + msPerPulse;
       pulseNum = (pulseNum + 1) % 24;
     }
@@ -476,6 +479,15 @@ void updateParameters(byte thisControlSet) {
       paramGlitch = storedValues[PARAM_GLITCH];
     }
     break;
+
+    case 3:
+    paramBeat = (NUM_BEATS * (int) storedValues[PARAM_BEAT]) / 256;
+    tapTempo.setBPM((float) MIN_TEMPO + ((float) storedValues[PARAM_TEMPO]));
+    paramTimeSignature = (storedValues[PARAM_TIME_SIGNATURE]>>5)+1;
+    numSteps = paramTimeSignature * 4;
+    paramDrift = storedValues[PARAM_DRIFT];
+    break;
+    
     case 4:
     paramDrop = storedValues[PARAM_DROP];
     // using values of 270 and 240 (i.e. 255±15) to give a decent "dead zone" in the middle of the knob
