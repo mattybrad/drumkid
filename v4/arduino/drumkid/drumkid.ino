@@ -1,3 +1,7 @@
+/*  This code is for the version 4 (V4) DrumKid PCB and breadboard designs.
+ *  It might work with other versions with a bit of tweaking   
+ */
+
 #define DEBUGGING false
 #define BREADBOARD true // switch to false if compiling code for PCB
 

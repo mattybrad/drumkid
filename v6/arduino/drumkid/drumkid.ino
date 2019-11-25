@@ -1,3 +1,7 @@
+/*  This code is for the version 6 (V6) DrumKid PCB and breadboard designs.
+ *  It might work with other versions with a bit of tweaking   
+ */
+
 #define DEBUGGING false
 #define BREADBOARD true // switch to false if compiling code for PCB
 
@@ -152,7 +156,7 @@ Oscil<SAW256_NUM_CELLS, AUDIO_RATE> droneOscillator2(SAW256_DATA);
 const byte beats[NUM_BEATS][NUM_SAMPLES_DEFINED][MAX_BEAT_STEPS] = {
   {
     {255,0,0,0,0,0,0,0,255,0,0,0,0,0,255,0,255,0,0,0,0,0,0,0,255,0,0,0,0,0,0,0,},
-    {255,0,255,0,255,0,255,0,255,0,255,255,255,255,255,0,255,0,255,0,255,0,255,0,255,0,255,0,255,0,255,0,},
+    {255,255,255,255,255,255,255,255,255,255,255,255,255,255,255,255,255,0,255,0,255,0,255,0,255,0,255,0,255,0,255,0,},
     {0,0,0,0,255,0,0,0,0,0,0,0,255,0,0,0,0,0,0,255,255,0,0,0,0,0,0,0,255,0,0,0,},
     {0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,255,255,255,255,},
     {0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,255,0,255,0,255,0,255,0,},
@@ -385,7 +389,11 @@ void updateControl() {
         stepNum ++;
         if(stepNum >= numSteps) stepNum = 0;
         for(i=0;i<NUM_SAMPLES_DEFINED;i++) {
-          tempSlop[i] = rand(0,paramSlop+1);
+          if(stepNum%2==0) {
+            tempSlop[i] = rand(0,paramSlop+1);
+          } else {
+            tempSlop[i] = constrain(rand(paramSwing-paramSlop/2, paramSwing+paramSlop/2+1),0,6);
+          }
         }
       }
       //if(pulseNum%6==1) cancelMidiNotes();
@@ -486,7 +494,7 @@ void updateParameters(byte thisControlSet) {
     
     case 2:
     paramSlop = storedValues[PARAM_SLOP] / 43; // between 0 and 5 pulses
-    paramSwing = storedValues[PARAM_SWING];
+    paramSwing = storedValues[PARAM_SWING] / 43; // between 0 and 5 pulses
     paramDelayMix = map(storedValues[PARAM_DELAY_MIX],0,256,0,4);
     paramDelayTime = map(storedValues[PARAM_DELAY_TIME],0,255,25,1000);
     break;
