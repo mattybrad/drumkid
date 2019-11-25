@@ -100,7 +100,7 @@ byte paramCrush;
 byte paramCrop;
 unsigned int paramGlitch;
 byte crushCompensation;
-int paramSlop;
+byte paramSlop;
 byte paramSwing;
 byte paramDelayMix;
 unsigned int paramDelayTime;
@@ -176,7 +176,7 @@ const byte beats[NUM_BEATS][NUM_SAMPLES_DEFINED][MAX_BEAT_STEPS] = {
 float nextPulseTime = 0;
 int pulseNum = 0;
 byte stepNum = 0;
-byte tempSlop = 0;
+byte tempSlop[NUM_SAMPLES_DEFINED];
 
 void setup() {
   startMozzi(CONTROL_RATE);
@@ -258,7 +258,7 @@ void loop() {
       testToggle = !testToggle;
       digitalWrite(13,testToggle);      
     } else if(thisMidiByte==0xF8) {
-      syncReceived = true;
+      /*syncReceived = true;
       if(sequencePlaying) {
         if(pulseNum%6==0) {
           triggerNotes();
@@ -270,7 +270,7 @@ void loop() {
         //else digitalWrite(ledPins[3],LOW);
         //nextPulseTime = nextPulseTime + msPerPulse;
         pulseNum = (pulseNum + 1) % 24;
-      }
+      }*/
     }
   }
 }
@@ -376,13 +376,17 @@ void updateControl() {
       Serial.write(0xF8); // MIDI clock continue
       if(pulseNum%24==0) digitalWrite(ledPins[stepNum/4],HIGH);
       else if(pulseNum%24==2) digitalWrite(ledPins[stepNum/4],LOW);
-      if(pulseNum%6==tempSlop) {
-        triggerNotes();
+      for(i=0;i<NUM_SAMPLES_DEFINED;i++) {
+        if(pulseNum%6==tempSlop[i]) {
+          triggerNotes(i);
+        }
       }
       if(pulseNum%6==5) {
         stepNum ++;
         if(stepNum >= numSteps) stepNum = 0;
-        tempSlop = rand(0,2);
+        for(i=0;i<NUM_SAMPLES_DEFINED;i++) {
+          tempSlop[i] = rand(0,paramSlop+1);
+        }
       }
       //if(pulseNum%6==1) cancelMidiNotes();
       nextPulseTime = nextPulseTime + msPerPulse;
@@ -479,6 +483,13 @@ void updateParameters(byte thisControlSet) {
       paramGlitch = storedValues[PARAM_GLITCH];
     }
     break;
+    
+    case 2:
+    paramSlop = storedValues[PARAM_SLOP] / 43; // between 0 and 5 pulses
+    paramSwing = storedValues[PARAM_SWING];
+    paramDelayMix = map(storedValues[PARAM_DELAY_MIX],0,256,0,4);
+    paramDelayTime = map(storedValues[PARAM_DELAY_TIME],0,255,25,1000);
+    break;
 
     case 3:
     paramBeat = (NUM_BEATS * (int) storedValues[PARAM_BEAT]) / 256;
@@ -512,28 +523,25 @@ void updateParameters(byte thisControlSet) {
   }
 }
 
-void triggerNotes() {
-  byte i;
-  for(i=0; i<NUM_SAMPLES_TOTAL; i++) {
-    if(beats[0][i][stepNum]>0) playMidiNote(midiNotes[i]);
-    if(beats[0][i][stepNum]>8) { // don't bother with very quiet notes
-      switch(i) {
-        case 0:
-        kick.start();
-        break;
-        case 1:
-        closedhat.start();
-        break;
-        case 2:
-        snare.start();
-        break;
-        case 3:
-        rim.start();
-        break;
-        case 4:
-        tom.start();
-        break;
-      }
+void triggerNotes(byte sampleNum) {
+    if(beats[0][sampleNum][stepNum]>0) playMidiNote(midiNotes[sampleNum]);
+    if(beats[0][sampleNum][stepNum]>8) { // don't bother with very quiet notes
+    switch(sampleNum) {
+      case 0:
+      kick.start();
+      break;
+      case 1:
+      closedhat.start();
+      break;
+      case 2:
+      snare.start();
+      break;
+      case 3:
+      rim.start();
+      break;
+      case 4:
+      tom.start();
+      break;
     }
   }
 }
