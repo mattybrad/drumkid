@@ -20,6 +20,10 @@ This project is almost entirely open source. The code, breadboard layout, schema
 ### Versions
 DrumKid has been through various iterations, and I have taken to referring to each new PCB design as a new version. I will try not to make too many breaking changes from one version to the next, and I'm currently hoping that version 5 will be around for a long time, but please make sure to match the PCB/breadboard version number to the Arduino code version number.
 
+Versions 1-3 were early prototypes.
+
 Version 4 was the first successful working design, with full code, schematics, Gerbers, etc available on GitHub.
 
-Version 5 is under development right now and will hopefully be the basis of the first commercially available DrumKid - finalised breadboard files, BOM, etc will appear in due course.
+Version 5 contained various PCB errors and has been superseded, but is very similar to V6.
+
+Version 6 is under development right now and will hopefully be the basis of the first commercially available DrumKid - finalised breadboard files, BOM, etc will appear in due course.

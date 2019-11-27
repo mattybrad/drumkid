@@ -1,19 +1,19 @@
 checklist of features to (re-)add
 
-chance
-zoom
-range
-midpoint
+chance (done)
+zoom (done)
+range (done)
+midpoint (done)
 pitch (done)
 crush (done)
 crop (done)
 glitch (done)
-slop
-swing
+slop (done)
+swing (done)
 delay_time
 delay_mix
 beat
-tempo
+tempo (done)
 beats/bar
 drift
 drop

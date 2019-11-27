@@ -156,7 +156,7 @@ Oscil<SAW256_NUM_CELLS, AUDIO_RATE> droneOscillator2(SAW256_DATA);
 const byte beats[NUM_BEATS][NUM_SAMPLES_DEFINED][MAX_BEAT_STEPS] = {
   {
     {255,0,0,0,0,0,0,0,255,0,0,0,0,0,255,0,255,0,0,0,0,0,0,0,255,0,0,0,0,0,0,0,},
-    {255,255,255,255,255,255,255,255,255,255,255,255,255,255,255,255,255,0,255,0,255,0,255,0,255,0,255,0,255,0,255,0,},
+    {255,0,255,255,255,255,255,255,255,255,255,255,255,255,255,255,255,0,255,0,255,0,255,0,255,0,255,0,255,0,255,0,},
     {0,0,0,0,255,0,0,0,0,0,0,0,255,0,0,0,0,0,0,255,255,0,0,0,0,0,0,0,255,0,0,0,},
     {0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,255,255,255,255,},
     {0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,255,0,255,0,255,0,255,0,},
@@ -378,21 +378,22 @@ void updateControl() {
     float msPerPulse = tapTempo.getBeatLength() / 24.0;
     if(millis()>=nextPulseTime) {
       Serial.write(0xF8); // MIDI clock continue
-      if(pulseNum%24==0) digitalWrite(ledPins[stepNum/4],HIGH);
-      else if(pulseNum%24==2) digitalWrite(ledPins[stepNum/4],LOW);
+      if(pulseNum%24==0) digitalWrite(ledPins[stepNum/8],HIGH);
+      else if(pulseNum%24==2) digitalWrite(ledPins[stepNum/8],LOW);
       for(i=0;i<NUM_SAMPLES_DEFINED;i++) {
-        if(pulseNum%6==tempSlop[i]) {
+        if(pulseNum%3==tempSlop[i]) {
+          bool useBeat = pulseNum%6==0;
           triggerNotes(i);
         }
       }
-      if(pulseNum%6==5) {
+      if(pulseNum%3==2) {
         stepNum ++;
         if(stepNum >= numSteps) stepNum = 0;
         for(i=0;i<NUM_SAMPLES_DEFINED;i++) {
-          if(stepNum%2==0) {
+          if(stepNum/2%2==0) {
             tempSlop[i] = rand(0,paramSlop+1);
           } else {
-            tempSlop[i] = constrain(rand(paramSwing-paramSlop/2, paramSwing+paramSlop/2+1),0,6);
+            tempSlop[i] = constrain(rand(paramSwing-paramSlop/2, paramSwing+paramSlop/2+1),0,3);
           }
         }
       }
@@ -446,7 +447,12 @@ void updateControl() {
 void updateParameters(byte thisControlSet) {
   switch(thisControlSet) {
     case 0:
+    paramChance = storedValues[PARAM_CHANCE];
+    paramMidpoint = storedValues[PARAM_MIDPOINT];
+    paramRange = storedValues[PARAM_RANGE];
+    paramZoom = storedValues[PARAM_ZOOM];
     break;
+    
     case 1:
     {
       // pitch alteration (could do this is a more efficient way to reduce RAM usage)
@@ -493,8 +499,8 @@ void updateParameters(byte thisControlSet) {
     break;
     
     case 2:
-    paramSlop = storedValues[PARAM_SLOP] / 43; // between 0 and 5 pulses
-    paramSwing = storedValues[PARAM_SWING] / 43; // between 0 and 5 pulses
+    paramSlop = storedValues[PARAM_SLOP] / 86; // 255/43 => between 0 and 5 pulses
+    paramSwing = storedValues[PARAM_SWING] / 86; // 255/43 => between 0 and 5 pulses
     paramDelayMix = map(storedValues[PARAM_DELAY_MIX],0,256,0,4);
     paramDelayTime = map(storedValues[PARAM_DELAY_TIME],0,255,25,1000);
     break;
@@ -503,7 +509,7 @@ void updateParameters(byte thisControlSet) {
     paramBeat = (NUM_BEATS * (int) storedValues[PARAM_BEAT]) / 256;
     tapTempo.setBPM((float) MIN_TEMPO + ((float) storedValues[PARAM_TEMPO]));
     paramTimeSignature = (storedValues[PARAM_TIME_SIGNATURE]>>5)+1;
-    numSteps = paramTimeSignature * 4;
+    numSteps = paramTimeSignature * 8;
     paramDrift = storedValues[PARAM_DRIFT];
     break;
     
@@ -531,9 +537,23 @@ void updateParameters(byte thisControlSet) {
   }
 }
 
+byte zoomValues[] = {32,16,8,4,2,1};
 void triggerNotes(byte sampleNum) {
-    if(beats[0][sampleNum][stepNum]>0) playMidiNote(midiNotes[sampleNum]);
-    if(beats[0][sampleNum][stepNum]>8) { // don't bother with very quiet notes
+  byte zoomValueIndex = map(paramZoom,0,256,0,6);
+  byte zoomValue = zoomValues[zoomValueIndex];
+  int thisVelocity = stepNum%2==0 ? beats[0][sampleNum][stepNum/2] : 0;
+  //if(beats[0][sampleNum][stepNum]>0) playMidiNote(midiNotes[sampleNum]);
+  if(thisVelocity==0) {
+    if(stepNum%zoomValue==0) {
+      byte yesNoRand = rand(0,255);
+      if(yesNoRand < paramChance) {
+        int velocityRand = rand(0,255);
+        thisVelocity = paramMidpoint - paramRange/2 + ((velocityRand * paramRange)>>8);
+      }
+    }
+  }
+  thisVelocity = constrain(thisVelocity,0,255);
+  if(thisVelocity>8) { // don't bother with very quiet notes
     switch(sampleNum) {
       case 0:
       kick.start();
@@ -551,6 +571,7 @@ void triggerNotes(byte sampleNum) {
       tom.start();
       break;
     }
+    sampleVolumes[sampleNum] = thisVelocity;
   }
 }
 
