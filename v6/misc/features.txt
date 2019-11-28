@@ -16,7 +16,7 @@ beat
 tempo (done)
 beats/bar
 drift
-drop
+drop (done, but rename)
 drone_mod (done)
 drone_mix (done)
 drone_pitch (done)
@@ -25,3 +25,17 @@ save
 load
 midi in
 midi out
+
+-----------------------
+
+what is "drop"? (rename it)
+stages:
+
+hats
+hats and clicks
+hats clicks and snare
+hats clicks snare tom
+whole beat
+no percussion
+kick and snare
+kicks only

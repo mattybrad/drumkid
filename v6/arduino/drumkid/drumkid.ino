@@ -154,7 +154,13 @@ Oscil<SAW256_NUM_CELLS, AUDIO_RATE> droneOscillator1(SAW256_DATA);
 Oscil<SAW256_NUM_CELLS, AUDIO_RATE> droneOscillator2(SAW256_DATA);
 
 
-
+byte dropRef[NUM_SAMPLES_DEFINED] = {
+  B11110000,
+  B00111111,
+  B01111100,
+  B00011110,
+  B00011000,
+};
 float nextPulseTime = 0;
 int pulseNum = 0;
 byte stepNum = 0;
@@ -359,7 +365,7 @@ void updateControl() {
       if(pulseNum%24==0) digitalWrite(ledPins[stepNum/8],HIGH);
       else if(pulseNum%24==2) digitalWrite(ledPins[stepNum/8],LOW);
       for(i=0;i<NUM_SAMPLES_DEFINED;i++) {
-        if(pulseNum%3==tempSlop[i]) {
+        if(pulseNum%3==tempSlop[i] && bitRead(dropRef[i],paramDrop)) {
           bool useBeat = pulseNum%6==0;
           triggerNotes(i);
         }
@@ -492,7 +498,7 @@ void updateParameters(byte thisControlSet) {
     break;
     
     case 4:
-    paramDrop = storedValues[PARAM_DROP];
+    paramDrop = storedValues[PARAM_DROP] >> 5; // range of 0 to 7
     // using values of 270 and 240 (i.e. 255±15) to give a decent "dead zone" in the middle of the knob
     oscilGain2 = constrain(2*storedValues[PARAM_DRONE]-270, 0, 255);
     if(storedValues[PARAM_DRONE] < 128) {
