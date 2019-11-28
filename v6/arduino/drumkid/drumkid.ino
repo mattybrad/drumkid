@@ -32,6 +32,9 @@
 #include "ArduinoTapTempoDK/src/ArduinoTapTempo.cpp"
 ArduinoTapTempo tapTempo;
 
+// include beats file
+#include "beats.h"
+
 // include audio data files
 #include "kick.h"
 #include "closedhat.h"
@@ -58,7 +61,7 @@ Bounce buttonY = Bounce();
 Bounce buttonZ = Bounce();
 
 #define CONTROL_RATE 256 // tweak this value if performance is bad, must be power of 2 (64, 128, etc)
-#define NUM_BEATS 3
+#define NUM_BEATS 32
 #define MAX_BEAT_STEPS 32
 #define NUM_PARAM_GROUPS 5
 #define NUM_KNOBS 4
@@ -150,32 +153,7 @@ Sample <tom_NUM_CELLS, AUDIO_RATE> tom(tom_DATA);
 Oscil<SAW256_NUM_CELLS, AUDIO_RATE> droneOscillator1(SAW256_DATA);
 Oscil<SAW256_NUM_CELLS, AUDIO_RATE> droneOscillator2(SAW256_DATA);
 
-// could just use bools instead of bytes to save space
-// order of samples: kick, hat, snare, rim, tom
-// USE PROGMEM LATER TO REDUCE SIZE
-const byte beats[NUM_BEATS][NUM_SAMPLES_DEFINED][MAX_BEAT_STEPS] = {
-  {
-    {255,0,0,0,0,0,0,0,255,0,0,0,0,0,255,0,255,0,0,0,0,0,0,0,255,0,0,0,0,0,0,0,},
-    {255,0,255,255,255,255,255,255,255,255,255,255,255,255,255,255,255,0,255,0,255,0,255,0,255,0,255,0,255,0,255,0,},
-    {0,0,0,0,255,0,0,0,0,0,0,0,255,0,0,0,0,0,0,255,255,0,0,0,0,0,0,0,255,0,0,0,},
-    {0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,255,255,255,255,},
-    {0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,255,0,255,0,255,0,255,0,},
-  },
-  {
-    {255,0,0,0,0,0,0,0,0,0,255,0,0,0,0,0,255,0,0,0,0,0,0,0,0,0,255,0,0,0,0,0,},
-    {255,0,0,0,255,0,0,0,255,0,0,0,255,0,0,0,255,0,0,0,255,0,0,0,255,0,0,0,255,0,0,0,},
-    {0,0,0,0,255,0,0,0,0,0,0,0,255,0,0,0,0,0,0,0,255,0,0,0,0,0,0,0,255,0,0,0,},
-    {0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,},
-    {0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,},
-  },
-  {
-    {255,0,0,0,255,0,0,0,255,0,0,0,255,0,0,0,255,0,0,0,255,0,0,0,255,0,0,0,255,0,0,0,},
-    {0,0,255,0,0,0,255,0,0,0,255,0,0,0,255,0,0,0,255,0,0,0,255,0,0,0,255,0,0,0,255,0,},
-    {0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,},
-    {0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,},
-    {0,0,0,0,255,0,0,0,0,0,0,0,255,0,0,0,0,0,0,0,255,0,0,0,0,0,0,0,255,0,0,0,},
-  },
-};  
+
 
 float nextPulseTime = 0;
 int pulseNum = 0;
@@ -541,7 +519,11 @@ byte zoomValues[] = {32,16,8,4,2,1};
 void triggerNotes(byte sampleNum) {
   byte zoomValueIndex = map(paramZoom,0,256,0,6);
   byte zoomValue = zoomValues[zoomValueIndex];
-  int thisVelocity = stepNum%2==0 ? beats[0][sampleNum][stepNum/2] : 0;
+  int thisVelocity = 0;
+  if(stepNum%2==0) {
+    byte beatByte = pgm_read_byte(&beats[paramBeat][sampleNum][stepNum/16]);
+    if(bitRead(beatByte,7-((stepNum/2)%8))) thisVelocity = 255;
+  }
   //if(beats[0][sampleNum][stepNum]>0) playMidiNote(midiNotes[sampleNum]);
   if(thisVelocity==0) {
     if(stepNum%zoomValue==0) {
