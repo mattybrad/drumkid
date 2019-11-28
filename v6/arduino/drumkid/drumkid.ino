@@ -69,6 +69,7 @@ Bounce buttonZ = Bounce();
 #define NUM_BUTTONS 6
 #define NUM_SAMPLES_TOTAL 5 // total number of samples including those only triggered by chance
 #define NUM_SAMPLES_DEFINED 5 // number of samples defined in the preset drumbeats (kick, hat, snare, rim, tom)
+#define NUM_DELAY_RECORDS 128
 #define SAVED_STATE_SLOT_BYTES 32
 #define MIN_TEMPO 40
 #define MAX_TEMPO 295
@@ -165,6 +166,8 @@ float nextPulseTime = 0;
 int pulseNum = 0;
 byte stepNum = 0;
 byte tempSlop[NUM_SAMPLES_DEFINED];
+byte delayRecords[NUM_DELAY_RECORDS][3]; // 1st byte = time (in pulses), 2nd byte = sample, 3rd byte = velocity (could compress this to 2 bytes if struggling for space)
+byte currentDelayIndex = 0;
 
 void setup() {
   startMozzi(CONTROL_RATE);
@@ -216,8 +219,10 @@ void setup() {
   storedValues[PARAM_RANGE] = 255;
   storedValues[PARAM_CRUSH] = 255;
   storedValues[PARAM_PITCH] = 160;
+  storedValues[PARAM_BEAT] = 8;
   storedValues[PARAM_TIME_SIGNATURE] = 120; // this means 4/4, it's confusing...
   storedValues[PARAM_TEMPO] = 100 - MIN_TEMPO; // not BPM!
+  storedValues[PARAM_DROP] = 128;
   storedValues[PARAM_DRONE] = 128;
   storedValues[PARAM_DRONE_PITCH] = 128;
   storedValues[PARAM_DRONE_MOD] = 128;
@@ -364,10 +369,18 @@ void updateControl() {
       Serial.write(0xF8); // MIDI clock continue
       if(pulseNum%24==0) digitalWrite(ledPins[stepNum/8],HIGH);
       else if(pulseNum%24==2) digitalWrite(ledPins[stepNum/8],LOW);
+      for(i=0;i<NUM_DELAY_RECORDS;i++) {
+        if(delayRecords[i][0]>1) {
+          delayRecords[i][0] --;
+        } else if(delayRecords[i][0]==1) {
+          delayRecords[i][0] = 0;
+          triggerNote(delayRecords[i][1], delayRecords[i][2]);
+        }
+      }
       for(i=0;i<NUM_SAMPLES_DEFINED;i++) {
         if(pulseNum%3==tempSlop[i] && bitRead(dropRef[i],paramDrop)) {
           bool useBeat = pulseNum%6==0;
-          triggerNotes(i);
+          calculateNote(i);
         }
       }
       if(pulseNum%3==2) {
@@ -486,7 +499,7 @@ void updateParameters(byte thisControlSet) {
     paramSlop = storedValues[PARAM_SLOP] / 86; // 255/43 => between 0 and 5 pulses
     paramSwing = storedValues[PARAM_SWING] / 86; // 255/43 => between 0 and 5 pulses
     paramDelayMix = map(storedValues[PARAM_DELAY_MIX],0,256,0,4);
-    paramDelayTime = map(storedValues[PARAM_DELAY_TIME],0,255,25,1000);
+    paramDelayTime = map(storedValues[PARAM_DELAY_TIME],0,255,0,24);
     break;
 
     case 3:
@@ -522,7 +535,7 @@ void updateParameters(byte thisControlSet) {
 }
 
 byte zoomValues[] = {32,16,8,4,2,1};
-void triggerNotes(byte sampleNum) {
+void calculateNote(byte sampleNum) {
   byte zoomValueIndex = map(paramZoom,0,256,0,6);
   byte zoomValue = zoomValues[zoomValueIndex];
   int thisVelocity = 0;
@@ -541,7 +554,27 @@ void triggerNotes(byte sampleNum) {
     }
   }
   thisVelocity = constrain(thisVelocity,0,255);
-  if(thisVelocity>8) { // don't bother with very quiet notes
+
+  // add delay records
+  byte i;
+  if(paramDelayTime>0) {
+    for(i=1;i<8;i++) {
+      byte delayVelocity = thisVelocity;
+      delayVelocity = delayVelocity >> i;
+      if(delayVelocity>8) {
+        delayRecords[currentDelayIndex][0] = paramDelayTime*i;
+        delayRecords[currentDelayIndex][1] = sampleNum;
+        delayRecords[currentDelayIndex][2] = delayVelocity;
+        currentDelayIndex = (currentDelayIndex + 1) % NUM_DELAY_RECORDS;
+      }
+    }
+  }
+    
+  triggerNote(sampleNum, thisVelocity);
+}
+
+void triggerNote(byte sampleNum, byte velocity) {
+  if(velocity>8) { // don't bother with very quiet notes
     switch(sampleNum) {
       case 0:
       kick.start();
@@ -559,7 +592,7 @@ void triggerNotes(byte sampleNum) {
       tom.start();
       break;
     }
-    sampleVolumes[sampleNum] = thisVelocity;
+    sampleVolumes[sampleNum] = velocity;
   }
 }
 
