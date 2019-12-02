@@ -2,7 +2,7 @@
  *  It might work with other versions with a bit of tweaking   
  */
 
-#define DEBUGGING false
+#define DEBUGGING true
 #define BREADBOARD true // switch to false if compiling code for PCB
 
 // when in debugging mode you can see the current memory usage
@@ -168,6 +168,7 @@ byte stepNum = 0;
 byte tempSlop[NUM_SAMPLES_DEFINED];
 byte delayRecords[NUM_DELAY_RECORDS][3]; // 1st byte = time (in pulses), 2nd byte = sample, 3rd byte = velocity (could compress this to 2 bytes if struggling for space)
 byte currentDelayIndex = 0;
+int driftOffset = 0;
 
 void setup() {
   startMozzi(CONTROL_RATE);
@@ -244,14 +245,14 @@ bool testToggle = false;
 
 void loop() {
   audioHook();
-  while(Serial.available()) {
+  /*while(Serial.available()) {
     thisMidiByte = Serial.read();
     if(thisMidiByte==0x90) {
       playMidiNote(midiNotes[4]);
       testToggle = !testToggle;
       digitalWrite(13,testToggle);      
     } else if(thisMidiByte==0xF8) {
-      /*syncReceived = true;
+      syncReceived = true;
       if(sequencePlaying) {
         if(pulseNum%6==0) {
           triggerNotes();
@@ -263,9 +264,9 @@ void loop() {
         //else digitalWrite(ledPins[3],LOW);
         //nextPulseTime = nextPulseTime + msPerPulse;
         pulseNum = (pulseNum + 1) % 24;
-      }*/
+      }
     }
-  }
+  }*/
 }
 
 void toggleSequence() {
@@ -274,7 +275,9 @@ void toggleSequence() {
 }
 
 void startSequence() {
+  #if !DEBUGGING
   Serial.write(0xFA); // MIDI clock start
+  #endif
   sequencePlaying = true;
   nextPulseTime = millis();
   pulseNum = 0;
@@ -282,7 +285,9 @@ void startSequence() {
 }
 
 void stopSequence() {
+  #if !DEBUGGING
   Serial.write(0xFC); // MIDI clock stop
+  #endif
   sequencePlaying = false;
 }
 
@@ -366,7 +371,13 @@ void updateControl() {
     //tapTempo.setBPM((float) MIN_TEMPO + ((float) tempoReading));
     float msPerPulse = tapTempo.getBeatLength() / 24.0;
     if(millis()>=nextPulseTime) {
+      #if !DEBUGGING
       Serial.write(0xF8); // MIDI clock continue
+      #endif
+      byte driftAmount = constrain(paramDrift>>4,1,255);
+      driftOffset += rand(-driftAmount/2,driftAmount/2+1);
+      driftOffset = constrain(driftOffset,-paramDrift/2,paramDrift/2);
+      Serial.println(driftOffset);
       if(pulseNum%24==0) digitalWrite(ledPins[stepNum/8],HIGH);
       else if(pulseNum%24==2) digitalWrite(ledPins[stepNum/8],LOW);
       for(i=0;i<NUM_DELAY_RECORDS;i++) {
@@ -431,7 +442,11 @@ void updateControl() {
   }
 
   // do logic based on params
-  if(!newStateLoaded) updateParameters(controlSet);
+  if(!newStateLoaded) {
+    for(byte i=0;i<NUM_PARAM_GROUPS;i++) {
+      updateParameters(i);
+    }
+  }
   
   if(firstLoop) {
     firstLoop = false;
@@ -444,10 +459,14 @@ void updateControl() {
 void updateParameters(byte thisControlSet) {
   switch(thisControlSet) {
     case 0:
-    paramChance = storedValues[PARAM_CHANCE];
-    paramMidpoint = storedValues[PARAM_MIDPOINT];
-    paramRange = storedValues[PARAM_RANGE];
-    paramZoom = storedValues[PARAM_ZOOM];
+    //paramChance = storedValues[PARAM_CHANCE];
+    paramChance = constrain(storedValues[PARAM_CHANCE]+driftOffset,0,255);
+    //paramMidpoint = storedValues[PARAM_MIDPOINT];
+    paramMidpoint = constrain(storedValues[PARAM_MIDPOINT]+driftOffset,0,255);
+    //paramRange = storedValues[PARAM_RANGE];
+    paramRange = constrain(storedValues[PARAM_RANGE]+driftOffset,0,255);
+    //paramZoom = storedValues[PARAM_ZOOM];
+    paramZoom = constrain(storedValues[PARAM_ZOOM]+driftOffset,0,255);
     break;
     
     case 1:
@@ -527,7 +546,8 @@ void updateParameters(byte thisControlSet) {
       droneMod2Active = true;
       paramDroneMod = constrain(2*storedValues[PARAM_DRONE_MOD]-270, 0, 255);;
     }
-    paramDronePitch = (float) storedValues[PARAM_DRONE_PITCH] * 0.768f + 65.41f; // gives range between "deep C" and "middle C"
+    //paramDronePitch = (float) storedValues[PARAM_DRONE_PITCH] * 0.768f + 65.41f; // gives range between "deep C" and "middle C"
+    paramDronePitch = (float) constrain(storedValues[PARAM_DRONE_PITCH]+driftOffset,0,255) * 0.768f + 65.41f; // gives range between "deep C" and "middle C"
     droneOscillator1.setFreq(paramDronePitch);
     droneOscillator2.setFreq(paramDronePitch*1.5f);
     break;
@@ -626,16 +646,20 @@ void startupLedSequence() {
 void cancelMidiNotes() {
   byte i;
   for(i=0; i<NUM_SAMPLES_TOTAL; i++) {
+    #if !DEBUGGING
     Serial.write(0x90);
     Serial.write(midiNotes[i]);
     Serial.write(0x00);
+    #endif
   }
 }
 
 void playMidiNote(byte noteNum) {
+  #if !DEBUGGING
   Serial.write(0x90);
   Serial.write(noteNum);
   Serial.write(100);
+  #endif
 }
 
 void saveParams(byte slotNum) {

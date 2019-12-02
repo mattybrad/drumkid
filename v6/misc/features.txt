@@ -10,9 +10,9 @@ crop (done)
 glitch (done)
 slop (done)
 swing (done)
-delay_time
-delay_mix
-beat
+delay_time (done)
+delay_mix (replace?)
+beat (done but need to actually add loads of beats)
 tempo (done)
 beats/bar
 drift
@@ -39,3 +39,16 @@ whole beat
 no percussion
 kick and snare
 kicks only
+
+-------------
+things "drift" might affect:
+(more question marks => only affected by higher drift)
+chance
+zoom??
+midpoint
+range
+pitch?
+crush?
+crop?
+glitch???
+drop?
