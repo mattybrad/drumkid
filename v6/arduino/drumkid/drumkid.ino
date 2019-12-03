@@ -2,7 +2,7 @@
  *  It might work with other versions with a bit of tweaking   
  */
 
-#define DEBUGGING true
+#define DEBUGGING false
 #define BREADBOARD true // switch to false if compiling code for PCB
 
 // when in debugging mode you can see the current memory usage
@@ -69,7 +69,7 @@ Bounce buttonZ = Bounce();
 #define NUM_BUTTONS 6
 #define NUM_SAMPLES_TOTAL 5 // total number of samples including those only triggered by chance
 #define NUM_SAMPLES_DEFINED 5 // number of samples defined in the preset drumbeats (kick, hat, snare, rim, tom)
-#define NUM_DELAY_RECORDS 32
+#define NUM_DELAY_RECORDS 64
 #define SAVED_STATE_SLOT_BYTES 32
 #define MIN_TEMPO 40
 #define MAX_TEMPO 295
@@ -168,8 +168,10 @@ byte stepNum = 0;
 byte tempSlop[NUM_SAMPLES_DEFINED];
 byte delayRecords[NUM_DELAY_RECORDS][3]; // 1st byte = time (in pulses), 2nd byte = sample, 3rd byte = velocity (could compress this to 2 bytes if struggling for space)
 byte currentDelayIndex = 0;
-int driftOffset = 0;
-int driftOffset1 = 0;
+
+int driftOffset0;
+int driftOffset1;
+int driftOffset2;
 
 void setup() {
   startMozzi(CONTROL_RATE);
@@ -375,16 +377,25 @@ void updateControl() {
       #if !DEBUGGING
       Serial.write(0xF8); // MIDI clock continue
       #endif
-      int driftAmount = constrain(paramDrift>>4,1,255);
-      driftOffset += rand(-driftAmount/2,driftAmount/2+1);
-      driftOffset = constrain(driftOffset,-paramDrift/2,paramDrift/2);
-      int driftAmount1 = constrain(((paramDrift-64)>>5),1,255);
-      driftOffset1 += rand(-driftAmount1/4,driftAmount1/4+1);
-      driftOffset1 = constrain(driftOffset1,-paramDrift/2,paramDrift/2);
-      #if DEBUGGING
-      Serial.println(driftOffset);
-      Serial.println(driftOffset1);
-      #endif
+
+      int range0 = paramDrift;
+      int driftMax0 = constrain(range0/16,1,255);
+      int thisDrift0 = rand(-driftMax0, driftMax0+1);
+      driftOffset0 += thisDrift0;
+      driftOffset0 = constrain(driftOffset0,-range0,range0);
+
+      int range1 = constrain(2*(paramDrift-127),0,255);
+      int driftMax1 = constrain(range1/16,1,255);
+      int thisDrift1 = rand(-driftMax1, driftMax1+1);
+      driftOffset1 += thisDrift1;
+      driftOffset1 = constrain(driftOffset1,-range1,range1);
+
+      int range2 = constrain(4*(paramDrift-191),0,255);
+      int driftMax2 = constrain(range2/16,1,255);
+      int thisDrift2 = rand(-driftMax2, driftMax2+1);
+      driftOffset2 += thisDrift2;
+      driftOffset2 = constrain(driftOffset2,-range2,range2);
+      
       if(pulseNum%24==0) digitalWrite(ledPins[stepNum/8],HIGH);
       else if(pulseNum%24==2) digitalWrite(ledPins[stepNum/8],LOW);
       for(i=0;i<NUM_DELAY_RECORDS;i++) {
@@ -475,7 +486,7 @@ void updateParameters(byte thisControlSet) {
     case 1:
     {
       // pitch alteration (could do this in a more efficient way to reduce RAM usage)
-      float thisPitch = fabs((float) driftValue(PARAM_PITCH,1) * (8.0f/255.0f) - 4.0f);
+      float thisPitch = fabs((float) driftValue(PARAM_PITCH,2) * (8.0f/255.0f) - 4.0f);
       float newKickFreq = thisPitch * (float) kick_SAMPLERATE / (float) kick_NUM_CELLS;
       float newHatFreq = thisPitch * (float) closedhat_SAMPLERATE / (float) closedhat_NUM_CELLS;
       float newSnareFreq = thisPitch * (float) snare_SAMPLERATE / (float) snare_NUM_CELLS;
@@ -486,7 +497,7 @@ void updateParameters(byte thisControlSet) {
       snare.setFreq(newSnareFreq);
       rim.setFreq(newRimFreq);
       tom.setFreq(newtomFreq);
-      bool thisDirection = driftValue(PARAM_PITCH,1) >= 128;
+      bool thisDirection = driftValue(PARAM_PITCH,2) >= 128;
       kick.setDirection(thisDirection);
       closedhat.setDirection(thisDirection);
       snare.setDirection(thisDirection);
@@ -533,7 +544,7 @@ void updateParameters(byte thisControlSet) {
     break;
     
     case 4:
-    paramDrop = driftValue(PARAM_DROP,1) >> 5; // range of 0 to 7
+    paramDrop = driftValue(PARAM_DROP,2) >> 5; // range of 0 to 7
     // using values of 270 and 240 (i.e. 255±15) to give a decent "dead zone" in the middle of the knob
     oscilGain2 = constrain(2*storedValues[PARAM_DRONE]-270, 0, 255);
     if(storedValues[PARAM_DRONE] < 128) {
@@ -544,13 +555,12 @@ void updateParameters(byte thisControlSet) {
     // do same thing for drone modulation gains
     if(storedValues[PARAM_DRONE_MOD] < 128) {
       droneMod2Active = false;
-      paramDroneMod = constrain(240-2*storedValues[PARAM_DRONE_MOD], 0, 255);
+      paramDroneMod = constrain(240-2*driftValue(PARAM_DRONE_MOD,2), 0, 255);
     } else {
       droneMod2Active = true;
-      paramDroneMod = constrain(2*storedValues[PARAM_DRONE_MOD]-270, 0, 255);;
+      paramDroneMod = constrain(2*driftValue(PARAM_DRONE_MOD,2)-270, 0, 255);;
     }
-    //paramDronePitch = (float) storedValues[PARAM_DRONE_PITCH] * 0.768f + 65.41f; // gives range between "deep C" and "middle C"
-    paramDronePitch = (float) driftValue(PARAM_DRONE_PITCH,1) * 0.768f + 65.41f; // gives range between "deep C" and "middle C"
+    paramDronePitch = (float) driftValue(PARAM_DRONE_PITCH,2) * 0.768f + 65.41f; // gives range between "deep C" and "middle C"
     droneOscillator1.setFreq(paramDronePitch);
     droneOscillator2.setFreq(paramDronePitch*1.5f);
     break;
@@ -560,10 +570,13 @@ void updateParameters(byte thisControlSet) {
 byte driftValue(byte storedValueNum, byte driftGroup) {
   switch(driftGroup) {
     case 0:
-    return constrain(storedValues[storedValueNum]+driftOffset,0,255);
+    return constrain(storedValues[storedValueNum]+driftOffset0,0,255);
     break;
     case 1:
     return constrain(storedValues[storedValueNum]+driftOffset1,0,255);
+    break;
+    case 2:
+    return constrain(storedValues[storedValueNum]+driftOffset2,0,255);
     break;
   }
 }
