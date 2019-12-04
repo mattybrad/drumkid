@@ -85,7 +85,6 @@ bool firstLoop = true;
 bool secondLoop = false;
 byte sampleVolumes[NUM_SAMPLES_TOTAL] = {255,255,255,255,255}; // temp
 byte midiNotes[NUM_SAMPLES_TOTAL] = {36,42,38,37,43};
-bool noteDown[NUM_SAMPLES_TOTAL];
 bool readyToSave = true;
 bool readyToChooseSaveSlot = false;
 bool readyToLoad = true;
@@ -154,13 +153,13 @@ Sample <tom_NUM_CELLS, AUDIO_RATE> tom(tom_DATA);
 Oscil<SAW256_NUM_CELLS, AUDIO_RATE> droneOscillator1(SAW256_DATA);
 Oscil<SAW256_NUM_CELLS, AUDIO_RATE> droneOscillator2(SAW256_DATA);
 
-
+// dropRef determines whether each sample is played or muted
 byte dropRef[NUM_SAMPLES_DEFINED] = {
-  B11110000,
-  B00111111,
-  B01111100,
-  B00011110,
-  B00011000,
+  B11110000, // kick
+  B00111111, // hat
+  B01111100, // snare
+  B00011110, // rim
+  B00011000, // tom
 };
 float nextPulseTime = 0;
 int pulseNum = 0;
@@ -294,6 +293,7 @@ void stopSequence() {
   sequencePlaying = false;
 }
 
+byte noteDown = B00000000;
 void updateControl() {
   byte i;
   bool controlSetChanged = false;
@@ -370,13 +370,13 @@ void updateControl() {
   }
   
   if(sequencePlaying&&!syncReceived) {
-    //byte tempoReading = mozziAnalogRead(breadboardAnalogPins[0])>>2;
-    //tapTempo.setBPM((float) MIN_TEMPO + ((float) tempoReading));
     float msPerPulse = tapTempo.getBeatLength() / 24.0;
     if(millis()>=nextPulseTime) {
       #if !DEBUGGING
       Serial.write(0xF8); // MIDI clock continue
       #endif
+
+      cancelMidiNotes();
 
       int range0 = paramDrift;
       int driftMax0 = constrain(range0/16,1,255);
@@ -640,6 +640,8 @@ void triggerNote(byte sampleNum, byte velocity) {
       break;
     }
     sampleVolumes[sampleNum] = velocity;
+    bitWrite(noteDown,sampleNum,true);
+    playMidiNote(midiNotes[sampleNum], velocity);
   }
 }
 
@@ -674,18 +676,21 @@ void cancelMidiNotes() {
   byte i;
   for(i=0; i<NUM_SAMPLES_TOTAL; i++) {
     #if !DEBUGGING
-    Serial.write(0x90);
-    Serial.write(midiNotes[i]);
-    Serial.write(0x00);
+    if(bitRead(noteDown,i)) {
+      Serial.write(0x90);
+      Serial.write(midiNotes[i]);
+      Serial.write(0x00);
+      bitWrite(noteDown,i,false);
+    }
     #endif
   }
 }
 
-void playMidiNote(byte noteNum) {
+void playMidiNote(byte noteNum, byte velocity) {
   #if !DEBUGGING
   Serial.write(0x90);
   Serial.write(noteNum);
-  Serial.write(100);
+  Serial.write(velocity>>1);
   #endif
 }
 

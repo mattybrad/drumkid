@@ -1,13 +1,13 @@
 checklist of features to (re-)add
 
 chance (done)
-zoom (done)
+zoom (done, but add interim volumes?)
 range (done)
 midpoint (done)
 pitch (done)
 crush (done)
 crop (done)
-glitch (done)
+glitch (done, kinda - could be better)
 slop (done)
 swing (done)
 delay_time (done)
@@ -15,7 +15,7 @@ delay_mix (replace?)
 beat (done but need to actually add loads of beats)
 tempo (done)
 beats/bar
-drift
+drift (done, but rename)
 drop (done, but rename)
 drone_mod (done)
 drone_mix (done)
@@ -24,7 +24,7 @@ go/stop (DONE!)
 save
 load
 midi in
-midi out
+midi out (done)
 
 -----------------------
 
@@ -39,16 +39,3 @@ whole beat
 no percussion
 kick and snare
 kicks only
-
--------------
-things "drift" might affect:
-(more question marks => only affected by higher drift)
-chance
-zoom??
-midpoint
-range
-pitch?
-crush?
-crop?
-glitch???
-drop?
