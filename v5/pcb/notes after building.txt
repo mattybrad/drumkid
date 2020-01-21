@@ -5,7 +5,7 @@ something not quite right about audio output, too bright? check
 power LED not connected to, well, power
 no labels for ICs
 LEDs still slightly too bright?
-labels for battery pos/neg
+labels for battery pos/neg DONE
 silkscreen guide for led mounting
 
 SOLUTIONS!

@@ -1,0 +1,17 @@
+TO DO:
+zoom (with volume levels)
+glitch (maybe improve)
+add loads of beats
+beats per bar
+delay mix replacement
+save
+load
+MIDI (finalise / write manual instructions)
+check V5 "notes after building"
+add extra decoupling capacitors?
+finalise PCB
+order PCB
+check component levels
+order new components
+assemble prototype
+order laser parts

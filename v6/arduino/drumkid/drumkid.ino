@@ -2,7 +2,7 @@
  *  It might work with other versions with a bit of tweaking   
  */
 
-#define DEBUGGING false
+#define DEBUGGING true
 #define BREADBOARD true // switch to false if compiling code for PCB
 
 // when in debugging mode you can see the current memory usage
@@ -60,7 +60,7 @@ Bounce buttonX = Bounce();
 Bounce buttonY = Bounce();
 Bounce buttonZ = Bounce();
 
-#define CONTROL_RATE 256 // tweak this value if performance is bad, must be power of 2 (64, 128, etc)
+#define CONTROL_RATE 128 // tweak this value if performance is bad, must be power of 2 (64, 128, etc)
 #define NUM_BEATS 32
 #define MAX_BEAT_STEPS 32
 #define NUM_PARAM_GROUPS 5
@@ -247,28 +247,15 @@ bool testToggle = false;
 
 void loop() {
   audioHook();
-  /*while(Serial.available()) {
+  while(Serial.available()) {
     thisMidiByte = Serial.read();
-    if(thisMidiByte==0x90) {
-      playMidiNote(midiNotes[4]);
-      testToggle = !testToggle;
-      digitalWrite(13,testToggle);      
-    } else if(thisMidiByte==0xF8) {
+    if(thisMidiByte==0xF8) {
       syncReceived = true;
       if(sequencePlaying) {
-        if(pulseNum%6==0) {
-          triggerNotes();
-          stepNum ++;
-          if(stepNum >= numSteps) stepNum = 0;
-        }
-        if(pulseNum%6==1) cancelMidiNotes();
-        //if(pulseNum%24==0) digitalWrite(ledPins[3],HIGH);
-        //else digitalWrite(ledPins[3],LOW);
-        //nextPulseTime = nextPulseTime + msPerPulse;
-        pulseNum = (pulseNum + 1) % 24;
+        doPulse();
       }
     }
-  }*/
+  }
 }
 
 void toggleSequence() {
@@ -372,60 +359,8 @@ void updateControl() {
   if(sequencePlaying&&!syncReceived) {
     float msPerPulse = tapTempo.getBeatLength() / 24.0;
     if(millis()>=nextPulseTime) {
-      #if !DEBUGGING
-      Serial.write(0xF8); // MIDI clock continue
-      #endif
-
-      cancelMidiNotes();
-
-      int range0 = paramDrift;
-      int driftMax0 = constrain(range0/16,1,255);
-      int thisDrift0 = rand(-driftMax0, driftMax0+1);
-      driftOffset0 += thisDrift0;
-      driftOffset0 = constrain(driftOffset0,-range0,range0);
-
-      int range1 = constrain(2*(paramDrift-127),0,255);
-      int driftMax1 = constrain(range1/16,1,255);
-      int thisDrift1 = rand(-driftMax1, driftMax1+1);
-      driftOffset1 += thisDrift1;
-      driftOffset1 = constrain(driftOffset1,-range1,range1);
-
-      int range2 = constrain(4*(paramDrift-191),0,255);
-      int driftMax2 = constrain(range2/16,1,255);
-      int thisDrift2 = rand(-driftMax2, driftMax2+1);
-      driftOffset2 += thisDrift2;
-      driftOffset2 = constrain(driftOffset2,-range2,range2);
-      
-      if(pulseNum%24==0) digitalWrite(ledPins[stepNum/8],HIGH);
-      else if(pulseNum%24==2) digitalWrite(ledPins[stepNum/8],LOW);
-      for(i=0;i<NUM_DELAY_RECORDS;i++) {
-        if(delayRecords[i][0]>1) {
-          delayRecords[i][0] --;
-        } else if(delayRecords[i][0]==1) {
-          delayRecords[i][0] = 0;
-          triggerNote(delayRecords[i][1], delayRecords[i][2]);
-        }
-      }
-      for(i=0;i<NUM_SAMPLES_DEFINED;i++) {
-        if(pulseNum%3==tempSlop[i] && bitRead(dropRef[i],paramDrop)) {
-          bool useBeat = pulseNum%6==0;
-          calculateNote(i);
-        }
-      }
-      if(pulseNum%3==2) {
-        stepNum ++;
-        if(stepNum >= numSteps) stepNum = 0;
-        for(i=0;i<NUM_SAMPLES_DEFINED;i++) {
-          if(stepNum/2%2==0) {
-            tempSlop[i] = rand(0,paramSlop+1);
-          } else {
-            tempSlop[i] = constrain(rand(paramSwing-paramSlop/2, paramSwing+paramSlop/2+1),0,3);
-          }
-        }
-      }
-      //if(pulseNum%6==1) cancelMidiNotes();
+      doPulse();
       nextPulseTime = nextPulseTime + msPerPulse;
-      pulseNum = (pulseNum + 1) % 24;
     }
   }
 
@@ -472,6 +407,62 @@ void updateControl() {
   } else {
     secondLoop = false;
   }
+}
+
+void doPulse() {
+  byte i;
+  #if !DEBUGGING
+  Serial.write(0xF8); // MIDI clock continue
+  #endif
+
+  cancelMidiNotes();
+
+  int range0 = paramDrift;
+  int driftMax0 = constrain(range0/16,1,255);
+  int thisDrift0 = rand(-driftMax0, driftMax0+1);
+  driftOffset0 += thisDrift0;
+  driftOffset0 = constrain(driftOffset0,-range0,range0);
+
+  int range1 = constrain(2*(paramDrift-127),0,255);
+  int driftMax1 = constrain(range1/16,1,255);
+  int thisDrift1 = rand(-driftMax1, driftMax1+1);
+  driftOffset1 += thisDrift1;
+  driftOffset1 = constrain(driftOffset1,-range1,range1);
+
+  int range2 = constrain(4*(paramDrift-191),0,255);
+  int driftMax2 = constrain(range2/16,1,255);
+  int thisDrift2 = rand(-driftMax2, driftMax2+1);
+  driftOffset2 += thisDrift2;
+  driftOffset2 = constrain(driftOffset2,-range2,range2);
+  
+  if(pulseNum%24==0) digitalWrite(ledPins[stepNum/8],HIGH);
+  else if(pulseNum%24==2) digitalWrite(ledPins[stepNum/8],LOW);
+  for(i=0;i<NUM_DELAY_RECORDS;i++) {
+    if(delayRecords[i][0]>1) {
+      delayRecords[i][0] --;
+    } else if(delayRecords[i][0]==1) {
+      delayRecords[i][0] = 0;
+      triggerNote(delayRecords[i][1], delayRecords[i][2]);
+    }
+  }
+  for(i=0;i<NUM_SAMPLES_DEFINED;i++) {
+    if(pulseNum%3==tempSlop[i] && bitRead(dropRef[i],paramDrop)) {
+      bool useBeat = pulseNum%6==0;
+      calculateNote(i);
+    }
+  }
+  if(pulseNum%3==2) {
+    stepNum ++;
+    if(stepNum >= numSteps) stepNum = 0;
+    for(i=0;i<NUM_SAMPLES_DEFINED;i++) {
+      if(stepNum/2%2==0) {
+        tempSlop[i] = rand(0,paramSlop+1);
+      } else {
+        tempSlop[i] = constrain(rand(paramSwing-paramSlop/2, paramSwing+paramSlop/2+1),0,3);
+      }
+    }
+  }
+  pulseNum = (pulseNum + 1) % 24;
 }
 
 void updateParameters(byte thisControlSet) {
@@ -583,19 +574,37 @@ byte driftValue(byte storedValueNum, byte driftGroup) {
 
 byte zoomValues[] = {32,16,8,4,2,1};
 void calculateNote(byte sampleNum) {
-  byte zoomValueIndex = map(paramZoom,0,256,0,6);
-  byte zoomValue = zoomValues[zoomValueIndex];
+  //byte zoomValueIndex = map(paramZoom,0,256,0,6); // gives value of 0 to 5
+  byte zoomValueIndex = paramZoom / 51; // gives value from 0 to 5
+  byte zoomVelocity = paramZoom % 51; // 
+  if(zoomValueIndex == 5) {
+    zoomValueIndex = 4;
+    zoomVelocity = 51;
+  }
+  byte lowerZoomValue = zoomValues[zoomValueIndex]; // e.g. 8 for a quarter note
+  byte upperZoomValue = zoomValues[zoomValueIndex+1]; // e.g. 16 for a quarter note
   int thisVelocity = 0;
   if(stepNum%2==0) {
+    // beats only defined down to 16th notes not 32nd, hence %2
     byte beatByte = pgm_read_byte(&beats[paramBeat][sampleNum][stepNum/16]);
     if(bitRead(beatByte,7-((stepNum/2)%8))) thisVelocity = 255;
   }
-  //if(beats[0][sampleNum][stepNum]>0) playMidiNote(midiNotes[sampleNum]);
   if(thisVelocity==0) {
-    if(stepNum%zoomValue==0) {
+    // for steps not defined in beat, use algorithm to determine velocity
+    if(stepNum%lowerZoomValue==0) {
       byte yesNoRand = rand(0,255);
       if(yesNoRand < paramChance) {
         int velocityRand = rand(0,255);
+        Serial.println("LOWER");
+        Serial.println(velocityRand);
+        thisVelocity = paramMidpoint - paramRange/2 + ((velocityRand * paramRange)>>8);
+      }
+    } else if(stepNum%upperZoomValue==0) {
+      byte yesNoRand = rand(0,255);
+      if(yesNoRand < paramChance) {
+        int velocityRand = rand(0,5*zoomVelocity);
+        Serial.println("UPPER");
+        Serial.println(velocityRand);
         thisVelocity = paramMidpoint - paramRange/2 + ((velocityRand * paramRange)>>8);
       }
     }

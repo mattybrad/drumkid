@@ -23,7 +23,7 @@ drone_pitch (done)
 go/stop (DONE!)
 save
 load
-midi in
+midi in (basically working but need to figure out start/stop)
 midi out (done)
 
 -----------------------
