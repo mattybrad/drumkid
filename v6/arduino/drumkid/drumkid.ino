@@ -60,7 +60,7 @@ Bounce buttonX = Bounce();
 Bounce buttonY = Bounce();
 Bounce buttonZ = Bounce();
 
-#define CONTROL_RATE 128 // tweak this value if performance is bad, must be power of 2 (64, 128, etc)
+#define CONTROL_RATE 64 // tweak this value if performance is bad, must be power of 2 (64, 128, etc)
 #define NUM_BEATS 32
 #define MAX_BEAT_STEPS 32
 #define NUM_PARAM_GROUPS 5
@@ -576,7 +576,7 @@ byte zoomValues[] = {32,16,8,4,2,1};
 void calculateNote(byte sampleNum) {
   //byte zoomValueIndex = map(paramZoom,0,256,0,6); // gives value of 0 to 5
   byte zoomValueIndex = paramZoom / 51; // gives value from 0 to 5
-  byte zoomVelocity = paramZoom % 51; // 
+  int zoomVelocity = paramZoom % 51; // 
   if(zoomValueIndex == 5) {
     zoomValueIndex = 4;
     zoomVelocity = 51;
@@ -592,21 +592,24 @@ void calculateNote(byte sampleNum) {
   if(thisVelocity==0) {
     // for steps not defined in beat, use algorithm to determine velocity
     if(stepNum%lowerZoomValue==0) {
+      // if step length is longer(?) than is affected by zoom
       byte yesNoRand = rand(0,255);
       if(yesNoRand < paramChance) {
         int velocityRand = rand(0,255);
-        Serial.println("LOWER");
-        Serial.println(velocityRand);
-        thisVelocity = paramMidpoint - paramRange/2 + ((velocityRand * paramRange)>>8);
+        //velocityRand = 255;
+        thisVelocity = velocityRand;
+        //thisVelocity = paramMidpoint - paramRange/2 + ((velocityRand * paramRange)>>8);
       }
     } else if(stepNum%upperZoomValue==0) {
       byte yesNoRand = rand(0,255);
       if(yesNoRand < paramChance) {
         int velocityRand = rand(0,5*zoomVelocity);
-        Serial.println("UPPER");
-        Serial.println(velocityRand);
-        thisVelocity = paramMidpoint - paramRange/2 + ((velocityRand * paramRange)>>8);
+        //velocityRand = 64;
+        thisVelocity = velocityRand;
+        //thisVelocity = paramMidpoint - paramRange/2 + ((velocityRand * paramRange)>>8);
       }
+    } else {
+      thisVelocity = 0;
     }
   }
   thisVelocity = constrain(thisVelocity,0,255);
