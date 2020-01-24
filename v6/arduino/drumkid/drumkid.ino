@@ -528,7 +528,7 @@ void updateParameters(byte thisControlSet) {
       tom.setStart(!thisDirection ? map(paramCrop,255,0,100,tom_NUM_CELLS) : 0);
       
       // experimental glitch effect
-      paramGlitch = storedValues[PARAM_GLITCH];
+      paramGlitch = driftValue(PARAM_GLITCH,2);
     }
     break;
     
@@ -587,16 +587,15 @@ byte driftValue(byte storedValueNum, byte driftGroup) {
 
 byte zoomValues[] = {32,16,8,4,2,1};
 void calculateNote(byte sampleNum) {
-  //byte zoomValueIndex = map(paramZoom,0,256,0,6); // gives value of 0 to 5
   byte zoomValueIndex = paramZoom / 51; // gives value from 0 to 5
-  int zoomVelocity = paramZoom % 51; // 
+  byte zoomVelocity = paramZoom % 51; // 
   if(zoomValueIndex == 5) {
     zoomValueIndex = 4;
     zoomVelocity = 51;
   }
   byte lowerZoomValue = zoomValues[zoomValueIndex]; // e.g. 8 for a quarter note
   byte upperZoomValue = zoomValues[zoomValueIndex+1]; // e.g. 16 for a quarter note
-  int thisVelocity = 0;
+  long thisVelocity = 0;
   if(stepNum%2==0) {
     // beats only defined down to 16th notes not 32nd, hence %2
     byte beatByte = pgm_read_byte(&beats[paramBeat][sampleNum][stepNum/16]);
@@ -604,28 +603,27 @@ void calculateNote(byte sampleNum) {
   }
   if(thisVelocity==0) {
     // for steps not defined in beat, use algorithm to determine velocity
-    if(stepNum%lowerZoomValue==0) {
+    if(stepNum%upperZoomValue==0) {
       // if step length is longer(?) than is affected by zoom
       byte yesNoRand = rand(0,255);
       if(yesNoRand < paramChance) {
-        int velocityRand = rand(0,255);
+        //int velocityRand = rand(0,255);
         //velocityRand = 255;
-        thisVelocity = velocityRand;
+        //thisVelocity = velocityRand;
         //thisVelocity = paramMidpoint - paramRange/2 + ((velocityRand * paramRange)>>8);
+        int lowerBound = paramMidpoint - paramRange/2;
+        int upperBound = paramMidpoint + paramRange/2;
+        thisVelocity = rand(lowerBound, upperBound);
+        thisVelocity = constrain(thisVelocity,0,255);
+        if(stepNum%lowerZoomValue!=0) {
+          Serial.println(thisVelocity);
+          thisVelocity = thisVelocity * 5 * zoomVelocity / 255;
+          Serial.println(thisVelocity);
+          Serial.println("");
+        }
       }
-    } else if(stepNum%upperZoomValue==0) {
-      byte yesNoRand = rand(0,255);
-      if(yesNoRand < paramChance) {
-        int velocityRand = rand(0,5*zoomVelocity);
-        //velocityRand = 64;
-        thisVelocity = velocityRand;
-        //thisVelocity = paramMidpoint - paramRange/2 + ((velocityRand * paramRange)>>8);
-      }
-    } else {
-      thisVelocity = 0;
     }
   }
-  thisVelocity = constrain(thisVelocity,0,255);
 
   // add delay records
   byte i;
