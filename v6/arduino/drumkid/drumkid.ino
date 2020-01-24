@@ -109,7 +109,6 @@ unsigned int paramGlitch;
 byte crushCompensation;
 byte paramSlop;
 byte paramSwing;
-byte paramDelayMix;
 unsigned int paramDelayTime;
 byte paramBeat;
 byte paramTimeSignature;
@@ -117,6 +116,7 @@ byte paramDrift;
 byte paramDrop;
 byte oscilGain1;
 byte oscilGain2;
+byte paramDroneRoot;
 float paramDronePitch;
 byte paramDroneMod;
 bool droneMod2Active = false;
@@ -131,12 +131,13 @@ bool droneMod2Active = false;
 #define PARAM_SLOP 8
 #define PARAM_SWING 9
 #define PARAM_DELAY_TIME 10
-#define PARAM_DELAY_MIX 11
+//#define PARAM_DELAY_MIX 11
+#define PARAM_DROP 11
 #define PARAM_BEAT 12
 #define PARAM_TEMPO 13
 #define PARAM_TIME_SIGNATURE 14
 #define PARAM_DRIFT 15
-#define PARAM_DROP 16
+#define PARAM_DRONE_ROOT 16
 #define PARAM_DRONE_MOD 17
 #define PARAM_DRONE 18
 #define PARAM_DRONE_PITCH 19
@@ -152,6 +153,23 @@ Sample <tom_NUM_CELLS, AUDIO_RATE> tom(tom_DATA);
 // define oscillators
 Oscil<SAW256_NUM_CELLS, AUDIO_RATE> droneOscillator1(SAW256_DATA);
 Oscil<SAW256_NUM_CELLS, AUDIO_RATE> droneOscillator2(SAW256_DATA);
+
+// define root notes
+float rootNotes[13] = {
+  277.182631f,
+  184.9972114f,
+  246.9416506f,
+  164.8137785f,
+  220.0f,
+  146.832384f,
+  195.997718f,
+  261.6255653f,
+  174.6141157f,
+  233.0818808f,
+  155.5634919f,
+  207.6523488f,
+  138.5913155f,
+};
 
 // dropRef determines whether each sample is played or muted
 byte dropRef[NUM_SAMPLES_DEFINED] = {
@@ -535,7 +553,7 @@ void updateParameters(byte thisControlSet) {
     case 2:
     paramSlop = storedValues[PARAM_SLOP] / 86; // 255/43 => between 0 and 5 pulses
     paramSwing = storedValues[PARAM_SWING] / 86; // 255/43 => between 0 and 5 pulses
-    paramDelayMix = map(storedValues[PARAM_DELAY_MIX],0,256,0,4);
+    //paramDelayMix = map(storedValues[PARAM_DELAY_MIX],0,256,0,4);
     paramDelayTime = map(storedValues[PARAM_DELAY_TIME],0,255,0,24);
     break;
 
@@ -564,7 +582,8 @@ void updateParameters(byte thisControlSet) {
       droneMod2Active = true;
       paramDroneMod = constrain(2*driftValue(PARAM_DRONE_MOD,2)-270, 0, 255);;
     }
-    paramDronePitch = (float) driftValue(PARAM_DRONE_PITCH,2) * 0.768f + 65.41f; // gives range between "deep C" and "middle C"
+    paramDroneRoot = map(driftValue(PARAM_DRONE_ROOT,2),0,255,0,12);
+    paramDronePitch = rootNotes[paramDroneRoot] * (0.5f + (float) storedValues[PARAM_DRONE_PITCH]/170.0f);// * 0.768f + 65.41f;
     droneOscillator1.setFreq(paramDronePitch);
     droneOscillator2.setFreq(paramDronePitch*1.5f);
     break;
