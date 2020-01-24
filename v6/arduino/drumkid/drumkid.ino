@@ -161,6 +161,7 @@ byte dropRef[NUM_SAMPLES_DEFINED] = {
   B00011110, // rim
   B00011000, // tom
 };
+
 float nextPulseTime = 0;
 int pulseNum = 0;
 byte stepNum = 0;
@@ -171,6 +172,14 @@ byte currentDelayIndex = 0;
 int driftOffset0;
 int driftOffset1;
 int driftOffset2;
+
+// glitch stuff
+const byte maxFreezeSize = 50;
+byte freezeSize = maxFreezeSize;
+int freezeRepeatNum = 5;
+int freeze[maxFreezeSize];
+byte freezePos = 0;
+byte freezeRepeats = 0;
 
 void setup() {
   startMozzi(CONTROL_RATE);
@@ -350,10 +359,14 @@ void updateControl() {
 
     // messing everything up to make a glitchy effect
     if(paramGlitch>0) {
-      byte minDelay = paramGlitch/4;
-      byte maxDelay = (paramGlitch*paramGlitch)>>6;
-      delay(rand(minDelay, maxDelay));
+      freezeRepeatNum = rand(1,(byte) paramGlitch);
+      freezeSize = rand(1,(byte) paramGlitch/6);
+      //freezeSize = paramGlitch / 5;
+    } else {
+      freezeSize = 1;
+      freezeRepeatNum = 1;
     }
+    
   }
   
   if(sequencePlaying&&!syncReceived) {
@@ -672,7 +685,18 @@ int updateAudio() {
     (droneSig>>2);
   asig = (asig * ((255-paramDroneMod)+((paramDroneMod*droneModSig)>>6)))>>8;
   asig = (asig>>paramCrush)<<crushCompensation;
-  return (int) asig;
+  if(freezeRepeats == 0) {
+    freeze[freezePos] = (int) asig;
+  }
+  byte thisFreezePos = freezePos;
+  freezePos ++;
+  if(freezePos >= freezeSize) {
+    freezePos = 0;
+    freezeRepeats ++;
+    if(freezeRepeats >= freezeRepeatNum) freezeRepeats = 0;
+  }
+  return freeze[freezePos];
+  //return (int) asig;
 }
 
 void startupLedSequence() {
