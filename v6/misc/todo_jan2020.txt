@@ -1,9 +1,8 @@
 TO DO:
-zoom (with volume levels)
-glitch (maybe improve)
 add loads of beats
+fix tempo knob
+fix beat LEDs
 beats per bar
-delay mix replacement
 save
 load
 MIDI (finalise / write manual instructions)
