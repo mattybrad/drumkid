@@ -250,7 +250,7 @@ void setup() {
   storedValues[PARAM_CRUSH] = 255;
   storedValues[PARAM_PITCH] = 160;
   storedValues[PARAM_BEAT] = 8;
-  storedValues[PARAM_TIME_SIGNATURE] = 120; // this means 4/4, it's confusing...
+  storedValues[PARAM_TIME_SIGNATURE] = 0; // this means 4/4, it's confusing...
   storedValues[PARAM_TEMPO] = 100 - MIN_TEMPO; // not BPM!
   storedValues[PARAM_DROP] = 128;
   storedValues[PARAM_DRONE] = 128;
@@ -390,6 +390,7 @@ void updateControl() {
   if(sequencePlaying&&!syncReceived) {
     float msPerPulse = tapTempo.getBeatLength() / 24.0;
     if(millis()>=nextPulseTime) {
+      Serial.println(pulseNum);
       doPulse();
       nextPulseTime = nextPulseTime + msPerPulse;
     }
@@ -466,8 +467,14 @@ void doPulse() {
   driftOffset2 += thisDrift2;
   driftOffset2 = constrain(driftOffset2,-range2,range2);
   
-  if(pulseNum%24==0) digitalWrite(ledPins[stepNum/8],HIGH);
-  else if(pulseNum%24==2) digitalWrite(ledPins[stepNum/8],LOW);
+  if(pulseNum%24==0) {
+    if(stepNum==0) {
+      numSteps = paramTimeSignature * 8;
+      if(numSteps == 32) numSteps = 64;
+    }
+    digitalWrite(ledPins[constrain((stepNum/8)%paramTimeSignature,0,NUM_LEDS-1)],HIGH);
+  }
+  else if(pulseNum%24==2) digitalWrite(ledPins[constrain((stepNum/8)%paramTimeSignature,0,NUM_LEDS-1)],LOW);
   for(i=0;i<NUM_DELAY_RECORDS;i++) {
     if(delayRecords[i][0]>1) {
       delayRecords[i][0] --;
@@ -560,8 +567,15 @@ void updateParameters(byte thisControlSet) {
     case 3:
     paramBeat = (NUM_BEATS * (int) storedValues[PARAM_BEAT]) / 256;
     tapTempo.setBPM((float) MIN_TEMPO + ((float) storedValues[PARAM_TEMPO]));
-    paramTimeSignature = (storedValues[PARAM_TIME_SIGNATURE]>>5)+1;
-    numSteps = paramTimeSignature * 8;
+    //Serial.println(tapTempo.getBPM());
+    //Serial.println(tapTempo.getBeatLength());
+    paramTimeSignature = map(storedValues[PARAM_TIME_SIGNATURE],0,256,4,8);
+    //Serial.print("TIME SIG: ");
+    //Serial.println(paramTimeSignature);
+    //numSteps = paramTimeSignature * 8;
+    //if(numSteps == 32) numSteps = 64;
+    //Serial.print("STEPS: ");
+    //Serial.println(numSteps);
     paramDrift = storedValues[PARAM_DRIFT];
     break;
     
@@ -750,7 +764,7 @@ void playMidiNote(byte noteNum, byte velocity) {
 void saveParams(byte slotNum) {
   // 1024 possible byte locations
   // currently need 20 bytes per saved state
-  // currently planning choice of 6 slots for saved states (1 per button)
+  // currently planning choice of 6 sllots for saved states (1 per button)
   // need to leave space for some possible extra saved state data
   // allot 32 bytes per saved state (nice round number), taking up total of 192 bytes
   readyToChooseSaveSlot = false;

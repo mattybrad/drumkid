@@ -4,7 +4,7 @@
 4	there there
 5	that weird snare driving rock beat
 6	"dance"
-7	
+7	amen
 8	
 9	
 10	
@@ -24,9 +24,9 @@
 24
 25
 26
-27
-28
-29
-30
+27	videotape (bonnaroo)
+28	videotape
+29	you can leave your hat on
+30	johnny two hats
 31	pre-randomised
 32	nihil
