@@ -61,7 +61,7 @@ Bounce buttonY = Bounce();
 Bounce buttonZ = Bounce();
 
 #define CONTROL_RATE 64 // tweak this value if performance is bad, must be power of 2 (64, 128, etc)
-#define NUM_BEATS 32
+#define NUM_BEATS 24
 #define MAX_BEAT_STEPS 32
 #define NUM_PARAM_GROUPS 5
 #define NUM_KNOBS 4
