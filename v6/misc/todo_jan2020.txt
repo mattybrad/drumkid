@@ -14,3 +14,6 @@ check component levels
 order new components
 assemble prototype
 order laser parts
+
+MORE STUFF AFTER NEW THOUGHTS:
+add switch to disable MIDI input during programming

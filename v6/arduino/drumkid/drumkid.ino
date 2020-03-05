@@ -2,7 +2,7 @@
  *  It might work with other versions with a bit of tweaking   
  */
 
-#define DEBUGGING true
+#define DEBUGGING false
 #define BREADBOARD true // switch to false if compiling code for PCB
 
 // when in debugging mode you can see the current memory usage
@@ -43,9 +43,9 @@ ArduinoTapTempo tapTempo;
 #include "tom.h"
 
 // define pins
-byte breadboardLedPins[5] = {5,6,7,8,13};
-byte breadboardButtonPins[6] = {2,3,4,10,11,12};
-byte breadboardAnalogPins[4] = {0,1,2,3};
+byte breadboardLedPins[5] = {2,3,11,12,13};
+byte breadboardButtonPins[6] = {4,5,6,7,8,10};
+byte breadboardAnalogPins[4] = {3,2,1,0};
 byte pcbLedPins[5] = {6,5,4,3,2};
 byte pcbButtonPins[6] = {13,12,11,10,8,7};
 byte pcbAnalogPins[4] = {3,2,1,0};
@@ -61,7 +61,7 @@ Bounce buttonY = Bounce();
 Bounce buttonZ = Bounce();
 
 #define CONTROL_RATE 64 // tweak this value if performance is bad, must be power of 2 (64, 128, etc)
-#define NUM_BEATS 24
+#define NUM_BEATS 18 // had to reduce this because of switch to nano, maybe reduce sample size instead
 #define MAX_BEAT_STEPS 32
 #define NUM_PARAM_GROUPS 5
 #define NUM_KNOBS 4
@@ -265,7 +265,7 @@ void setup() {
   tapTempo.setMinBPM((float) MIN_TEMPO);
   tapTempo.setMaxBPM((float) MAX_TEMPO);
 
-  startupLedSequence();
+  //startupLedSequence();
 }
 
 bool syncReceived = false;
@@ -649,10 +649,10 @@ void calculateNote(byte sampleNum) {
         thisVelocity = rand(lowerBound, upperBound);
         thisVelocity = constrain(thisVelocity,0,255);
         if(stepNum%lowerZoomValue!=0) {
-          Serial.println(thisVelocity);
+          //Serial.println(thisVelocity);
           thisVelocity = thisVelocity * 5 * zoomVelocity / 255;
-          Serial.println(thisVelocity);
-          Serial.println("");
+          //Serial.println(thisVelocity);
+          //Serial.println("");
         }
       }
     }
@@ -730,14 +730,14 @@ int updateAudio() {
   //return (int) asig;
 }
 
-void startupLedSequence() {
+/*void startupLedSequence() {
   byte seq[15] = {0,1,2,3,4,3,2,1,0,1,2,3,4,3,2};
   for(byte i=0; i<15; i++) {
     digitalWrite(ledPins[seq[i]], HIGH);
     delay(30);
     digitalWrite(ledPins[seq[i]], LOW);
   }
-}
+}*/
 
 void cancelMidiNotes() {
   byte i;
