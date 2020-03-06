@@ -23,6 +23,11 @@ Bounce buttonB = Bounce();
 // use #define for CONTROL_RATE, not a constant
 #define CONTROL_RATE 64 // Hz, powers of 2 are most reliable
 
+float nextPulseTime = 0.0;
+float msPerPulse = 20.8333; // 120bpm
+byte pulseNum = 0; // 0 to 23 (24ppqn, pulses per quarter note)
+byte beatNum = 0; // 0 to 7 (max two bars of 8 beats)
+
 void setup(){
   startMozzi(CONTROL_RATE);
   kick.setFreq((float) kick_SAMPLERATE / (float) kick_NUM_CELLS);
@@ -34,23 +39,35 @@ void setup(){
   buttonB.attach(5, INPUT_PULLUP);
 }
 
-float nextPulseTime = 0.0;
-float msPerPulse = 25.0;
 void updateControl(){
   /*buttonA.update();
   buttonB.update();
   if(buttonA.fell()) kick.start();
   if(buttonB.fell()) snare.start();*/
   if(millis()>=nextPulseTime) {
-    doPulse();
+    playPulseHits();
+    incrementPulse();
     nextPulseTime = nextPulseTime + msPerPulse;
   }
 }
 
-void doPulse() {
-  if(rand(0,10)==0) kick.start();
-  if(rand(0,2)==0) closedhat.start();
-  if(rand(0,10)==0) snare.start();
+void playPulseHits() {
+  if(pulseNum % 12 == 0) closedhat.start();
+  if(pulseNum % 24 == 0) {
+    if(beatNum % 2 == 0) kick.start();
+    else snare.start();
+  }
+}
+
+void incrementPulse() {
+  pulseNum ++;
+  if(pulseNum == 24) {
+    pulseNum = 0;
+    beatNum ++;
+    if(beatNum == 4) {
+      beatNum = 0;
+    }
+  }
 }
 
 int updateAudio(){
