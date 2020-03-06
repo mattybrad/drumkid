@@ -73,10 +73,12 @@ void setup(){
   tapTempo.setMinBPM((float) 40);
   tapTempo.setMaxBPM((float) 240);
   tapTempo.setBPM(120.0);
+  Serial.begin(31250);
 }
 
 float testBPM = 120.0;
 void updateControl(){
+  Serial.println("abc");
   buttonA.update();
   buttonB.update();
   buttonC.update();
@@ -146,7 +148,18 @@ int updateAudio(){
   return asig; // return an int signal centred around 0
 }
 
-
+bool syncReceived = false;
+byte thisMidiByte;
 void loop(){
-  audioHook(); // required here
+  audioHook(); // main Mozzi function, calls updateAudio and updateControl
+  while(Serial.available()) {
+    thisMidiByte = Serial.read();
+    if(thisMidiByte==0xF8) {
+      syncReceived = true;
+      if(beatPlaying) {
+        playPulseHits();
+        incrementPulse();
+      }
+    }
+  }
 }
