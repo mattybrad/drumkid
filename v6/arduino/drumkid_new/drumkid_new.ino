@@ -31,14 +31,20 @@ Bounce buttonX = Bounce();
 Bounce buttonY = Bounce();
 Bounce buttonZ = Bounce();
 
-// use #define for CONTROL_RATE, not a constant
 #define CONTROL_RATE 256 // Hz, aiming for 256 to keep up with high tempos
+#define NUM_KNOBS 4
+#define NUM_LEDS 5
+#define NUM_BUTTONS 6
+#define NUM_SAMPLES_TOTAL 5 // total number of samples
 
 float nextPulseTime = 0.0;
 float msPerPulse = 20.8333; // 120bpm
 byte pulseNum = 0; // 0 to 23 (24ppqn, pulses per quarter note)
 byte stepNum = 0; // 0 to 32 (max two bars of 8 beats, aka 32 16th-notes)
 bool beatPlaying = false;
+byte noteDown = B00000000;
+
+const byte midiNotes[NUM_SAMPLES_TOTAL] = {36,42,38,37,43};
 
 // temp beat definition
 byte beats[1][5][4] = {
@@ -78,7 +84,6 @@ void setup(){
 
 float testBPM = 120.0;
 void updateControl(){
-  Serial.println("abc");
   buttonA.update();
   buttonB.update();
   buttonC.update();
@@ -89,6 +94,7 @@ void updateControl(){
   msPerPulse = tapTempo.getBeatLength() / 24.0;
   if(buttonZ.fell()) doStartStop();
   while(beatPlaying && millis()>=nextPulseTime) {
+    cancelMidiNotes();
     playPulseHits();
     incrementPulse();
     nextPulseTime = nextPulseTime + msPerPulse;
@@ -125,9 +131,17 @@ void playPulseHits() {
           tom.start();
           break;
         }
+        bitWrite(noteDown,i,true);
+        playMidiNote(midiNotes[i], 255);
       }
     }
   }
+}
+
+void playMidiNote(byte noteNum, byte velocity) {
+  Serial.write(0x90);
+  Serial.write(noteNum);
+  Serial.write(velocity>>1);
 }
 
 void incrementPulse() {
@@ -143,6 +157,18 @@ void incrementPulse() {
   }
 }
 
+void cancelMidiNotes() {
+  byte i;
+  for(i=0; i<NUM_SAMPLES_TOTAL; i++) {
+    if(bitRead(noteDown,i)) {
+      Serial.write(0x90);
+      Serial.write(midiNotes[i]);
+      Serial.write(0x00);
+      bitWrite(noteDown,i,false);
+    }
+  }
+}
+
 int updateAudio(){
   char asig = (kick.next() >> 2) + (closedhat.next() >> 3) + (snare.next() >> 2) + (rim.next() >> 1) + (tom.next() >> 2);
   return asig; // return an int signal centred around 0
@@ -154,12 +180,12 @@ void loop(){
   audioHook(); // main Mozzi function, calls updateAudio and updateControl
   while(Serial.available()) {
     thisMidiByte = Serial.read();
-    if(thisMidiByte==0xF8) {
+    /*if(thisMidiByte==0xF8) {
       syncReceived = true;
       if(beatPlaying) {
         playPulseHits();
         incrementPulse();
       }
-    }
+    }*/
   }
 }
