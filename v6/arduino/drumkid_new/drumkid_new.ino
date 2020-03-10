@@ -37,12 +37,17 @@ Bounce buttonZ = Bounce();
 #define NUM_BUTTONS 6
 #define NUM_SAMPLES_TOTAL 5 // total number of samples
 
+const byte ledPins[5] = {2,3,11,12,13};
+const byte buttonPins[6] = {4,5,6,7,8,10};
+const byte analogPins[4] = {0,1,2,3};
+
 float nextPulseTime = 0.0;
 float msPerPulse = 20.8333; // 120bpm
 byte pulseNum = 0; // 0 to 23 (24ppqn, pulses per quarter note)
 byte stepNum = 0; // 0 to 32 (max two bars of 8 beats, aka 32 16th-notes)
 bool beatPlaying = false;
 byte noteDown = B00000000;
+bool syncReceived = false;
 
 const byte midiNotes[NUM_SAMPLES_TOTAL] = {36,42,38,37,43};
 
@@ -58,6 +63,13 @@ byte beats[1][5][4] = {
 };
 
 void setup(){
+  byte i;
+  for(i=0;i<NUM_LEDS;i++) {
+    pinMode(ledPins[i],OUTPUT);
+  }
+  for(i=0;i<NUM_BUTTONS;i++) {
+    pinMode(buttonPins[i],INPUT_PULLUP);
+  }
   startMozzi(CONTROL_RATE);
   kick.setFreq((float) kick_SAMPLERATE / (float) kick_NUM_CELLS);
   closedhat.setFreq((float) closedhat_SAMPLERATE / (float) closedhat_NUM_CELLS);
@@ -80,6 +92,7 @@ void setup(){
   tapTempo.setMaxBPM((float) 240);
   tapTempo.setBPM(120.0);
   Serial.begin(31250);
+  flashLeds(); // remove if low on space later
 }
 
 float testBPM = 120.0;
@@ -93,9 +106,10 @@ void updateControl(){
   tapTempo.update(!buttonA.read());
   msPerPulse = tapTempo.getBeatLength() / 24.0;
   if(buttonZ.fell()) doStartStop();
-  while(beatPlaying && millis()>=nextPulseTime) {
-    cancelMidiNotes();
+  while(!syncReceived && beatPlaying && millis()>=nextPulseTime) {
     Serial.write(0xF8); // MIDI clock continue
+    cancelMidiNotes();
+    updateLeds();
     playPulseHits();
     incrementPulse();
     nextPulseTime = nextPulseTime + msPerPulse;
@@ -178,18 +192,46 @@ int updateAudio(){
   return asig; // return an int signal centred around 0
 }
 
-bool syncReceived = false;
 byte thisMidiByte;
 void loop(){
   audioHook(); // main Mozzi function, calls updateAudio and updateControl
   while(Serial.available()) {
     thisMidiByte = Serial.read();
-    /*if(thisMidiByte==0xF8) {
+    if(thisMidiByte==0xF8) {
       syncReceived = true;
       if(beatPlaying) {
+        cancelMidiNotes();
         playPulseHits();
         incrementPulse();
       }
-    }*/
+    }
+  }
+}
+
+void flashLeds() {
+  byte i, j;
+  for(i=0;i<7;i++) {
+    for(j=0;j<NUM_LEDS;j++) {
+      digitalWrite(ledPins[j],(i+j)%2&&i<6);
+    }
+    delay(100);
+  }
+}
+
+void updateLeds() {
+  byte i;
+  for(i=0;i<NUM_LEDS;i++) {
+    if(beatPlaying) {
+      switch(pulseNum%24) {
+        case 0:
+        if(i==stepNum/4) digitalWrite(ledPins[i], HIGH);
+        break;
+        case 1:
+        if(i==stepNum/4) digitalWrite(ledPins[i], LOW);
+        break;
+      }
+    } else {
+      digitalWrite(ledPins[i], LOW);
+    }
   }
 }
