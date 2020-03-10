@@ -46,7 +46,7 @@ const byte analogPins[4] = {0,1,2,3};
 float nextPulseTime = 0.0;
 float msPerPulse = 20.8333; // 120bpm
 byte pulseNum = 0; // 0 to 23 (24ppqn, pulses per quarter note)
-byte stepNum = 0; // 0 to 32 (max two bars of 8 beats, aka 32 16th-notes)
+byte stepNum = 0; // 0 to 64 (max two bars of 8 beats, aka 32 32nd-notes)
 bool beatPlaying = false;
 byte noteDown = B00000000;
 bool syncReceived = false;
@@ -54,6 +54,12 @@ bool syncReceived = false;
 const byte midiNotes[NUM_SAMPLES_TOTAL] = {36,42,38,37,43};
 const byte zoomValues[] = {32,16,8,4,2,1}; // could be compressed?
 byte sampleVolumes[NUM_SAMPLES_TOTAL] = {255,255,255,255,255}; // temp
+
+byte paramZoom = 200;
+byte paramChance = 64;
+byte paramMidpoint = 127;
+byte paramRange = 127;
+byte paramBeat = 2;
 
 void setup(){
   byte i;
@@ -108,6 +114,11 @@ void updateControl(){
     incrementPulse();
     nextPulseTime = nextPulseTime + msPerPulse;
   }
+  // temp:
+  paramChance = mozziAnalogRead(analogPins[0])>>2;
+  paramZoom = mozziAnalogRead(analogPins[1])>>2;
+  paramMidpoint = mozziAnalogRead(analogPins[2])>>2;
+  paramRange = mozziAnalogRead(analogPins[3])>>2;
 }
 
 void doStartStop() {
@@ -124,18 +135,13 @@ void doStartStop() {
 }
 
 void playPulseHits() {
-  if(pulseNum % 6 == 0) {
+  if(pulseNum % 3 == 0) {
     for(byte i=0; i<5; i++) {
       calculateNote(i);
     }
   }
 }
 
-byte paramZoom = 200;
-byte paramChance = 64;
-byte paramMidpoint = 127;
-byte paramRange = 127;
-byte paramBeat = 2;
 void calculateNote(byte sampleNum) {
   byte zoomValueIndex = paramZoom / 51; // gives value from 0 to 5
   byte zoomVelocity = paramZoom % 51; // 
@@ -213,9 +219,9 @@ void incrementPulse() {
   if(pulseNum == 24) {
     pulseNum = 0;
   }
-  if(pulseNum % 6 == 0) {
+  if(pulseNum % 3 == 0) {
     stepNum ++;
-    if(stepNum == 32) {
+    if(stepNum == 64) {
       stepNum = 0;
     }
   }
@@ -251,7 +257,15 @@ void loop(){
   audioHook(); // main Mozzi function, calls updateAudio and updateControl
   while(Serial.available()) {
     thisMidiByte = Serial.read();
-    if(thisMidiByte==0xF8) {
+    if(thisMidiByte==0xFA) {
+      // start beat (redo this later, bit hacky, separate start/stop funcs)
+      beatPlaying = false;
+      doStartStop();
+    } else if(thisMidiByte==0xFC) {
+      // stop beat (also hacky)
+      //beatPlaying = true;
+      //doStartStop();
+    } else if(thisMidiByte==0xF8) {
       syncReceived = true;
       if(beatPlaying) {
         cancelMidiNotes();
@@ -278,10 +292,10 @@ void updateLeds() {
     if(beatPlaying) {
       switch(pulseNum%24) {
         case 0:
-        if(i==stepNum/4) digitalWrite(ledPins[i], HIGH);
+        if(i==stepNum/8) digitalWrite(ledPins[i], HIGH);
         break;
         case 12:
-        if(i==stepNum/4) digitalWrite(ledPins[i], LOW);
+        if(i==stepNum/8) digitalWrite(ledPins[i], LOW);
         break;
       }
     } else {
