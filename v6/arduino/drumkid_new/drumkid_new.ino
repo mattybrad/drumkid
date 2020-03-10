@@ -95,6 +95,7 @@ void updateControl(){
   if(buttonZ.fell()) doStartStop();
   while(beatPlaying && millis()>=nextPulseTime) {
     cancelMidiNotes();
+    Serial.write(0xF8); // MIDI clock continue
     playPulseHits();
     incrementPulse();
     nextPulseTime = nextPulseTime + msPerPulse;
@@ -107,6 +108,9 @@ void doStartStop() {
     pulseNum = 0;
     stepNum = 0;
     nextPulseTime = millis();
+    Serial.write(0xFA); // MIDI clock start
+  } else {
+    Serial.write(0xFC); // MIDI clock stop
   }
 }
 
