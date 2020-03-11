@@ -26,6 +26,9 @@ Sample <tom_NUM_CELLS, AUDIO_RATE> tom(tom_DATA);
 #include "ArduinoTapTempoDK/src/ArduinoTapTempo.cpp"
 ArduinoTapTempo tapTempo;
 
+// include EEPROM library for saving data
+#include <EEPROM.h>
+
 Bounce buttonA = Bounce();
 Bounce buttonB = Bounce();
 Bounce buttonC = Bounce();
@@ -39,6 +42,7 @@ Bounce buttonZ = Bounce();
 #define NUM_BUTTONS 6
 #define NUM_SAMPLES_TOTAL 5 // total number of samples
 #define NUM_PARAM_GROUPS 5
+#define SAVED_STATE_SLOT_BYTES 32
 
 const byte ledPins[5] = {2,3,11,12,13};
 const byte buttonPins[6] = {4,5,6,7,8,10};
@@ -64,6 +68,12 @@ bool knobLocked[NUM_KNOBS] = {true,true,true,true}; // bad use of space, use sin
 byte analogValues[NUM_KNOBS] = {0,0,0,0};
 byte initValues[NUM_KNOBS] = {0,0,0,0};
 
+bool readyToSave = true;
+bool readyToChooseSaveSlot = false;
+bool readyToLoad = true;
+bool readyToChooseLoadSlot = false;
+bool newStateLoaded = false;
+
 // parameters, 0-255 unless otherwise noted
 byte paramChance = 64;
 byte paramZoom = 200;
@@ -76,6 +86,18 @@ byte paramCrop = 0;
 byte paramGlitch = 0;
 
 byte paramBeat = 2; // 0 to 23
+byte paramTimeSignature = 4;
+// N.B. no such variable as paramTempo - handled by TapTempo library
+byte paramDrift = 0; // to be scrapped?
+
+byte crushCompensation;
+
+#define MIN_TEMPO 40
+#define MAX_TEMPO 295
+
+#if MIN_TEMPO + 255 != MAX_TEMPO
+#error "Tempo must have a range of exactly 255 otherwise I'll have to write more code"
+#endif
 
 // define which knob controls which parameter
 // e.g. 0 is group 1 knob 1, 6 is group 2 knob 3
@@ -89,6 +111,11 @@ byte paramBeat = 2; // 0 to 23
 #define CROP 6
 #define GLITCH 7
 
+#define BEAT 12
+#define TEMPO 13
+#define TIME_SIGNATURE 14
+#define DRIFT 15
+
 void setup(){
   byte i;
   for(i=0;i<NUM_LEDS;i++) {
@@ -98,7 +125,6 @@ void setup(){
     pinMode(buttonPins[i],INPUT_PULLUP);
   }
   startMozzi(CONTROL_RATE);
-  randSeed();
   kick.setFreq((float) kick_SAMPLERATE / (float) kick_NUM_CELLS);
   closedhat.setFreq((float) closedhat_SAMPLERATE / (float) closedhat_NUM_CELLS);
   snare.setFreq((float) snare_SAMPLERATE / (float) snare_NUM_CELLS);
@@ -122,14 +148,19 @@ void setup(){
   storedValues[RANGE] = 0;
   storedValues[MIDPOINT] = 0;
   
-  storedValues[PITCH] = 0;
+  storedValues[PITCH] = 130;
   storedValues[CRUSH] = 0;
   storedValues[CROP] = 0;
   storedValues[GLITCH] = 0;
   
-  tapTempo.setMinBPM((float) 40);
-  tapTempo.setMaxBPM((float) 240);
+  tapTempo.setMinBPM((float) MIN_TEMPO);
+  tapTempo.setMaxBPM((float) MAX_TEMPO);
   tapTempo.setBPM(120.0);
+
+  for(byte i=0;i<NUM_PARAM_GROUPS;i++) {
+    updateParameters(i);
+  }
+  
   Serial.begin(31250);
   flashLeds(); // remove if low on space later
 }
@@ -138,6 +169,7 @@ float testBPM = 120.0;
 void updateControl(){
   byte i;
   bool controlSetChanged = false;
+  newStateLoaded = false;
   
   buttonA.update();
   buttonB.update();
@@ -145,9 +177,68 @@ void updateControl(){
   buttonX.update();
   buttonY.update();
   buttonZ.update();
-  tapTempo.update(!buttonA.read());
+
+  if(!buttonB.read() && !buttonC.read()) {
+    readyToLoad = false;
+    readyToSave = false;
+    readyToChooseLoadSlot = true;
+    readyToChooseSaveSlot = false;
+    tapTempo.update(false);
+  } else if(!buttonX.read() && !buttonY.read()) {
+    readyToSave = false;
+    readyToLoad = false;
+    readyToChooseSaveSlot = true;
+    readyToChooseLoadSlot = false;
+    tapTempo.update(false);
+  } else {
+    readyToSave = true;
+    readyToLoad = true;
+    if(!readyToChooseLoadSlot&&!readyToChooseSaveSlot) {
+      tapTempo.update(!buttonA.read());
+    } else {
+      tapTempo.update(false);
+    }
+
+    // handle button presses
+    byte prevControlSet = controlSet;
+    if(buttonA.fell()) {
+      if(readyToChooseLoadSlot) loadParams(0);
+      else if(readyToChooseSaveSlot) saveParams(0);
+      else {
+        controlSet = 0;
+        storedValues[TEMPO] = tapTempo.getBPM() - MIN_TEMPO;
+      }
+    } else if(buttonB.fell()) {
+      if(readyToChooseLoadSlot) loadParams(1);
+      else if(readyToChooseSaveSlot) saveParams(1);
+      else controlSet = 1;
+    } else if(buttonC.fell()) {
+      if(readyToChooseLoadSlot) loadParams(2);
+      else if(readyToChooseSaveSlot) saveParams(2);
+      else controlSet = 2;
+    } else if(buttonX.fell()) {
+      if(readyToChooseLoadSlot) loadParams(3);
+      else if(readyToChooseSaveSlot) saveParams(3);
+      else controlSet = 3;
+    } else if(buttonY.fell()) {
+      if(readyToChooseLoadSlot) loadParams(4);
+      else if(readyToChooseSaveSlot) saveParams(4);
+      else controlSet = 4;
+    }
+    controlSetChanged = (prevControlSet != controlSet);
+    
+    if(buttonZ.fell()) {
+      if(readyToChooseLoadSlot) loadParams(5);
+      else if(readyToChooseSaveSlot) saveParams(5);
+      else doStartStop();
+    }
+    
+  }
+
+  //if(buttonZ.fell()) doStartStop();
+  //tapTempo.update(!buttonA.read());
+  
   msPerPulse = tapTempo.getBeatLength() / 24.0;
-  if(buttonZ.fell()) doStartStop();
   while(!syncReceived && beatPlaying && millis()>=nextPulseTime) {
     Serial.write(0xF8); // MIDI clock continue
     cancelMidiNotes();
@@ -156,11 +247,6 @@ void updateControl(){
     incrementPulse();
     nextPulseTime = nextPulseTime + msPerPulse;
   }
-  // temp:
-  /*paramChance = mozziAnalogRead(analogPins[0])>>2;
-  paramZoom = mozziAnalogRead(analogPins[1])>>2;
-  paramMidpoint = mozziAnalogRead(analogPins[2])>>2;
-  paramRange = mozziAnalogRead(analogPins[3])>>2;*/
 
   for(i=0;i<NUM_KNOBS;i++) {
     if(firstLoop) {
@@ -169,9 +255,9 @@ void updateControl(){
       analogValues[i] = mozziAnalogRead(analogPins[i])>>2;
     }
   }
-  if(controlSetChanged||secondLoop) {
+  if(controlSetChanged||secondLoop||newStateLoaded) {
     for(i=0;i<NUM_KNOBS;i++) {
-      knobLocked[i] = false;
+      knobLocked[i] = true;
       initValues[i] = analogValues[i];
     }
   } else {
@@ -185,7 +271,13 @@ void updateControl(){
       }
     }
   }
-  updateParameters(0); // temp
+  if(secondLoop) {
+    for(i=0;i<NUM_PARAM_GROUPS;i++) {
+      updateParameters(i);
+    }
+  } else {
+    updateParameters(controlSet);
+  }
 
   if(firstLoop) {
     firstLoop = false;
@@ -204,7 +296,61 @@ void updateParameters(byte thisControlSet) {
     paramMidpoint = storedValues[MIDPOINT];
     break;
 
-    // testing...
+    case 1:
+    {
+      // pitch alteration (could do this in a more efficient way to reduce RAM usage)
+      float thisPitch = fabs((float) storedValues[PITCH] * (8.0f/255.0f) - 4.0f);
+      float newKickFreq = thisPitch * (float) kick_SAMPLERATE / (float) kick_NUM_CELLS;
+      float newHatFreq = thisPitch * (float) closedhat_SAMPLERATE / (float) closedhat_NUM_CELLS;
+      float newSnareFreq = thisPitch * (float) snare_SAMPLERATE / (float) snare_NUM_CELLS;
+      float newRimFreq = thisPitch * (float) rim_SAMPLERATE / (float) rim_NUM_CELLS;
+      float newTomFreq = thisPitch * (float) tom_SAMPLERATE / (float) tom_NUM_CELLS;
+      kick.setFreq(newKickFreq);
+      closedhat.setFreq(newHatFreq);
+      snare.setFreq(newSnareFreq);
+      rim.setFreq(newRimFreq);
+      tom.setFreq(newTomFreq);
+      /*bool thisDirection = driftValue(PARAM_PITCH,2) >= 128;
+      kick.setDirection(thisDirection);
+      closedhat.setDirection(thisDirection);
+      snare.setDirection(thisDirection);
+      rim.setDirection(thisDirection);
+      tom.setDirection(thisDirection);*/
+      
+      // bit crush! high value = clean (8 bits), low value = dirty (1 bit?)
+      paramCrush = 7-(storedValues[CRUSH]>>5);
+      crushCompensation = paramCrush;
+      if(paramCrush >= 6) crushCompensation --;
+      if(paramCrush >= 7) crushCompensation --;
+
+      // crop - a basic effect to chop off the end of each sample for a more staccato feel
+      paramCrop = storedValues[CRUSH];
+      /*kick.setEnd(thisDirection ? map(paramCrop,0,255,100,kick_NUM_CELLS) : kick_NUM_CELLS);
+      closedhat.setEnd(thisDirection ? map(paramCrop,0,255,100,closedhat_NUM_CELLS) : closedhat_NUM_CELLS);
+      snare.setEnd(thisDirection ? map(paramCrop,0,255,100,snare_NUM_CELLS) : snare_NUM_CELLS);
+      rim.setEnd(thisDirection ? map(paramCrop,0,255,100,rim_NUM_CELLS) : rim_NUM_CELLS);
+      tom.setEnd(thisDirection ? map(paramCrop,0,255,100,tom_NUM_CELLS) : tom_NUM_CELLS);
+      kick.setStart(!thisDirection ? map(paramCrop,255,0,100,kick_NUM_CELLS) : 0);
+      closedhat.setStart(!thisDirection ? map(paramCrop,255,0,100,closedhat_NUM_CELLS) : 0);
+      snare.setStart(!thisDirection ? map(paramCrop,255,0,100,snare_NUM_CELLS) : 0);
+      rim.setStart(!thisDirection ? map(paramCrop,255,0,100,rim_NUM_CELLS) : 0);
+      tom.setStart(!thisDirection ? map(paramCrop,255,0,100,tom_NUM_CELLS) : 0);*/
+      
+      // experimental glitch effect
+      //paramGlitch = driftValue(PARAM_GLITCH,2);
+    }
+    break;
+
+    case 2:
+    // slop, swing, etc
+    break;
+
+    case 3:
+    paramBeat = (NUM_BEATS * (int) storedValues[BEAT]) / 256;
+    tapTempo.setBPM((float) MIN_TEMPO + ((float) storedValues[TEMPO]));
+    paramTimeSignature = map(storedValues[TIME_SIGNATURE],0,256,4,8);
+    paramDrift = storedValues[DRIFT]; // to be scrapped?
+    break;
   }
 }
 
@@ -336,6 +482,7 @@ int updateAudio(){
     ((sampleVolumes[2]*snare.next())>>atten)+
     ((sampleVolumes[3]*rim.next())>>atten)+
     ((sampleVolumes[4]*tom.next())>>atten);
+  asig = (asig>>paramCrush)<<crushCompensation;
   return asig;
 }
 
@@ -388,5 +535,29 @@ void updateLeds() {
     } else {
       digitalWrite(ledPins[i], LOW);
     }
+  }
+}
+
+void loadParams(byte slotNum) {
+  readyToChooseLoadSlot = false;
+  newStateLoaded = true;
+  for(byte i=0; i<NUM_PARAM_GROUPS*NUM_KNOBS; i++) {
+    byte thisValue = EEPROM.read(slotNum*SAVED_STATE_SLOT_BYTES+i);
+    storedValues[i] = thisValue;
+  }
+  for(byte i=0;i<NUM_PARAM_GROUPS;i++) {
+    updateParameters(i);
+  }
+}
+
+void saveParams(byte slotNum) {
+  // 1024 possible byte locations
+  // currently need 20 bytes per saved state
+  // currently planning choice of 6 slots for saved states (1 per button)
+  // need to leave space for some possible extra saved state data
+  // allot 32 bytes per saved state (nice round number), taking up total of 192 bytes
+  readyToChooseSaveSlot = false;
+  for(byte i=0; i<NUM_PARAM_GROUPS*NUM_KNOBS; i++) {
+    EEPROM.write(slotNum*SAVED_STATE_SLOT_BYTES+i, storedValues[i]);
   }
 }

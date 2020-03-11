@@ -1,5 +1,8 @@
 // order of samples: kick, hat, snare, rim, tom
-const byte beats[24][5][4] PROGMEM = {
+
+#define NUM_BEATS 24
+
+const byte beats[NUM_BEATS][5][4] PROGMEM = {
   { // you can leave your hat on
     {B00000000,B00000000,B00000000,B00000000,},
     {B10101010,B10101010,B10101010,B10101010,},
