@@ -69,6 +69,9 @@ bool knobLocked[NUM_KNOBS] = {true,true,true,true}; // bad use of space, use sin
 byte analogValues[NUM_KNOBS] = {0,0,0,0};
 byte initValues[NUM_KNOBS] = {0,0,0,0};
 
+byte specialLedDisplayNum = 10;
+unsigned long specialLedDisplayTime = 0;
+
 bool readyToSave = true;
 bool readyToChooseSaveSlot = false;
 bool readyToLoad = true;
@@ -91,7 +94,10 @@ byte paramTimeSignature = 4;
 // N.B. no such variable as paramTempo - handled by TapTempo library
 byte paramDrift = 0; // to be scrapped?
 
+// special global variables needed for certain parameters
 byte crushCompensation;
+byte previousBeat;
+byte previousTimeSignature;
 
 #define MIN_TEMPO 40
 #define MAX_TEMPO 295
@@ -249,10 +255,9 @@ void updateControl(){
         numSteps = paramTimeSignature * 8; // 8 steps ber beat
         if(numSteps == 32) numSteps = 64; // allow 4/4 signature to use two bars of defined beat
       }
-    }
-    
-    updateLeds();
+    } 
     playPulseHits();
+    updateLeds();
     incrementPulse();
     nextPulseTime = nextPulseTime + msPerPulse;
   }
@@ -294,6 +299,8 @@ void updateControl(){
   } else {
     secondLoop = false;
   }
+
+  if(!beatPlaying) updateLeds();
 }
 
 void updateParameters(byte thisControlSet) {
@@ -356,8 +363,16 @@ void updateParameters(byte thisControlSet) {
 
     case 3:
     paramBeat = (NUM_BEATS * (int) storedValues[BEAT]) / 256;
+    if(paramBeat != previousBeat) {
+      specialLedDisplay(paramBeat); // display current beat number using LEDs
+      previousBeat = paramBeat;
+    }
     tapTempo.setBPM((float) MIN_TEMPO + ((float) storedValues[TEMPO]));
     paramTimeSignature = map(storedValues[TIME_SIGNATURE],0,256,4,8);
+    if(paramTimeSignature != previousTimeSignature) {
+      specialLedDisplay(paramTimeSignature); // display current beat number using LEDs
+      previousTimeSignature = paramTimeSignature;
+    }
     paramDrift = storedValues[DRIFT]; // to be scrapped?
     break;
   }
@@ -529,22 +544,37 @@ void flashLeds() {
   }
 }
 
+// figure out better pattern for metronome flashing
 void updateLeds() {
   byte i;
   for(i=0;i<NUM_LEDS;i++) {
-    if(beatPlaying) {
+    if(millis() < specialLedDisplayTime + 2500UL) {
+      displayLedNum(specialLedDisplayNum);
+    } else if(beatPlaying) {
       switch(pulseNum%24) {
         case 0:
-        if(i==(stepNum/8)%5) digitalWrite(ledPins[i], HIGH);
+        if(i==(stepNum/8)%5) displayLedNum(stepNum?1:3);
         break;
-        case 1:
-        if(i==(stepNum/8)%5) digitalWrite(ledPins[i], LOW);
+        case 3:
+        if(i==(stepNum/8)%5) displayLedNum(0);
         break;
       }
     } else {
       digitalWrite(ledPins[i], LOW);
     }
   }
+}
+
+void displayLedNum(byte displayNum) {
+  byte i;
+  for(i=0;i<NUM_LEDS;i++) {
+    digitalWrite(ledPins[i], bitRead(displayNum,i));
+  }
+}
+
+void specialLedDisplay(byte displayNum) {
+  specialLedDisplayNum = displayNum;
+  specialLedDisplayTime = millis();
 }
 
 void loadParams(byte slotNum) {
