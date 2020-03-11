@@ -52,6 +52,7 @@ float nextPulseTime = 0.0;
 float msPerPulse = 20.8333; // 120bpm
 byte pulseNum = 0; // 0 to 23 (24ppqn, pulses per quarter note)
 byte stepNum = 0; // 0 to 64 (max two bars of 8 beats, aka 32 32nd-notes)
+byte numSteps;
 bool beatPlaying = false;
 byte noteDown = B00000000;
 bool syncReceived = false;
@@ -242,6 +243,14 @@ void updateControl(){
   while(!syncReceived && beatPlaying && millis()>=nextPulseTime) {
     Serial.write(0xF8); // MIDI clock continue
     cancelMidiNotes();
+    
+    if(pulseNum%24==0) {
+      if(stepNum==0) {
+        numSteps = paramTimeSignature * 8; // 8 steps ber beat
+        if(numSteps == 32) numSteps = 64; // allow 4/4 signature to use two bars of defined beat
+      }
+    }
+    
     updateLeds();
     playPulseHits();
     incrementPulse();
@@ -454,7 +463,7 @@ void incrementPulse() {
   }
   if(pulseNum % 3 == 0) {
     stepNum ++;
-    if(stepNum == 64) {
+    if(stepNum == numSteps) {
       stepNum = 0;
     }
   }
@@ -502,9 +511,9 @@ void loop(){
     } else if(thisMidiByte==0xF8) {
       syncReceived = true;
       if(beatPlaying) {
-        cancelMidiNotes();
+        /*cancelMidiNotes();
         playPulseHits();
-        incrementPulse();
+        incrementPulse();*/
       }
     }
   }
@@ -526,10 +535,10 @@ void updateLeds() {
     if(beatPlaying) {
       switch(pulseNum%24) {
         case 0:
-        if(i==stepNum/8) digitalWrite(ledPins[i], HIGH);
+        if(i==(stepNum/8)%5) digitalWrite(ledPins[i], HIGH);
         break;
-        case 12:
-        if(i==stepNum/8) digitalWrite(ledPins[i], LOW);
+        case 1:
+        if(i==(stepNum/8)%5) digitalWrite(ledPins[i], LOW);
         break;
       }
     } else {
