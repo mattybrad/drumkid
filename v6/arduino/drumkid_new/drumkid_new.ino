@@ -204,7 +204,7 @@ void updateParameters(byte thisControlSet) {
     paramMidpoint = storedValues[MIDPOINT];
     break;
 
-    
+    // testing...
   }
 }
 
