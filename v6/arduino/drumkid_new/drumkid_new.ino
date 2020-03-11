@@ -38,10 +38,11 @@ Bounce buttonZ = Bounce();
 #define NUM_LEDS 5
 #define NUM_BUTTONS 6
 #define NUM_SAMPLES_TOTAL 5 // total number of samples
+#define NUM_PARAM_GROUPS 5
 
 const byte ledPins[5] = {2,3,11,12,13};
 const byte buttonPins[6] = {4,5,6,7,8,10};
-const byte analogPins[4] = {0,1,2,3};
+const byte analogPins[4] = {3,2,1,0}; // unnecessary? remove, save four bytes?
 
 float nextPulseTime = 0.0;
 float msPerPulse = 20.8333; // 120bpm
@@ -55,11 +56,38 @@ const byte midiNotes[NUM_SAMPLES_TOTAL] = {36,42,38,37,43};
 const byte zoomValues[] = {32,16,8,4,2,1}; // could be compressed?
 byte sampleVolumes[NUM_SAMPLES_TOTAL] = {255,255,255,255,255}; // temp
 
-byte paramZoom = 200;
+byte storedValues[NUM_PARAM_GROUPS*NUM_KNOBS]; // analog knob values
+byte firstLoop = true;
+byte secondLoop = false;
+byte controlSet = 0;
+bool knobLocked[NUM_KNOBS] = {true,true,true,true}; // bad use of space, use single byte instead
+byte analogValues[NUM_KNOBS] = {0,0,0,0};
+byte initValues[NUM_KNOBS] = {0,0,0,0};
+
+// parameters, 0-255 unless otherwise noted
 byte paramChance = 64;
+byte paramZoom = 200;
 byte paramMidpoint = 127;
 byte paramRange = 127;
-byte paramBeat = 2;
+
+byte paramPitch = 127;
+byte paramCrush = 0;
+byte paramCrop = 0;
+byte paramGlitch = 0;
+
+byte paramBeat = 2; // 0 to 23
+
+// define which knob controls which parameter
+// e.g. 0 is group 1 knob 1, 6 is group 2 knob 3
+#define CHANCE 0
+#define ZOOM 1
+#define MIDPOINT 2
+#define RANGE 3
+
+#define PITCH 4
+#define CRUSH 5
+#define CROP 6
+#define GLITCH 7
 
 void setup(){
   byte i;
@@ -88,6 +116,17 @@ void setup(){
   buttonX.attach(7, INPUT_PULLUP);
   buttonY.attach(8, INPUT_PULLUP);
   buttonZ.attach(10, INPUT_PULLUP);
+  
+  storedValues[CHANCE] = 0;
+  storedValues[ZOOM] = 0;
+  storedValues[RANGE] = 0;
+  storedValues[MIDPOINT] = 0;
+  
+  storedValues[PITCH] = 0;
+  storedValues[CRUSH] = 0;
+  storedValues[CROP] = 0;
+  storedValues[GLITCH] = 0;
+  
   tapTempo.setMinBPM((float) 40);
   tapTempo.setMaxBPM((float) 240);
   tapTempo.setBPM(120.0);
@@ -97,6 +136,9 @@ void setup(){
 
 float testBPM = 120.0;
 void updateControl(){
+  byte i;
+  bool controlSetChanged = false;
+  
   buttonA.update();
   buttonB.update();
   buttonC.update();
@@ -115,10 +157,55 @@ void updateControl(){
     nextPulseTime = nextPulseTime + msPerPulse;
   }
   // temp:
-  paramChance = mozziAnalogRead(analogPins[0])>>2;
+  /*paramChance = mozziAnalogRead(analogPins[0])>>2;
   paramZoom = mozziAnalogRead(analogPins[1])>>2;
   paramMidpoint = mozziAnalogRead(analogPins[2])>>2;
-  paramRange = mozziAnalogRead(analogPins[3])>>2;
+  paramRange = mozziAnalogRead(analogPins[3])>>2;*/
+
+  for(i=0;i<NUM_KNOBS;i++) {
+    if(firstLoop) {
+      byte dummyReading = mozziAnalogRead(analogPins[i]);
+    } else {
+      analogValues[i] = mozziAnalogRead(analogPins[i])>>2;
+    }
+  }
+  if(controlSetChanged||secondLoop) {
+    for(i=0;i<NUM_KNOBS;i++) {
+      knobLocked[i] = false;
+      initValues[i] = analogValues[i];
+    }
+  } else {
+    for(i=0;i<NUM_KNOBS;i++) {
+      if(knobLocked[i]) {
+        int diff = initValues[i] - analogValues[i];
+        if(diff<-5||diff>5) knobLocked[i] = false;
+      }
+      if(!knobLocked[i]) {
+        storedValues[NUM_KNOBS*controlSet+i] = analogValues[i];
+      }
+    }
+  }
+  updateParameters(0); // temp
+
+  if(firstLoop) {
+    firstLoop = false;
+    secondLoop = true;
+  } else {
+    secondLoop = false;
+  }
+}
+
+void updateParameters(byte thisControlSet) {
+  switch(thisControlSet) {
+    case 0:
+    paramChance = storedValues[CHANCE];
+    paramZoom = storedValues[ZOOM];
+    paramRange = storedValues[RANGE];
+    paramMidpoint = storedValues[MIDPOINT];
+    break;
+
+    
+  }
 }
 
 void doStartStop() {
