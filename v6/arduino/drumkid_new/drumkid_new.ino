@@ -247,18 +247,7 @@ void updateControl(){
   
   msPerPulse = tapTempo.getBeatLength() / 24.0;
   while(!syncReceived && beatPlaying && millis()>=nextPulseTime) {
-    Serial.write(0xF8); // MIDI clock continue
-    cancelMidiNotes();
-    
-    if(pulseNum%24==0) {
-      if(stepNum==0) {
-        numSteps = paramTimeSignature * 8; // 8 steps ber beat
-        if(numSteps == 32) numSteps = 64; // allow 4/4 signature to use two bars of defined beat
-      }
-    } 
-    playPulseHits();
-    updateLeds();
-    incrementPulse();
+    doPulseActions();
     nextPulseTime = nextPulseTime + msPerPulse;
   }
 
@@ -301,6 +290,20 @@ void updateControl(){
   }
 
   if(!beatPlaying) updateLeds();
+}
+
+void doPulseActions() {
+  Serial.write(0xF8); // MIDI clock continue
+  cancelMidiNotes();
+  if(pulseNum%24==0) {
+    if(stepNum==0) {
+      numSteps = paramTimeSignature * 8; // 8 steps ber beat
+      if(numSteps == 32) numSteps = 64; // allow 4/4 signature to use two bars of defined beat
+    }
+  } 
+  playPulseHits();
+  updateLeds();
+  incrementPulse();
 }
 
 void updateParameters(byte thisControlSet) {
@@ -526,9 +529,7 @@ void loop(){
     } else if(thisMidiByte==0xF8) {
       syncReceived = true;
       if(beatPlaying) {
-        /*cancelMidiNotes();
-        playPulseHits();
-        incrementPulse();*/
+        doPulseActions();
       }
     }
   }
