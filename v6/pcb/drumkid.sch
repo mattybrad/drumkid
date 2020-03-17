@@ -927,7 +927,7 @@ U 1 1 5E89BBDD
 P 8750 2300
 F 0 "J3" H 8830 2342 50  0000 L CNN
 F 1 "Conn_01x15" H 8830 2251 50  0000 L CNN
-F 2 "Connector_PinSocket_2.54mm:PinSocket_1x15_P2.54mm_Horizontal" H 8750 2300 50  0001 C CNN
+F 2 "Connector_PinSocket_2.54mm:PinSocket_1x15_P2.54mm_Vertical" H 8750 2300 50  0001 C CNN
 F 3 "~" H 8750 2300 50  0001 C CNN
 	1    8750 2300
 	1    0    0    -1  
@@ -954,7 +954,7 @@ U 1 1 5E8A44BB
 P 8750 3950
 F 0 "J4" H 8830 3992 50  0000 L CNN
 F 1 "Conn_01x15" H 8830 3901 50  0000 L CNN
-F 2 "Connector_PinSocket_2.54mm:PinSocket_1x15_P2.54mm_Horizontal" H 8750 3950 50  0001 C CNN
+F 2 "Connector_PinSocket_2.54mm:PinSocket_1x15_P2.54mm_Vertical" H 8750 3950 50  0001 C CNN
 F 3 "~" H 8750 3950 50  0001 C CNN
 	1    8750 3950
 	1    0    0    -1  
