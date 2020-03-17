@@ -46,7 +46,7 @@ Bounce buttonZ = Bounce();
 
 const byte ledPins[5] = {2,3,11,12,13};
 const byte buttonPins[6] = {4,5,6,7,8,10};
-const byte analogPins[4] = {3,2,1,0}; // unnecessary? remove, save four bytes?
+const byte analogPins[4] = {0,1,2,3}; // unnecessary? remove, save four bytes?
 
 float nextPulseTime = 0.0;
 float msPerPulse = 20.8333; // 120bpm
