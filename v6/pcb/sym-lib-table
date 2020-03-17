@@ -1,3 +1,4 @@
 (sym_lib_table
   (lib (name MAX756)(type Legacy)(uri C:/Users/Matt/Downloads/MAX756/MAX756.lib)(options "")(descr ""))
+  (lib (name arduino_nano_v3.x)(type Legacy)(uri ${KIPRJMOD}/arduino_nano_v3.x.lib)(options "")(descr ""))
 )
