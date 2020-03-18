@@ -29,12 +29,12 @@ ArduinoTapTempo tapTempo;
 // include EEPROM library for saving data
 #include <EEPROM.h>
 
+Bounce buttonX = Bounce();
 Bounce buttonA = Bounce();
 Bounce buttonB = Bounce();
 Bounce buttonC = Bounce();
-Bounce buttonX = Bounce();
+Bounce buttonD = Bounce();
 Bounce buttonY = Bounce();
-Bounce buttonZ = Bounce();
 
 #define CONTROL_RATE 256 // Hz, aiming for 256 to keep up with high tempos
 #define NUM_KNOBS 4
@@ -137,18 +137,18 @@ void setup(){
   snare.setFreq((float) snare_SAMPLERATE / (float) snare_NUM_CELLS);
   rim.setFreq((float) rim_SAMPLERATE / (float) rim_NUM_CELLS);
   tom.setFreq((float) tom_SAMPLERATE / (float) tom_NUM_CELLS);
+  buttonX.interval(25);
   buttonA.interval(25);
   buttonB.interval(25);
   buttonC.interval(25);
-  buttonX.interval(25);
+  buttonD.interval(25);
   buttonY.interval(25);
-  buttonZ.interval(25);
-  buttonA.attach(4, INPUT_PULLUP);
-  buttonB.attach(5, INPUT_PULLUP);
-  buttonC.attach(6, INPUT_PULLUP);
-  buttonX.attach(7, INPUT_PULLUP);
-  buttonY.attach(8, INPUT_PULLUP);
-  buttonZ.attach(10, INPUT_PULLUP);
+  buttonX.attach(4, INPUT_PULLUP);
+  buttonA.attach(5, INPUT_PULLUP);
+  buttonB.attach(6, INPUT_PULLUP);
+  buttonC.attach(7, INPUT_PULLUP);
+  buttonD.attach(8, INPUT_PULLUP);
+  buttonY.attach(10, INPUT_PULLUP);
   
   storedValues[CHANCE] = 0;
   storedValues[ZOOM] = 0;
@@ -178,20 +178,20 @@ void updateControl(){
   bool controlSetChanged = false;
   newStateLoaded = false;
   
+  buttonX.update();
   buttonA.update();
   buttonB.update();
   buttonC.update();
-  buttonX.update();
+  buttonD.update();
   buttonY.update();
-  buttonZ.update();
 
-  if(!buttonB.read() && !buttonC.read()) {
+  if(!buttonA.read() && !buttonB.read()) {
     readyToLoad = false;
     readyToSave = false;
     readyToChooseLoadSlot = true;
     readyToChooseSaveSlot = false;
     tapTempo.update(false);
-  } else if(!buttonX.read() && !buttonY.read()) {
+  } else if(!buttonC.read() && !buttonD.read()) {
     readyToSave = false;
     readyToLoad = false;
     readyToChooseSaveSlot = true;
@@ -201,49 +201,46 @@ void updateControl(){
     readyToSave = true;
     readyToLoad = true;
     if(!readyToChooseLoadSlot&&!readyToChooseSaveSlot) {
-      tapTempo.update(!buttonA.read());
+      tapTempo.update(!buttonY.read());
     } else {
       tapTempo.update(false);
     }
 
     // handle button presses
     byte prevControlSet = controlSet;
-    if(buttonA.fell()) {
-      if(readyToChooseLoadSlot) loadParams(0);
-      else if(readyToChooseSaveSlot) saveParams(0);
-      else {
-        controlSet = 0;
-        storedValues[TEMPO] = tapTempo.getBPM() - MIN_TEMPO;
-      }
-    } else if(buttonB.fell()) {
+    if(buttonY.fell()) {
+      if(readyToChooseLoadSlot) loadParams(5);
+      else if(readyToChooseSaveSlot) saveParams(5);
+      else storedValues[TEMPO] = tapTempo.getBPM() - MIN_TEMPO;
+    } else if(buttonA.fell()) {
       if(readyToChooseLoadSlot) loadParams(1);
       else if(readyToChooseSaveSlot) saveParams(1);
-      else controlSet = 1;
-    } else if(buttonC.fell()) {
+      else controlSet = 0;
+    } else if(buttonB.fell()) {
       if(readyToChooseLoadSlot) loadParams(2);
       else if(readyToChooseSaveSlot) saveParams(2);
-      else controlSet = 2;
-    } else if(buttonX.fell()) {
+      else controlSet = 1;
+    } else if(buttonC.fell()) {
       if(readyToChooseLoadSlot) loadParams(3);
       else if(readyToChooseSaveSlot) saveParams(3);
-      else controlSet = 3;
-    } else if(buttonY.fell()) {
+      else controlSet = 2;
+    } else if(buttonD.fell()) {
       if(readyToChooseLoadSlot) loadParams(4);
       else if(readyToChooseSaveSlot) saveParams(4);
-      else controlSet = 4;
+      else controlSet = 3;
     }
     controlSetChanged = (prevControlSet != controlSet);
     
-    if(buttonZ.fell()) {
-      if(readyToChooseLoadSlot) loadParams(5);
-      else if(readyToChooseSaveSlot) saveParams(5);
+    if(buttonX.fell()) {
+      if(readyToChooseLoadSlot) loadParams(0);
+      else if(readyToChooseSaveSlot) saveParams(0);
       else doStartStop();
     }
     
   }
 
-  //if(buttonZ.fell()) doStartStop();
-  //tapTempo.update(!buttonA.read());
+  //if(buttonY.fell()) doStartStop();
+  //tapTempo.update(!buttonX.read());
   
   msPerPulse = tapTempo.getBeatLength() / 24.0;
   while(!syncReceived && beatPlaying && millis()>=nextPulseTime) {
