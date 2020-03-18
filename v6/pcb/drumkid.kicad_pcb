@@ -2,7 +2,7 @@
 
   (general
     (thickness 1.6)
-    (drawings 46)
+    (drawings 48)
     (tracks 0)
     (zones 0)
     (modules 52)
@@ -2464,6 +2464,12 @@
     )
   )
 
+  (gr_text arduino (at 133.35 138.43) (layer F.SilkS) (tstamp 5E72272C)
+    (effects (font (size 1.2 1.2) (thickness 0.3)) (justify left))
+  )
+  (gr_text midi (at 133.35 149.86) (layer F.SilkS)
+    (effects (font (size 1.2 1.2) (thickness 0.3)) (justify left))
+  )
   (gr_line (start 144.9324 77.47) (end 54.991 77.47) (layer B.SilkS) (width 0.1) (tstamp 5E721570))
   (gr_line (start 144.9324 75.3872) (end 54.991 75.3872) (layer B.SilkS) (width 0.1) (tstamp 5E721564))
   (gr_line (start 144.9324 71.1708) (end 54.991 71.1708) (layer B.SilkS) (width 0.1) (tstamp 5E7214F3))
