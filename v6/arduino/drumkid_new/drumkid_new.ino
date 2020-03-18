@@ -2,9 +2,9 @@
  *  It might work with other versions with a bit of tweaking   
  */
 
-#include <MozziGuts.h>
-#include <Sample.h>
-#include <mozzi_rand.h>
+#include "MozziDK/MozziGuts.h"
+#include "MozziDK/Sample.h"
+#include "MozziDK/mozzi_rand.h"
 
 #include "beats.h"
 
@@ -110,8 +110,8 @@ byte previousTimeSignature;
 // e.g. 0 is group 1 knob 1, 6 is group 2 knob 3
 #define CHANCE 0
 #define ZOOM 1
-#define MIDPOINT 2
-#define RANGE 3
+#define RANGE 2
+#define MIDPOINT 3
 
 #define PITCH 4
 #define CRUSH 5
@@ -326,12 +326,12 @@ void updateParameters(byte thisControlSet) {
       snare.setFreq(newSnareFreq);
       rim.setFreq(newRimFreq);
       tom.setFreq(newTomFreq);
-      /*bool thisDirection = driftValue(PARAM_PITCH,2) >= 128;
+      bool thisDirection = storedValues[PITCH] >= 128;
       kick.setDirection(thisDirection);
       closedhat.setDirection(thisDirection);
       snare.setDirection(thisDirection);
       rim.setDirection(thisDirection);
-      tom.setDirection(thisDirection);*/
+      tom.setDirection(thisDirection);
       
       // bit crush! high value = clean (8 bits), low value = dirty (1 bit?)
       paramCrush = 7-(storedValues[CRUSH]>>5);
@@ -340,8 +340,8 @@ void updateParameters(byte thisControlSet) {
       if(paramCrush >= 7) crushCompensation --;
 
       // crop - a basic effect to chop off the end of each sample for a more staccato feel
-      paramCrop = storedValues[CRUSH];
-      /*kick.setEnd(thisDirection ? map(paramCrop,0,255,100,kick_NUM_CELLS) : kick_NUM_CELLS);
+      paramCrop = storedValues[CROP];
+      kick.setEnd(thisDirection ? map(paramCrop,0,255,100,kick_NUM_CELLS) : kick_NUM_CELLS);
       closedhat.setEnd(thisDirection ? map(paramCrop,0,255,100,closedhat_NUM_CELLS) : closedhat_NUM_CELLS);
       snare.setEnd(thisDirection ? map(paramCrop,0,255,100,snare_NUM_CELLS) : snare_NUM_CELLS);
       rim.setEnd(thisDirection ? map(paramCrop,0,255,100,rim_NUM_CELLS) : rim_NUM_CELLS);
@@ -350,7 +350,7 @@ void updateParameters(byte thisControlSet) {
       closedhat.setStart(!thisDirection ? map(paramCrop,255,0,100,closedhat_NUM_CELLS) : 0);
       snare.setStart(!thisDirection ? map(paramCrop,255,0,100,snare_NUM_CELLS) : 0);
       rim.setStart(!thisDirection ? map(paramCrop,255,0,100,rim_NUM_CELLS) : 0);
-      tom.setStart(!thisDirection ? map(paramCrop,255,0,100,tom_NUM_CELLS) : 0);*/
+      tom.setStart(!thisDirection ? map(paramCrop,255,0,100,tom_NUM_CELLS) : 0);
       
       // experimental glitch effect
       //paramGlitch = driftValue(PARAM_GLITCH,2);
