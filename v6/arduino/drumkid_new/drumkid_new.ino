@@ -206,7 +206,7 @@ void setup(){
   storedValues[CROP] = 255;
   storedValues[DROP] = 128;
 
-  storedValues[BEAT] = 26;
+  storedValues[BEAT] = 13;
   storedValues[TEMPO] = 128;
 
   storedValues[DRONE_MOD] = 127;
@@ -464,7 +464,7 @@ void doStartStop() {
 
 void playPulseHits() {
   byte tempDivider = 3;
-  if(tempSwing == 2) tempDivider = 4;
+  if(tempSwing == 2) tempDivider = 1;
   if(pulseNum % tempDivider == 0) {
     for(byte i=0; i<5; i++) {
       if(bitRead(dropRef[i],paramDrop)) calculateNote(i);
@@ -487,10 +487,13 @@ void calculateNote(byte sampleNum) {
   byte lowerZoomValue = zoomValuesTriplet[zoomValueIndex]; // e.g. 8 for a quarter note (NO)
   byte upperZoomValue = zoomValuesTriplet[zoomValueIndex+1]; // e.g. 16 for a quarter note (NO)
   long thisVelocity = 0;
-  if(stepNum%6==0) {
+  // this is a big mess! sort it out later
+  if((tempSwing==0&&stepNum%6==0)||(tempSwing==2&&(stepNum%12==0||stepNum%12==7))) {
     // beats only defined down to 16th notes not 32nd, hence %2 (CHANGE COMMENT)
-    byte beatByte = pgm_read_byte(&beats[paramBeat][sampleNum][stepNum/48]); // 48...? was 16
-    if(bitRead(beatByte,7-((stepNum/6)%8))) thisVelocity = 255;
+    byte effectiveStepNum = stepNum;
+    if(stepNum%12==7) effectiveStepNum = stepNum - 1;
+    byte beatByte = pgm_read_byte(&beats[paramBeat][sampleNum][effectiveStepNum/48]); // 48...? was 16
+    if(bitRead(beatByte,7-((effectiveStepNum/6)%8))) thisVelocity = 255;
   }
   if(thisVelocity==0) {
     // for steps not defined in beat, use algorithm to determine velocity
