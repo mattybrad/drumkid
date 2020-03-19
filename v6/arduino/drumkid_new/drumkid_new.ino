@@ -5,6 +5,8 @@
 #include "MozziDK/MozziGuts.h"
 #include "MozziDK/Sample.h"
 #include "MozziDK/mozzi_rand.h"
+#include "MozziDK/Oscil.h"
+#include "MozziDK/tables/saw256_int8.h"
 
 #include "beats.h"
 
@@ -19,6 +21,10 @@ Sample <closedhat_NUM_CELLS, AUDIO_RATE> closedhat(closedhat_DATA);
 Sample <snare_NUM_CELLS, AUDIO_RATE> snare(snare_DATA);
 Sample <rim_NUM_CELLS, AUDIO_RATE> rim(rim_DATA);
 Sample <tom_NUM_CELLS, AUDIO_RATE> tom(tom_DATA);
+
+// define oscillators
+Oscil<SAW256_NUM_CELLS, AUDIO_RATE> droneOscillator1(SAW256_DATA);
+Oscil<SAW256_NUM_CELLS, AUDIO_RATE> droneOscillator2(SAW256_DATA);
 
 // include debouncing library
 #include <Bounce2.h>
@@ -94,10 +100,17 @@ byte paramTimeSignature = 4;
 // N.B. no such variable as paramTempo - handled by TapTempo library
 byte paramDrift = 0; // to be scrapped?
 
+byte paramDroneRoot;
+float paramDronePitch;
+byte paramDroneMod;
+
 // special global variables needed for certain parameters
 byte crushCompensation;
 byte previousBeat;
 byte previousTimeSignature;
+byte oscilGain1 = 255;
+byte oscilGain2 = 255;
+bool droneMod2Active = false;
 
 #define MIN_TEMPO 40
 #define MAX_TEMPO 295
@@ -118,10 +131,32 @@ byte previousTimeSignature;
 #define CROP 6
 #define GLITCH 7
 
-#define BEAT 12
-#define TEMPO 13
-#define TIME_SIGNATURE 14
-#define DRIFT 15
+#define BEAT 8
+#define TEMPO 9
+#define TIME_SIGNATURE 10
+#define DRIFT 11
+
+#define DRONE_ROOT 12
+#define DRONE_MOD 13
+#define DRONE 14
+#define DRONE_PITCH 15
+
+// define root notes
+float rootNotes[13] = {
+  277.182631f,
+  184.9972114f,
+  246.9416506f,
+  164.8137785f,
+  220.0f,
+  146.832384f,
+  195.997718f,
+  261.6255653f,
+  174.6141157f,
+  233.0818808f,
+  155.5634919f,
+  207.6523488f,
+  138.5913155f,
+};
 
 void setup(){
   byte i;
@@ -167,6 +202,9 @@ void setup(){
   for(byte i=0;i<NUM_PARAM_GROUPS;i++) {
     updateParameters(i);
   }
+
+  droneOscillator1.setFreq(100);
+  droneOscillator2.setFreq(150);
   
   Serial.begin(31250);
   flashLeds(); // remove if low on space later
@@ -358,10 +396,6 @@ void updateParameters(byte thisControlSet) {
     break;
 
     case 2:
-    // slop, swing, etc
-    break;
-
-    case 3:
     paramBeat = (NUM_BEATS * (int) storedValues[BEAT]) / 256;
     if(paramBeat != previousBeat) {
       specialLedDisplay(paramBeat); // display current beat number using LEDs
@@ -374,6 +408,29 @@ void updateParameters(byte thisControlSet) {
       previousTimeSignature = paramTimeSignature;
     }
     paramDrift = storedValues[DRIFT]; // to be scrapped?
+    break;
+
+    case 3:
+    //paramDrop = driftValue(PARAM_DROP,2) >> 5; // range of 0 to 7
+    // using values of 270 and 240 (i.e. 255±15) to give a decent "dead zone" in the middle of the knob
+    oscilGain2 = constrain(2*storedValues[DRONE]-270, 0, 255);
+    if(storedValues[DRONE] < 128) {
+      oscilGain1 = constrain(240-2*storedValues[DRONE], 0, 255);
+    } else {
+      oscilGain1 = oscilGain2;
+    }
+    // do same thing for drone modulation gains
+    if(storedValues[DRONE_MOD] < 128) {
+      droneMod2Active = false;
+      paramDroneMod = constrain(240-2*storedValues[DRONE_MOD], 0, 255);
+    } else {
+      droneMod2Active = true;
+      paramDroneMod = constrain(2*storedValues[DRONE_MOD]-270, 0, 255);;
+    }
+    paramDroneRoot = map(storedValues[DRONE_ROOT],0,255,0,12);
+    paramDronePitch = rootNotes[paramDroneRoot] * (0.5f + (float) storedValues[DRONE_PITCH]/170.0f);// * 0.768f + 65.41f;
+    droneOscillator1.setFreq(paramDronePitch);
+    droneOscillator2.setFreq(paramDronePitch*1.5f);
     break;
   }
 }
@@ -497,15 +554,19 @@ void cancelMidiNotes() {
 }
 
 const byte atten = 9;
+char d1Next, d2Next;
 int updateAudio(){
-  //char asig = (kick.next() >> 2) + (closedhat.next() >> 3) + (snare.next() >> 2) + (rim.next() >> 1) + (tom.next() >> 2);
-  //return asig; // return an int signal centred around 0
-
+  d1Next = droneOscillator1.next();
+  d2Next = droneOscillator2.next();
+  char droneSig = ((oscilGain1*d1Next)>>10)+((oscilGain2*d2Next)>>10);
+  char droneModSig = (d1Next>>2)+(droneMod2Active?(d2Next>>2):0);
   char asig = ((sampleVolumes[0]*kick.next())>>atten)+
     ((sampleVolumes[1]*closedhat.next())>>atten)+
     ((sampleVolumes[2]*snare.next())>>atten)+
     ((sampleVolumes[3]*rim.next())>>atten)+
-    ((sampleVolumes[4]*tom.next())>>atten);
+    ((sampleVolumes[4]*tom.next())>>atten)+
+    (droneSig>>2);
+  asig = (asig * ((255-paramDroneMod)+((paramDroneMod*droneModSig)>>6)))>>8;
   asig = (asig>>paramCrush)<<crushCompensation;
   return asig;
 }
