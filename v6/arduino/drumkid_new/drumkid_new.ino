@@ -47,7 +47,7 @@ Bounce buttonY = Bounce();
 #define NUM_LEDS 5
 #define NUM_BUTTONS 6
 #define NUM_SAMPLES 5 // total number of samples
-#define NUM_PARAM_GROUPS 5
+#define NUM_PARAM_GROUPS 4
 #define SAVED_STATE_SLOT_BYTES 32
 
 const byte ledPins[5] = {2,3,11,12,13};
@@ -194,15 +194,23 @@ void setup(){
   buttonD.attach(8, INPUT_PULLUP);
   buttonY.attach(10, INPUT_PULLUP);
   
-  storedValues[CHANCE] = 64;
+  storedValues[CHANCE] = 31;
   storedValues[ZOOM] = 192;
   storedValues[RANGE] = 128;
-  storedValues[MIDPOINT] = 128;
+  storedValues[MIDPOINT] = 64;
   
-  storedValues[PITCH] = 192;
+  storedValues[PITCH] = 170;
   storedValues[CRUSH] = 255;
   storedValues[CROP] = 255;
-  storedValues[DROP] = 0;
+  storedValues[DROP] = 128;
+
+  storedValues[BEAT] = 26;
+  storedValues[TEMPO] = 128;
+
+  storedValues[DRONE_MOD] = 127;
+  storedValues[DRONE] = 127;
+  storedValues[DRONE_ROOT] = 127;
+  storedValues[DRONE_PITCH] = 127;
   
   tapTempo.setMinBPM((float) MIN_TEMPO);
   tapTempo.setMaxBPM((float) MAX_TEMPO);
@@ -211,9 +219,6 @@ void setup(){
   for(byte i=0;i<NUM_PARAM_GROUPS;i++) {
     updateParameters(i);
   }
-
-  droneOscillator1.setFreq(100);
-  droneOscillator2.setFreq(150);
   
   Serial.begin(31250);
   flashLeds(); // remove if low on space later
@@ -297,7 +302,7 @@ void updateControl(){
 
   for(i=0;i<NUM_KNOBS;i++) {
     if(firstLoop) {
-      byte dummyReading = mozziAnalogRead(analogPins[i]);
+      byte dummyReading = mozziAnalogRead(analogPins[i]); // need to read pin once because first reading is not accurate
     } else {
       analogValues[i] = mozziAnalogRead(analogPins[i])>>2;
     }
