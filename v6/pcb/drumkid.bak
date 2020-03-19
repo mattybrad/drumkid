@@ -536,7 +536,7 @@ Wire Wire Line
 Wire Wire Line
 	8000 5450 8000 5300
 $Comp
-L MCU_Module:Arduino_Nano_v3.x A1
+L arduino_nano_v3.x:Arduino_Nano_v3.x A1
 U 1 1 5E754F97
 P 2000 3000
 F 0 "A1" H 1500 1900 50  0000 C CNN
@@ -1058,8 +1058,6 @@ Wire Wire Line
 	2750 1200 2950 1200
 Connection ~ 2950 1200
 Wire Wire Line
-	2950 1200 3150 1200
-Wire Wire Line
 	2950 1500 3300 1500
 $Comp
 L power:GND #PWR0112
@@ -1168,13 +1166,8 @@ Wire Wire Line
 Connection ~ 5150 6000
 Wire Wire Line
 	5150 6000 5700 6000
-Connection ~ 3150 1200
-Wire Wire Line
-	3150 1200 3300 1200
 Wire Wire Line
 	2050 1200 2200 1200
-Wire Wire Line
-	2200 1200 2200 1450
 Wire Wire Line
 	2200 2000 2200 1900
 Wire Wire Line
@@ -1185,4 +1178,11 @@ Connection ~ 2200 1900
 Wire Wire Line
 	2200 1900 2200 1750
 Connection ~ 2750 1200
+Wire Wire Line
+	2200 1200 2200 1450
+Wire Wire Line
+	3150 1200 3300 1200
+Wire Wire Line
+	2950 1200 3150 1200
+Connection ~ 3150 1200
 $EndSCHEMATC
