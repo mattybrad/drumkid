@@ -46,7 +46,7 @@ Bounce buttonY = Bounce();
 #define NUM_KNOBS 4
 #define NUM_LEDS 5
 #define NUM_BUTTONS 6
-#define NUM_SAMPLES_TOTAL 5 // total number of samples
+#define NUM_SAMPLES 5 // total number of samples
 #define NUM_PARAM_GROUPS 5
 #define SAVED_STATE_SLOT_BYTES 32
 
@@ -63,9 +63,9 @@ bool beatPlaying = false;
 byte noteDown = B00000000;
 bool syncReceived = false;
 
-const byte midiNotes[NUM_SAMPLES_TOTAL] = {36,42,38,37,43};
+const byte midiNotes[NUM_SAMPLES] = {36,42,38,37,43};
 const byte zoomValues[] = {32,16,8,4,2,1}; // could be compressed?
-byte sampleVolumes[NUM_SAMPLES_TOTAL] = {255,255,255,255,255}; // temp
+byte sampleVolumes[NUM_SAMPLES] = {255,255,255,255,255}; // temp
 
 byte storedValues[NUM_PARAM_GROUPS*NUM_KNOBS]; // analog knob values
 byte firstLoop = true;
@@ -93,7 +93,7 @@ byte paramRange = 127;
 byte paramPitch = 127;
 byte paramCrush = 0;
 byte paramCrop = 0;
-byte paramGlitch = 0;
+byte paramDrop = 0;
 
 byte paramBeat = 2; // 0 to 23
 byte paramTimeSignature = 4;
@@ -129,7 +129,7 @@ bool droneMod2Active = false;
 #define PITCH 4
 #define CRUSH 5
 #define CROP 6
-#define GLITCH 7
+#define DROP 7
 
 #define BEAT 8
 #define TEMPO 9
@@ -156,6 +156,15 @@ float rootNotes[13] = {
   155.5634919f,
   207.6523488f,
   138.5913155f,
+};
+
+// dropRef determines whether each sample is played or muted
+byte dropRef[NUM_SAMPLES] = {
+  B11110000, // kick
+  B00111111, // hat
+  B01111100, // snare
+  B00011110, // rim
+  B00011000, // tom
 };
 
 void setup(){
@@ -185,15 +194,15 @@ void setup(){
   buttonD.attach(8, INPUT_PULLUP);
   buttonY.attach(10, INPUT_PULLUP);
   
-  storedValues[CHANCE] = 0;
-  storedValues[ZOOM] = 0;
-  storedValues[RANGE] = 0;
-  storedValues[MIDPOINT] = 0;
+  storedValues[CHANCE] = 64;
+  storedValues[ZOOM] = 192;
+  storedValues[RANGE] = 128;
+  storedValues[MIDPOINT] = 128;
   
-  storedValues[PITCH] = 130;
-  storedValues[CRUSH] = 0;
-  storedValues[CROP] = 0;
-  storedValues[GLITCH] = 0;
+  storedValues[PITCH] = 192;
+  storedValues[CRUSH] = 255;
+  storedValues[CROP] = 255;
+  storedValues[DROP] = 0;
   
   tapTempo.setMinBPM((float) MIN_TEMPO);
   tapTempo.setMaxBPM((float) MAX_TEMPO);
@@ -390,8 +399,7 @@ void updateParameters(byte thisControlSet) {
       rim.setStart(!thisDirection ? map(paramCrop,255,0,100,rim_NUM_CELLS) : 0);
       tom.setStart(!thisDirection ? map(paramCrop,255,0,100,tom_NUM_CELLS) : 0);
       
-      // experimental glitch effect
-      //paramGlitch = driftValue(PARAM_GLITCH,2);
+      paramDrop = storedValues[DROP] >> 5; // range of 0 to 7
     }
     break;
 
@@ -411,7 +419,6 @@ void updateParameters(byte thisControlSet) {
     break;
 
     case 3:
-    //paramDrop = driftValue(PARAM_DROP,2) >> 5; // range of 0 to 7
     // using values of 270 and 240 (i.e. 255±15) to give a decent "dead zone" in the middle of the knob
     oscilGain2 = constrain(2*storedValues[DRONE]-270, 0, 255);
     if(storedValues[DRONE] < 128) {
@@ -451,7 +458,7 @@ void doStartStop() {
 void playPulseHits() {
   if(pulseNum % 3 == 0) {
     for(byte i=0; i<5; i++) {
-      calculateNote(i);
+      if(bitRead(dropRef[i],paramDrop)) calculateNote(i);
     }
   }
 }
@@ -543,7 +550,7 @@ void incrementPulse() {
 
 void cancelMidiNotes() {
   byte i;
-  for(i=0; i<NUM_SAMPLES_TOTAL; i++) {
+  for(i=0; i<NUM_SAMPLES; i++) {
     if(bitRead(noteDown,i)) {
       Serial.write(0x90);
       Serial.write(midiNotes[i]);
