@@ -65,6 +65,7 @@ bool syncReceived = false;
 
 const byte midiNotes[NUM_SAMPLES] = {36,42,38,37,43};
 const byte zoomValues[] = {96,48,24,12,6,3}; // could be compressed?
+const byte zoomValuesTriplet[] = {128,64,32,16,8,4};
 byte sampleVolumes[NUM_SAMPLES] = {255,255,255,255,255}; // temp
 
 byte storedValues[NUM_PARAM_GROUPS*NUM_KNOBS]; // analog knob values
@@ -111,7 +112,7 @@ byte previousTimeSignature;
 byte oscilGain1 = 255;
 byte oscilGain2 = 255;
 bool droneMod2Active = false;
-byte tempSwing = 0; // 2=triplets
+byte tempSwing = 2; // 2=triplets
 
 #define MIN_TEMPO 40
 #define MAX_TEMPO 295
@@ -483,8 +484,8 @@ void calculateNote(byte sampleNum) {
     zoomValueIndex = 4;
     zoomVelocity = 51;
   }
-  byte lowerZoomValue = zoomValues[zoomValueIndex]; // e.g. 8 for a quarter note (NO)
-  byte upperZoomValue = zoomValues[zoomValueIndex+1]; // e.g. 16 for a quarter note (NO)
+  byte lowerZoomValue = zoomValuesTriplet[zoomValueIndex]; // e.g. 8 for a quarter note (NO)
+  byte upperZoomValue = zoomValuesTriplet[zoomValueIndex+1]; // e.g. 16 for a quarter note (NO)
   long thisVelocity = 0;
   if(stepNum%6==0) {
     // beats only defined down to 16th notes not 32nd, hence %2 (CHANGE COMMENT)
