@@ -57,14 +57,14 @@ const byte analogPins[4] = {0,1,2,3}; // unnecessary? remove, save four bytes?
 float nextPulseTime = 0.0;
 float msPerPulse = 20.8333; // 120bpm
 byte pulseNum = 0; // 0 to 23 (24ppqn, pulses per quarter note)
-byte stepNum = 0; // 0 to 64 (max two bars of 8 beats, aka 32 32nd-notes)
+byte stepNum = 0; // 0 to 192 (max two bars of 8 beats, aka 192 pulses
 byte numSteps;
 bool beatPlaying = false;
 byte noteDown = B00000000;
 bool syncReceived = false;
 
 const byte midiNotes[NUM_SAMPLES] = {36,42,38,37,43};
-const byte zoomValues[] = {32,16,8,4,2,1}; // could be compressed?
+const byte zoomValues[] = {96,48,24,12,6,3}; // could be compressed?
 byte sampleVolumes[NUM_SAMPLES] = {255,255,255,255,255}; // temp
 
 byte storedValues[NUM_PARAM_GROUPS*NUM_KNOBS]; // analog knob values
@@ -111,6 +111,7 @@ byte previousTimeSignature;
 byte oscilGain1 = 255;
 byte oscilGain2 = 255;
 bool droneMod2Active = false;
+byte tempSwing = 0; // 2=triplets
 
 #define MIN_TEMPO 40
 #define MAX_TEMPO 295
@@ -346,8 +347,8 @@ void doPulseActions() {
   cancelMidiNotes();
   if(pulseNum%24==0) {
     if(stepNum==0) {
-      numSteps = paramTimeSignature * 8; // 8 steps ber beat
-      if(numSteps == 32) numSteps = 64; // allow 4/4 signature to use two bars of defined beat
+      numSteps = paramTimeSignature * 24; // 24 pulses per beat
+      if(numSteps == 96) numSteps = 192; // allow 4/4 signature to use two bars of defined beat
     }
   } 
   playPulseHits();
@@ -461,11 +462,18 @@ void doStartStop() {
 }
 
 void playPulseHits() {
-  if(pulseNum % 3 == 0) {
+  byte tempDivider = 3;
+  if(tempSwing == 2) tempDivider = 4;
+  if(pulseNum % tempDivider == 0) {
     for(byte i=0; i<5; i++) {
       if(bitRead(dropRef[i],paramDrop)) calculateNote(i);
     }
   }
+  /*if(pulseNum % 3 == 0) {
+    for(byte i=0; i<5; i++) {
+      if(bitRead(dropRef[i],paramDrop)) calculateNote(i);
+    }
+  }*/
 }
 
 void calculateNote(byte sampleNum) {
@@ -475,13 +483,13 @@ void calculateNote(byte sampleNum) {
     zoomValueIndex = 4;
     zoomVelocity = 51;
   }
-  byte lowerZoomValue = zoomValues[zoomValueIndex]; // e.g. 8 for a quarter note
-  byte upperZoomValue = zoomValues[zoomValueIndex+1]; // e.g. 16 for a quarter note
+  byte lowerZoomValue = zoomValues[zoomValueIndex]; // e.g. 8 for a quarter note (NO)
+  byte upperZoomValue = zoomValues[zoomValueIndex+1]; // e.g. 16 for a quarter note (NO)
   long thisVelocity = 0;
-  if(stepNum%2==0) {
-    // beats only defined down to 16th notes not 32nd, hence %2
-    byte beatByte = pgm_read_byte(&beats[paramBeat][sampleNum][stepNum/16]);
-    if(bitRead(beatByte,7-((stepNum/2)%8))) thisVelocity = 255;
+  if(stepNum%6==0) {
+    // beats only defined down to 16th notes not 32nd, hence %2 (CHANGE COMMENT)
+    byte beatByte = pgm_read_byte(&beats[paramBeat][sampleNum][stepNum/48]); // 48...? was 16
+    if(bitRead(beatByte,7-((stepNum/6)%8))) thisVelocity = 255;
   }
   if(thisVelocity==0) {
     // for steps not defined in beat, use algorithm to determine velocity
@@ -545,11 +553,9 @@ void incrementPulse() {
   if(pulseNum == 24) {
     pulseNum = 0;
   }
-  if(pulseNum % 3 == 0) {
-    stepNum ++;
-    if(stepNum == numSteps) {
-      stepNum = 0;
-    }
+  stepNum ++;
+  if(stepNum == numSteps) {
+    stepNum = 0;
   }
 }
 
@@ -624,10 +630,10 @@ void updateLeds() {
     } else if(beatPlaying) {
       switch(pulseNum%24) {
         case 0:
-        if(i==(stepNum/8)%5) displayLedNum(stepNum?1:3);
+        if(i==(stepNum/24)%5) displayLedNum(stepNum%3?1:3); // ???
         break;
         case 3:
-        if(i==(stepNum/8)%5) displayLedNum(0);
+        if(i==(stepNum/24)%5) displayLedNum(0);
         break;
       }
     } else {
