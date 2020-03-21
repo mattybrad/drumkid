@@ -112,7 +112,7 @@ byte previousTimeSignature;
 byte oscilGain1 = 255;
 byte oscilGain2 = 255;
 bool droneMod2Active = false;
-byte tempSwing = 2; // 2=triplets
+byte tempSwing = 2; // 0=straight,1=half-swing,2=triplets
 
 #define MIN_TEMPO 40
 #define MAX_TEMPO 295
@@ -463,8 +463,7 @@ void doStartStop() {
 }
 
 void playPulseHits() {
-  byte tempDivider = 3;
-  if(tempSwing == 2) tempDivider = 1;
+  byte tempDivider = 1;
   if(pulseNum % tempDivider == 0) {
     for(byte i=0; i<5; i++) {
       if(bitRead(dropRef[i],paramDrop)) calculateNote(i);
@@ -487,11 +486,17 @@ void calculateNote(byte sampleNum) {
   byte lowerZoomValue = zoomValuesTriplet[zoomValueIndex]; // e.g. 8 for a quarter note (NO)
   byte upperZoomValue = zoomValuesTriplet[zoomValueIndex+1]; // e.g. 16 for a quarter note (NO)
   long thisVelocity = 0;
-  // this is a big mess! sort it out later
-  if((tempSwing==0&&stepNum%6==0)||(tempSwing==2&&(stepNum%12==0||stepNum%12==7))) {
-    // beats only defined down to 16th notes not 32nd, hence %2 (CHANGE COMMENT)
-    byte effectiveStepNum = stepNum;
+  // first, check for notes which are defined in the beat
+  byte effectiveStepNum = stepNum;
+  if(tempSwing==1) {
+    if(stepNum%12==6) effectiveStepNum = stepNum - 1; // arbitrary...
     if(stepNum%12==7) effectiveStepNum = stepNum - 1;
+  } else if(tempSwing==2) {
+    if(stepNum%12==6) effectiveStepNum = stepNum - 1; // arbitrary...
+    if(stepNum%12==8) effectiveStepNum = stepNum - 2;
+  }
+  if(effectiveStepNum%6==0) {
+    // beats only defined down to 16th notes not 32nd, hence %2 (CHANGE COMMENT)
     byte beatByte = pgm_read_byte(&beats[paramBeat][sampleNum][effectiveStepNum/48]); // 48...? was 16
     if(bitRead(beatByte,7-((effectiveStepNum/6)%8))) thisVelocity = 255;
   }
@@ -517,7 +522,7 @@ void calculateNote(byte sampleNum) {
         }
       }
     }
-  } 
+  }
   triggerNote(sampleNum, thisVelocity);
 }
 

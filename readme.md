@@ -26,6 +26,6 @@ Versions 1-3 were early prototypes.
 
 Version 4 was the first successful working design, with full code, schematics, Gerbers, etc available on GitHub.
 
-Version 5 contained various PCB errors and has been superseded, but is very similar to V6.
+Version 5 contained various PCB errors and has been superseded.
 
 Version 6 is under development right now and will hopefully be the basis of the first commercially available DrumKid - finalised breadboard files, BOM, etc will appear in due course.
