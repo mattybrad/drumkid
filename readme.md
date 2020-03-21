@@ -1,6 +1,8 @@
 # DrumKid
 ## Lo-fi aleatoric Arduino drum machine
 
+### Please note, this project is under active development and a new, improved, more stable update is coming very soon! In the meantime, please refer to the V4 folder for the most recent fully working version. V6 will be ready by the end of March, including updated breadboard instructions and MIDI in/out support.
+
 ![DrumKid](v4/misc/drumkid1.jpg?raw=true "DrumKid")
 
 ### Concept
