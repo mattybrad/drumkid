@@ -64,8 +64,6 @@ byte noteDown = B00000000;
 bool syncReceived = false;
 
 const byte midiNotes[NUM_SAMPLES] = {36,42,38,37,43};
-const byte zoomValues[] = {96,48,24,12,6,3}; // could be compressed?
-const byte zoomValuesTriplet[] = {128,64,32,16,8,4};
 byte sampleVolumes[NUM_SAMPLES] = {255,255,255,255,255}; // temp
 
 byte storedValues[NUM_PARAM_GROUPS*NUM_KNOBS]; // analog knob values
@@ -100,6 +98,7 @@ byte paramBeat = 2; // 0 to 23
 byte paramTimeSignature = 4;
 // N.B. no such variable as paramTempo - handled by TapTempo library
 byte paramDrift = 0; // to be scrapped?
+byte paramSwing = 0; // 0=straight,1=half-swing,2=triplets
 
 byte paramDroneRoot;
 float paramDronePitch;
@@ -112,8 +111,6 @@ byte previousTimeSignature;
 byte oscilGain1 = 255;
 byte oscilGain2 = 255;
 bool droneMod2Active = false;
-byte tempSwing = 2; // 0=straight,1=half-swing,2=triplets
-
 #define MIN_TEMPO 40
 #define MAX_TEMPO 295
 
@@ -136,7 +133,7 @@ byte tempSwing = 2; // 0=straight,1=half-swing,2=triplets
 #define BEAT 8
 #define TEMPO 9
 #define TIME_SIGNATURE 10
-#define DRIFT 11
+#define SWING 11
 
 #define DRONE_ROOT 12
 #define DRONE_MOD 13
@@ -197,7 +194,7 @@ void setup(){
   buttonY.attach(10, INPUT_PULLUP);
   
   storedValues[CHANCE] = 31;
-  storedValues[ZOOM] = 192;
+  storedValues[ZOOM] = 194;
   storedValues[RANGE] = 128;
   storedValues[MIDPOINT] = 64;
   
@@ -206,8 +203,9 @@ void setup(){
   storedValues[CROP] = 255;
   storedValues[DROP] = 128;
 
-  storedValues[BEAT] = 13;
-  storedValues[TEMPO] = 128;
+  storedValues[BEAT] = 27;
+  storedValues[TEMPO] = 64;
+  storedValues[SWING] = 0;
 
   storedValues[DRONE_MOD] = 127;
   storedValues[DRONE] = 127;
@@ -422,7 +420,7 @@ void updateParameters(byte thisControlSet) {
       specialLedDisplay(paramTimeSignature); // display current beat number using LEDs
       previousTimeSignature = paramTimeSignature;
     }
-    paramDrift = storedValues[DRIFT]; // to be scrapped?
+    paramSwing = storedValues[SWING] / 86; // gives range of 0 to 2
     break;
 
     case 3:
@@ -477,21 +475,14 @@ void playPulseHits() {
 }
 
 void calculateNote(byte sampleNum) {
-  byte zoomValueIndex = paramZoom / 51; // gives value from 0 to 5
-  byte zoomVelocity = paramZoom % 51; // 
-  if(zoomValueIndex == 5) {
-    zoomValueIndex = 4;
-    zoomVelocity = 51;
-  }
-  byte lowerZoomValue = zoomValuesTriplet[zoomValueIndex]; // e.g. 8 for a quarter note (NO)
-  byte upperZoomValue = zoomValuesTriplet[zoomValueIndex+1]; // e.g. 16 for a quarter note (NO)
+  
   long thisVelocity = 0;
   // first, check for notes which are defined in the beat
   byte effectiveStepNum = stepNum;
-  if(tempSwing==1) {
+  if(paramSwing==1) {
     if(stepNum%12==6) effectiveStepNum = stepNum - 1; // arbitrary...
     if(stepNum%12==7) effectiveStepNum = stepNum - 1;
-  } else if(tempSwing==2) {
+  } else if(paramSwing==2) {
     if(stepNum%12==6) effectiveStepNum = stepNum - 1; // arbitrary...
     if(stepNum%12==8) effectiveStepNum = stepNum - 2;
   }
@@ -500,30 +491,93 @@ void calculateNote(byte sampleNum) {
     byte beatByte = pgm_read_byte(&beats[paramBeat][sampleNum][effectiveStepNum/48]); // 48...? was 16
     if(bitRead(beatByte,7-((effectiveStepNum/6)%8))) thisVelocity = 255;
   }
+  byte testZoomMult = getZoomMultiplier();
   if(thisVelocity==0) {
-    // for steps not defined in beat, use algorithm to determine velocity
-    if(stepNum%upperZoomValue==0) {
-      // if step length is longer(?) than is affected by zoom
-      byte yesNoRand = rand(0,255);
-      if(yesNoRand < paramChance) {
-        //int velocityRand = rand(0,255);
-        //velocityRand = 255;
-        //thisVelocity = velocityRand;
-        //thisVelocity = paramMidpoint - paramRange/2 + ((velocityRand * paramRange)>>8);
-        int lowerBound = paramMidpoint - paramRange/2;
-        int upperBound = paramMidpoint + paramRange/2;
-        thisVelocity = rand(lowerBound, upperBound);
-        thisVelocity = constrain(thisVelocity,0,255);
-        if(stepNum%lowerZoomValue!=0) {
-          //Serial.println(thisVelocity);
-          thisVelocity = thisVelocity * 5 * zoomVelocity / 255;
-          //Serial.println(thisVelocity);
-          //Serial.println("");
-        }
+    byte yesNoRand = rand(0,255);
+    if(yesNoRand < paramChance) {
+      int lowerBound = paramMidpoint - paramRange/2;
+      int upperBound = paramMidpoint + paramRange/2;
+      thisVelocity = rand(lowerBound, upperBound);
+      thisVelocity = constrain(thisVelocity,0,255);
+      if(testZoomMult < 42) {
+        thisVelocity = thisVelocity * 6 * testZoomMult / 255;
       }
     }
   }
   triggerNote(sampleNum, thisVelocity);
+}
+
+// zoom stuff is hard to explain
+byte getZoomMultiplier() {
+  byte zoomValueIndex = paramZoom / 43; // gives value from 0 to 6, denoting which zoom region we are in
+  byte zoomVelocity = paramZoom % 43; // gives value from 0 to 42 - how much velocity the "zoomed" note will have
+  byte returnVal = 0;
+  switch(zoomValueIndex) {
+    case 99:
+    if(stepNum%96==0) returnVal = zoomVelocity;
+    break;
+    case 0:
+    if(stepNum%96==0) returnVal = 42;
+    else if(stepNum%48==0) returnVal = zoomVelocity;
+    break;
+    case 1:
+    if(stepNum%48==0) returnVal = 42;
+    else if(stepNum%24==0) returnVal = zoomVelocity;
+    break;
+    case 2:
+    if(stepNum%24==0) returnVal = 42;
+    else if(stepNum%12==0) returnVal = zoomVelocity;
+    break;
+    case 3:
+    // at this zoom level, the return value depends on the swing setting
+    if(stepNum%12==0) returnVal = 42;
+    else {
+      if(paramSwing==0) {
+        // straight
+        if(stepNum%6==0) returnVal = zoomVelocity;
+      } else if(paramSwing==1) {
+        // partial swing
+        if(stepNum%12==7) returnVal = zoomVelocity;
+      } else if(paramSwing==2) {
+        // full swing
+        if(stepNum%12==8) returnVal = zoomVelocity;
+      }
+    }
+    break;
+    case 4:
+    // at this zoom level, the return value depends on the swing setting
+    if(paramSwing==0) {
+      // straight
+      if(stepNum%6==0) returnVal = 42;
+      else if(stepNum%3==0) returnVal = zoomVelocity;
+    } else if(paramSwing==1) {
+      // partial swing
+      if(stepNum%12==0||stepNum%12==7) returnVal = 42;
+      else if(stepNum%12==5) returnVal = zoomVelocity;
+    } else if(paramSwing==2) {
+      // full swing
+      if(stepNum%12==0||stepNum%12==8) returnVal = 42;
+      else if(stepNum%12==4) returnVal = zoomVelocity;
+    }
+    break;
+    case 5:
+    // at this zoom level, the return value depends on the swing setting
+    if(paramSwing==0) {
+      // straight
+      if(stepNum%3==0) returnVal = 42;
+      else returnVal = zoomVelocity;
+    } else if(paramSwing==1) {
+      // partial swing
+      if(stepNum%12==0||stepNum%12==5||stepNum%12==7) returnVal = 42;
+      else returnVal = zoomVelocity;
+    } else if(paramSwing==2) {
+      // full swing
+      if(stepNum%4==0) returnVal = 42;
+      returnVal = zoomVelocity;
+    }
+    break;
+  }
+  return returnVal;
 }
 
 void triggerNote(byte sampleNum, byte velocity) {
