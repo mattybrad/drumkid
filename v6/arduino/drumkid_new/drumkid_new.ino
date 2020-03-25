@@ -130,15 +130,15 @@ bool droneMod2Active = false;
 #define CROP 6
 #define DROP 7
 
-#define BEAT 8
-#define TEMPO 9
-#define TIME_SIGNATURE 10
-#define SWING 11
+#define DRONE 8
+#define DRONE_MOD 9
+#define DRONE_PITCH 10
+#define DRONE_ROOT 11
 
-#define DRONE_ROOT 12
-#define DRONE_MOD 13
-#define DRONE 14
-#define DRONE_PITCH 15
+#define BEAT 12
+#define TIME_SIGNATURE 13
+#define SWING 14
+#define TEMPO 15
 
 // define root notes
 float rootNotes[13] = {
@@ -409,21 +409,6 @@ void updateParameters(byte thisControlSet) {
     break;
 
     case 2:
-    paramBeat = (NUM_BEATS * (int) storedValues[BEAT]) / 256;
-    if(paramBeat != previousBeat) {
-      specialLedDisplay(paramBeat); // display current beat number using LEDs
-      previousBeat = paramBeat;
-    }
-    tapTempo.setBPM((float) MIN_TEMPO + ((float) storedValues[TEMPO]));
-    paramTimeSignature = map(storedValues[TIME_SIGNATURE],0,256,4,8);
-    if(paramTimeSignature != previousTimeSignature) {
-      specialLedDisplay(paramTimeSignature); // display current beat number using LEDs
-      previousTimeSignature = paramTimeSignature;
-    }
-    paramSwing = storedValues[SWING] / 86; // gives range of 0 to 2
-    break;
-
-    case 3:
     // using values of 270 and 240 (i.e. 255±15) to give a decent "dead zone" in the middle of the knob
     oscilGain2 = constrain(2*storedValues[DRONE]-270, 0, 255);
     if(storedValues[DRONE] < 128) {
@@ -443,6 +428,21 @@ void updateParameters(byte thisControlSet) {
     paramDronePitch = rootNotes[paramDroneRoot] * (0.5f + (float) storedValues[DRONE_PITCH]/170.0f);// * 0.768f + 65.41f;
     droneOscillator1.setFreq(paramDronePitch);
     droneOscillator2.setFreq(paramDronePitch*1.5f);
+    break;
+
+    case 3:
+    paramBeat = (NUM_BEATS * (int) storedValues[BEAT]) / 256;
+    if(paramBeat != previousBeat) {
+      specialLedDisplay(paramBeat); // display current beat number using LEDs
+      previousBeat = paramBeat;
+    }
+    tapTempo.setBPM((float) MIN_TEMPO + ((float) storedValues[TEMPO]));
+    paramTimeSignature = map(storedValues[TIME_SIGNATURE],0,256,4,8);
+    if(paramTimeSignature != previousTimeSignature) {
+      specialLedDisplay(paramTimeSignature); // display current beat number using LEDs
+      previousTimeSignature = paramTimeSignature;
+    }
+    paramSwing = storedValues[SWING] / 86; // gives range of 0 to 2
     break;
   }
 }
