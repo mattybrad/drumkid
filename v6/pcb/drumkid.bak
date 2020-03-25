@@ -1185,4 +1185,26 @@ Wire Wire Line
 Wire Wire Line
 	2950 1200 3150 1200
 Connection ~ 3150 1200
+$Comp
+L Mechanical:MountingHole H9
+U 1 1 5E73A9BB
+P 10350 3650
+F 0 "H9" H 10450 3696 50  0000 L CNN
+F 1 "MountingHole" H 10450 3605 50  0000 L CNN
+F 2 "drumkidcustom:MountingHole_3.2mm_M3" H 10350 3650 50  0001 C CNN
+F 3 "~" H 10350 3650 50  0001 C CNN
+	1    10350 3650
+	1    0    0    -1  
+$EndComp
+$Comp
+L Mechanical:MountingHole H10
+U 1 1 5E73AA49
+P 10350 3850
+F 0 "H10" H 10450 3896 50  0000 L CNN
+F 1 "MountingHole" H 10450 3805 50  0000 L CNN
+F 2 "drumkidcustom:MountingHole_3.2mm_M3" H 10350 3850 50  0001 C CNN
+F 3 "~" H 10350 3850 50  0001 C CNN
+	1    10350 3850
+	1    0    0    -1  
+$EndComp
 $EndSCHEMATC

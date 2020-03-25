@@ -627,7 +627,7 @@ F 3 "" H 2750 950 50  0001 C CNN
 	1    2750 950 
 	1    0    0    -1  
 $EndComp
-NoConn ~ 2050 1000
+NoConn ~ 2050 1200
 $Comp
 L power:GND #PWR0106
 U 1 1 5E7873F6
@@ -1167,8 +1167,6 @@ Connection ~ 5150 6000
 Wire Wire Line
 	5150 6000 5700 6000
 Wire Wire Line
-	2050 1200 2200 1200
-Wire Wire Line
 	2200 2000 2200 1900
 Wire Wire Line
 	2200 1900 2750 1900
@@ -1178,8 +1176,6 @@ Connection ~ 2200 1900
 Wire Wire Line
 	2200 1900 2200 1750
 Connection ~ 2750 1200
-Wire Wire Line
-	2200 1200 2200 1450
 Wire Wire Line
 	3150 1200 3300 1200
 Wire Wire Line
@@ -1207,4 +1203,8 @@ F 3 "~" H 10350 3850 50  0001 C CNN
 	1    10350 3850
 	1    0    0    -1  
 $EndComp
+Wire Wire Line
+	2200 1000 2050 1000
+Wire Wire Line
+	2200 1000 2200 1450
 $EndSCHEMATC
