@@ -447,13 +447,13 @@ void updateParameters(byte thisControlSet) {
     case 3:
     paramBeat = (NUM_BEATS * (int) storedValues[BEAT]) / 256;
     if(paramBeat != previousBeat) {
-      specialLedDisplay(paramBeat); // display current beat number using LEDs
+      specialLedDisplay(paramBeat, false); // display current beat number using LEDs
       previousBeat = paramBeat;
     }
     tapTempo.setBPM((float) MIN_TEMPO + ((float) storedValues[TEMPO]));
     paramTimeSignature = map(storedValues[TIME_SIGNATURE],0,256,4,8);
     if(paramTimeSignature != previousTimeSignature) {
-      specialLedDisplay(paramTimeSignature); // display current beat number using LEDs
+      specialLedDisplay(paramTimeSignature-4, false); // display current beat number using LEDs
       previousTimeSignature = paramTimeSignature;
     }
     paramSwing = storedValues[SWING] / 86; // gives range of 0 to 2
@@ -719,9 +719,14 @@ void displayLedNum(byte displayNum) {
   }
 }
 
-void specialLedDisplay(byte displayNum) {
+void specialLedDisplay(byte displayNum, bool isBinary) {
   if(!firstLoop&&!secondLoop) {
-    specialLedDisplayNum = displayNum;
+    if(isBinary) {
+      specialLedDisplayNum = displayNum;
+    } else {
+      specialLedDisplayNum = B00000000;
+      bitWrite(specialLedDisplayNum,displayNum%NUM_LEDS,HIGH);
+    }
     specialLedDisplayTime = millis();
   }
 }
