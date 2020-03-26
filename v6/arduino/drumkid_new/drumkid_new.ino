@@ -76,42 +76,38 @@ bool beatPlaying = false; // true when beat is playing, false when not
 byte noteDown = B00000000; // keeps track of whether a MIDI note is currently down or up
 bool syncReceived = false; // has a sync/clock signal been received? (IMPROVE THIS LATER)
 const byte midiNotes[NUM_SAMPLES] = {36,42,38,37,43}; // MIDI note numbers, currently set to kick, closed hat, snare, click, tom - feel free to change
-byte sampleVolumes[NUM_SAMPLES] = {255,255,255,255,255}; // current sample volumes
+byte sampleVolumes[NUM_SAMPLES] = {0,0,0,0,0}; // current sample volumes
 byte storedValues[NUM_PARAM_GROUPS*NUM_KNOBS]; // analog knob values, one for each parameter (so the value can be remembered even after switching groups)
 byte firstLoop = true; // allows special actions on first loop
 byte secondLoop = false; // allows special actions on second loop
 byte controlSet = 0; // current active set of parameters
 byte knobLocked = B11111111; // record whether a knob's value is currently "locked" (i.e. won't alter effect until moved by a threshold amount)
-byte analogValues[NUM_KNOBS] = {0,0,0,0};
-byte initValues[NUM_KNOBS] = {0,0,0,0};
+byte analogValues[NUM_KNOBS]; // current analog (knob) values
+byte initValues[NUM_KNOBS]; // initial parameter values
+byte specialLedDisplayNum; // binary number to display on LEDs (when needed)
+unsigned long specialLedDisplayTime = 0; // the last time the LEDs were told to display a number
 
-byte specialLedDisplayNum = 10;
-unsigned long specialLedDisplayTime = 0;
-
+// save/load variables
 bool readyToSave = true;
 bool readyToChooseSaveSlot = false;
 bool readyToLoad = true;
 bool readyToChooseLoadSlot = false;
 bool newStateLoaded = false;
 
-// parameters, 0-255 unless otherwise noted
-byte paramChance = 64;
-byte paramZoom = 200;
-byte paramMidpoint = 127;
-byte paramRange = 127;
-
-byte paramPitch = 127;
-byte paramCrush = 0;
-byte paramCrop = 0;
-byte paramDrop = 0;
-
-byte paramBeat = 2; // 0 to 23
-byte paramTimeSignature = 4;
+// parameter variables, each with a range of 0-255 unless otherwise noted
+byte paramChance;
+byte paramZoom;
+byte paramMidpoint;
+byte paramRange;
+byte paramPitch;
+byte paramCrush;
+byte paramCrop;
+byte paramDrop;
+byte paramBeat; // 0 to 23 (24 beats in total)
+byte paramTimeSignature; // 3 to 7 (3/4, 4/4, 5/4, 6/4, 7/4)
 // N.B. no such variable as paramTempo - handled by TapTempo library
-byte paramDrift = 0; // to be scrapped?
-byte paramSwing = 0; // 0=straight,1=half-swing,2=triplets
-
-byte paramDroneRoot;
+byte paramSwing = 0; // 0 to 2 (0=straight, 1=approx quintuplet swing, 2=triplet swing)
+byte paramDroneRoot; // 0 to 11 (all 12 possible semitones in an octave)
 float paramDronePitch;
 byte paramDroneMod;
 
@@ -168,42 +164,41 @@ float rootNotes[13] = {
   138.5913155f,
 };
 
-// dropRef determines whether each sample is played or muted
+// determines whether each sample is played or muted in a particular drop mode
 byte dropRef[NUM_SAMPLES] = {
   B11110000, // kick
-  B00111111, // hat
-  B01111100, // snare
-  B00011110, // rim
-  B00011000, // tom
+  B00111110, // hat
+  B01111000, // snare
+  B00011100, // rim
+  B00010000, // tom
 };
 
 void setup(){
   byte i;
   for(i=0;i<NUM_LEDS;i++) {
-    pinMode(ledPins[i],OUTPUT);
+    pinMode(ledPins[i],OUTPUT); // set LED pins as outputs
   }
   for(i=0;i<NUM_BUTTONS;i++) {
-    pinMode(buttonPins[i],INPUT_PULLUP);
+    pinMode(buttonPins[i],INPUT_PULLUP); // set button pins as inputs
   }
+  
   startMozzi(CONTROL_RATE);
-  kick.setFreq((float) kick_SAMPLERATE / (float) kick_NUM_CELLS);
-  closedhat.setFreq((float) closedhat_SAMPLERATE / (float) closedhat_NUM_CELLS);
-  snare.setFreq((float) snare_SAMPLERATE / (float) snare_NUM_CELLS);
-  rim.setFreq((float) rim_SAMPLERATE / (float) rim_NUM_CELLS);
-  tom.setFreq((float) tom_SAMPLERATE / (float) tom_NUM_CELLS);
+
+  // initialise all buttons using Bounce2 library
   buttonStartStop.interval(25);
+  buttonTapTempo.interval(25);
   buttonA.interval(25);
   buttonB.interval(25);
   buttonC.interval(25);
   buttonD.interval(25);
-  buttonTapTempo.interval(25);
   buttonStartStop.attach(4, INPUT_PULLUP);
+  buttonTapTempo.attach(10, INPUT_PULLUP);
   buttonA.attach(5, INPUT_PULLUP);
   buttonB.attach(6, INPUT_PULLUP);
   buttonC.attach(7, INPUT_PULLUP);
   buttonD.attach(8, INPUT_PULLUP);
-  buttonTapTempo.attach(10, INPUT_PULLUP);
-  
+
+  // set starting values for each parameter
   storedValues[CHANCE] = 31;
   storedValues[ZOOM] = 194;
   storedValues[RANGE] = 128;
@@ -222,20 +217,21 @@ void setup(){
   storedValues[DRONE] = 127;
   storedValues[DRONE_ROOT] = 127;
   storedValues[DRONE_PITCH] = 127;
-  
+
+  // initialise tempo (slightly different to other parameters)
   tapTempo.setMinBPM((float) MIN_TEMPO);
   tapTempo.setMaxBPM((float) MAX_TEMPO);
   tapTempo.setBPM(120.0);
 
   for(byte i=0;i<NUM_PARAM_GROUPS;i++) {
-    updateParameters(i);
+    updateParameters(i); // set parameters to initial values defined above
   }
   
-  Serial.begin(31250);
-  flashLeds(); // remove if low on space later
+  Serial.begin(31250); // begin serial communication for MIDI input/output
+
+  flashLeds(); // do a brief LED light show to show the unit is working
 }
 
-float testBPM = 120.0;
 void updateControl(){
   byte i;
   bool controlSetChanged = false;
@@ -686,33 +682,26 @@ void loop(){
 }
 
 void flashLeds() {
-  byte i, j;
-  for(i=0;i<7;i++) {
-    for(j=0;j<NUM_LEDS;j++) {
-      digitalWrite(ledPins[j],(i+j)%2&&i<6);
-    }
-    delay(100);
+  byte i, randByte;
+  for(i=0;i<30;i++) {
+    randByte = rand(0,255);
+    displayLedNum(randByte);
+    delay(25);
   }
+  displayLedNum(0);
 }
 
 // figure out better pattern for metronome flashing
 void updateLeds() {
-  byte i;
-  for(i=0;i<NUM_LEDS;i++) {
-    if(millis() < specialLedDisplayTime + 2500UL) {
-      displayLedNum(specialLedDisplayNum);
-    } else if(beatPlaying) {
-      switch(pulseNum%24) {
-        case 0:
-        if(i==(stepNum/24)%5) displayLedNum(stepNum%3?1:3); // ???
-        break;
-        case 3:
-        if(i==(stepNum/24)%5) displayLedNum(0);
-        break;
-      }
-    } else {
-      digitalWrite(ledPins[i], LOW);
-    }
+  if(millis() < specialLedDisplayTime + 2500UL && specialLedDisplayTime > 0) {
+    // show desired binary number for certain parameters where visual feedback is helpful
+    displayLedNum(specialLedDisplayNum);
+  } else if(beatPlaying) {
+    if(stepNum==0) displayLedNum(B00000011);
+    else if(stepNum%24==0) displayLedNum(B00000010);
+    else if(stepNum%24==3) displayLedNum(B00000000);
+  } else {
+    displayLedNum(B00000000);
   }
 }
 
@@ -724,8 +713,10 @@ void displayLedNum(byte displayNum) {
 }
 
 void specialLedDisplay(byte displayNum) {
-  specialLedDisplayNum = displayNum;
-  specialLedDisplayTime = millis();
+  if(!firstLoop&&!secondLoop) {
+    specialLedDisplayNum = displayNum;
+    specialLedDisplayTime = millis();
+  }
 }
 
 void loadParams(byte slotNum) {
