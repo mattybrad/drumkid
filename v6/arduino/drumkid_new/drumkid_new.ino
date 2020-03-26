@@ -234,6 +234,7 @@ void setup(){
 
 void updateControl(){
   byte i;
+  bool didTapHappen = false;
   bool controlSetChanged = false;
   newStateLoaded = false;
   
@@ -249,20 +250,20 @@ void updateControl(){
     readyToSave = false;
     readyToChooseLoadSlot = true;
     readyToChooseSaveSlot = false;
-    tapTempo.update(false);
+    //tapTempo.update(false);
   } else if(!buttonC.read() && !buttonD.read()) {
     readyToSave = false;
     readyToLoad = false;
     readyToChooseSaveSlot = true;
     readyToChooseLoadSlot = false;
-    tapTempo.update(false);
+    //tapTempo.update(false);
   } else {
     readyToSave = true;
     readyToLoad = true;
     if(!readyToChooseLoadSlot&&!readyToChooseSaveSlot) {
-      tapTempo.update(!buttonTapTempo.read());
+      //tapTempo.update(!buttonTapTempo.read());
     } else {
-      tapTempo.update(false);
+      //tapTempo.update(false);
     }
 
     // handle button presses
@@ -270,7 +271,11 @@ void updateControl(){
     if(buttonTapTempo.fell()) {
       if(readyToChooseLoadSlot) loadParams(5);
       else if(readyToChooseSaveSlot) saveParams(5);
-      else storedValues[TEMPO] = tapTempo.getBPM() - MIN_TEMPO;
+      else {
+        tapTempo.update(true);
+        didTapHappen = true;
+        storedValues[TEMPO] = tapTempo.getBPM() - MIN_TEMPO;
+      }
     } else if(buttonA.fell()) {
       if(readyToChooseLoadSlot) loadParams(1);
       else if(readyToChooseSaveSlot) saveParams(1);
@@ -298,13 +303,15 @@ void updateControl(){
     
   }
 
-  //if(buttonTapTempo.fell()) doStartStop();
-  //tapTempo.update(!buttonStartStop.read());
+  if(!didTapHappen) tapTempo.update(false);
   
   msPerPulse = tapTempo.getBeatLength() / 24.0;
+  byte numLoops = 0;
   while(!syncReceived && beatPlaying && millis()>=nextPulseTime) {
-    doPulseActions();
+    if(numLoops<5) doPulseActions();
     nextPulseTime = nextPulseTime + msPerPulse;
+    if(numLoops>=100) beatPlaying = false;
+    numLoops ++;
   }
 
   for(i=0;i<NUM_KNOBS;i++) {
