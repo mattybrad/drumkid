@@ -2,75 +2,86 @@
  *  It might work with other versions with a bit of tweaking   
  */
 
+// include Mozzi library files for generating audio (custom version to allow reverse playback)
 #include "MozziDK/MozziGuts.h"
 #include "MozziDK/Sample.h"
 #include "MozziDK/mozzi_rand.h"
 #include "MozziDK/Oscil.h"
 #include "MozziDK/tables/saw256_int8.h"
 
+// include drum beat pattern definitions from separate file
 #include "beats.h"
 
+// include sample data (generated via Python script)
 #include "kick.h"
 #include "closedhat.h"
 #include "snare.h"
 #include "rim.h"
 #include "tom.h"
 
+// declare samples as Mozzi sample objects
 Sample <kick_NUM_CELLS, AUDIO_RATE> kick(kick_DATA);
 Sample <closedhat_NUM_CELLS, AUDIO_RATE> closedhat(closedhat_DATA);
 Sample <snare_NUM_CELLS, AUDIO_RATE> snare(snare_DATA);
 Sample <rim_NUM_CELLS, AUDIO_RATE> rim(rim_DATA);
 Sample <tom_NUM_CELLS, AUDIO_RATE> tom(tom_DATA);
 
-// define oscillators
+// define oscillators for drone
 Oscil<SAW256_NUM_CELLS, AUDIO_RATE> droneOscillator1(SAW256_DATA);
 Oscil<SAW256_NUM_CELLS, AUDIO_RATE> droneOscillator2(SAW256_DATA);
 
-// include debouncing library
+// include debouncing library to make buttons work reliably
 #include <Bounce2.h>
 
+// include tap tempo library (custom version to allow directly setting the tempo via knob)
 #include "ArduinoTapTempoDK/src/ArduinoTapTempo.cpp"
 ArduinoTapTempo tapTempo;
 
 // include EEPROM library for saving data
 #include <EEPROM.h>
 
-Bounce buttonX = Bounce();
+// declare buttons as Bounce objects
+Bounce buttonStartStop = Bounce();
+Bounce buttonTapTempo = Bounce();
 Bounce buttonA = Bounce();
 Bounce buttonB = Bounce();
 Bounce buttonC = Bounce();
 Bounce buttonD = Bounce();
-Bounce buttonY = Bounce();
 
-#define CONTROL_RATE 256 // Hz, aiming for 256 to keep up with high tempos
+// Mozzi control rate, measured in Hz, must be power of 2
+// try to keep this value as high as possible but reduce if having performance issues
+#define CONTROL_RATE 256
+
+// define various values
 #define NUM_KNOBS 4
 #define NUM_LEDS 5
 #define NUM_BUTTONS 6
-#define NUM_SAMPLES 5 // total number of samples
+#define NUM_SAMPLES 5
 #define NUM_PARAM_GROUPS 4
 #define SAVED_STATE_SLOT_BYTES 32
 
+// define pin numbers
+// keep pin 9 for audio, but others can be changed to suit your breadboard layout
 const byte ledPins[5] = {2,3,11,12,13};
 const byte buttonPins[6] = {4,5,6,7,8,10};
-const byte analogPins[4] = {0,1,2,3}; // unnecessary? remove, save four bytes?
+const byte analogPins[4] = {A0,A1,A2,A3};
 
-float nextPulseTime = 0.0;
-float msPerPulse = 20.8333; // 120bpm
+// various other global variables
+float nextPulseTime = 0.0; // the time, in milliseconds, of the next pulse
+float msPerPulse; // time for one "pulse" (there are 24 pulses per quarter note, as defined in MIDI spec)
 byte pulseNum = 0; // 0 to 23 (24ppqn, pulses per quarter note)
-byte stepNum = 0; // 0 to 192 (max two bars of 8 beats, aka 192 pulses
-byte numSteps;
-bool beatPlaying = false;
-byte noteDown = B00000000;
-bool syncReceived = false;
-
-const byte midiNotes[NUM_SAMPLES] = {36,42,38,37,43};
-byte sampleVolumes[NUM_SAMPLES] = {255,255,255,255,255}; // temp
-
-byte storedValues[NUM_PARAM_GROUPS*NUM_KNOBS]; // analog knob values
-byte firstLoop = true;
-byte secondLoop = false;
-byte controlSet = 0;
-bool knobLocked[NUM_KNOBS] = {true,true,true,true}; // bad use of space, use single byte instead
+byte stepNum = 0; // 0 to 192 (max two bars of 8 beats, aka 192 pulses)
+byte numSteps; // number of steps used - dependent on time signature
+bool beatPlaying = false; // true when beat is playing, false when not
+byte noteDown = B00000000; // keeps track of whether a MIDI note is currently down or up
+bool syncReceived = false; // has a sync/clock signal been received? (IMPROVE THIS LATER)
+const byte midiNotes[NUM_SAMPLES] = {36,42,38,37,43}; // MIDI note numbers, currently set to kick, closed hat, snare, click, tom - feel free to change
+byte sampleVolumes[NUM_SAMPLES] = {255,255,255,255,255}; // current sample volumes
+byte storedValues[NUM_PARAM_GROUPS*NUM_KNOBS]; // analog knob values, one for each parameter (so the value can be remembered even after switching groups)
+byte firstLoop = true; // allows special actions on first loop
+byte secondLoop = false; // allows special actions on second loop
+byte controlSet = 0; // current active set of parameters
+byte knobLocked = B11111111; // record whether a knob's value is currently "locked" (i.e. won't alter effect until moved by a threshold amount)
 byte analogValues[NUM_KNOBS] = {0,0,0,0};
 byte initValues[NUM_KNOBS] = {0,0,0,0};
 
@@ -180,18 +191,18 @@ void setup(){
   snare.setFreq((float) snare_SAMPLERATE / (float) snare_NUM_CELLS);
   rim.setFreq((float) rim_SAMPLERATE / (float) rim_NUM_CELLS);
   tom.setFreq((float) tom_SAMPLERATE / (float) tom_NUM_CELLS);
-  buttonX.interval(25);
+  buttonStartStop.interval(25);
   buttonA.interval(25);
   buttonB.interval(25);
   buttonC.interval(25);
   buttonD.interval(25);
-  buttonY.interval(25);
-  buttonX.attach(4, INPUT_PULLUP);
+  buttonTapTempo.interval(25);
+  buttonStartStop.attach(4, INPUT_PULLUP);
   buttonA.attach(5, INPUT_PULLUP);
   buttonB.attach(6, INPUT_PULLUP);
   buttonC.attach(7, INPUT_PULLUP);
   buttonD.attach(8, INPUT_PULLUP);
-  buttonY.attach(10, INPUT_PULLUP);
+  buttonTapTempo.attach(10, INPUT_PULLUP);
   
   storedValues[CHANCE] = 31;
   storedValues[ZOOM] = 194;
@@ -230,12 +241,12 @@ void updateControl(){
   bool controlSetChanged = false;
   newStateLoaded = false;
   
-  buttonX.update();
+  buttonStartStop.update();
   buttonA.update();
   buttonB.update();
   buttonC.update();
   buttonD.update();
-  buttonY.update();
+  buttonTapTempo.update();
 
   if(!buttonA.read() && !buttonB.read()) {
     readyToLoad = false;
@@ -253,14 +264,14 @@ void updateControl(){
     readyToSave = true;
     readyToLoad = true;
     if(!readyToChooseLoadSlot&&!readyToChooseSaveSlot) {
-      tapTempo.update(!buttonY.read());
+      tapTempo.update(!buttonTapTempo.read());
     } else {
       tapTempo.update(false);
     }
 
     // handle button presses
     byte prevControlSet = controlSet;
-    if(buttonY.fell()) {
+    if(buttonTapTempo.fell()) {
       if(readyToChooseLoadSlot) loadParams(5);
       else if(readyToChooseSaveSlot) saveParams(5);
       else storedValues[TEMPO] = tapTempo.getBPM() - MIN_TEMPO;
@@ -283,7 +294,7 @@ void updateControl(){
     }
     controlSetChanged = (prevControlSet != controlSet);
     
-    if(buttonX.fell()) {
+    if(buttonStartStop.fell()) {
       if(readyToChooseLoadSlot) loadParams(0);
       else if(readyToChooseSaveSlot) saveParams(0);
       else doStartStop();
@@ -291,8 +302,8 @@ void updateControl(){
     
   }
 
-  //if(buttonY.fell()) doStartStop();
-  //tapTempo.update(!buttonX.read());
+  //if(buttonTapTempo.fell()) doStartStop();
+  //tapTempo.update(!buttonStartStop.read());
   
   msPerPulse = tapTempo.getBeatLength() / 24.0;
   while(!syncReceived && beatPlaying && millis()>=nextPulseTime) {
@@ -309,16 +320,16 @@ void updateControl(){
   }
   if(controlSetChanged||secondLoop||newStateLoaded) {
     for(i=0;i<NUM_KNOBS;i++) {
-      knobLocked[i] = true;
+      bitWrite(knobLocked, i, true);
       initValues[i] = analogValues[i];
     }
   } else {
     for(i=0;i<NUM_KNOBS;i++) {
-      if(knobLocked[i]) {
+      if(bitRead(knobLocked, i)) {
         int diff = initValues[i] - analogValues[i];
-        if(diff<-5||diff>5) knobLocked[i] = false;
+        if(diff<-5||diff>5) bitWrite(knobLocked, i, false);
       }
-      if(!knobLocked[i]) {
+      if(!bitRead(knobLocked, i)) {
         storedValues[NUM_KNOBS*controlSet+i] = analogValues[i];
       }
     }
