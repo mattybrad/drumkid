@@ -114,6 +114,8 @@ byte paramDroneMod;
 // special global variables needed for certain parameters
 byte crushCompensation;
 byte previousBeat;
+byte previousDroneRoot;
+byte activeDroneRoot;
 byte previousTimeSignature;
 byte oscilGain1 = 255;
 byte oscilGain2 = 255;
@@ -149,6 +151,21 @@ bool droneMod2Active = false;
 
 // define root notes
 float rootNotes[13] = {
+  138.5913155f,
+  146.832384f,
+  155.5634919f,
+  164.8137785f,
+  174.6141157f,
+  184.9972114f,
+  195.997718f,
+  207.6523488f,
+  220.0f,
+  233.0818808f,
+  246.9416506f,
+  261.6255653f,
+  277.182631f,
+};
+/*float rootNotes[13] = {
   277.182631f,
   184.9972114f,
   246.9416506f,
@@ -162,7 +179,7 @@ float rootNotes[13] = {
   155.5634919f,
   207.6523488f,
   138.5913155f,
-};
+};*/
 
 // determines whether each sample is played or muted in a particular drop mode
 byte dropRef[NUM_SAMPLES] = {
@@ -215,7 +232,7 @@ void setup(){
 
   storedValues[DRONE_MOD] = 127;
   storedValues[DRONE] = 127;
-  storedValues[DRONE_ROOT] = 127;
+  storedValues[DRONE_ROOT] = 0;
   storedValues[DRONE_PITCH] = 127;
 
   // initialise tempo (slightly different to other parameters)
@@ -361,6 +378,7 @@ void doPulseActions() {
   if(pulseNum%24==0) {
     if(stepNum==0) {
       numSteps = paramTimeSignature * 24; // 24 pulses per beat
+      activeDroneRoot = paramDroneRoot;
       if(numSteps == 96) numSteps = 192; // allow 4/4 signature to use two bars of defined beat
     }
   } 
@@ -438,8 +456,12 @@ void updateParameters(byte thisControlSet) {
       droneMod2Active = true;
       paramDroneMod = constrain(2*storedValues[DRONE_MOD]-270, 0, 255);;
     }
-    paramDroneRoot = map(storedValues[DRONE_ROOT],0,255,0,12);
-    paramDronePitch = rootNotes[paramDroneRoot] * (0.5f + (float) storedValues[DRONE_PITCH]/170.0f);// * 0.768f + 65.41f;
+    paramDroneRoot = storedValues[DRONE_ROOT]/20;
+    if(paramDroneRoot != previousDroneRoot) {
+      specialLedDisplay(paramDroneRoot, false);
+      previousDroneRoot = paramDroneRoot;
+    }
+    paramDronePitch = rootNotes[activeDroneRoot] * (0.5f + (float) storedValues[DRONE_PITCH]/170.0f);// * 0.768f + 65.41f;
     droneOscillator1.setFreq(paramDronePitch);
     droneOscillator2.setFreq(paramDronePitch*1.5f);
     break;
