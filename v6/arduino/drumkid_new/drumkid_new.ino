@@ -376,7 +376,7 @@ void doPulseActions() {
   Serial.write(0xF8); // MIDI clock continue
   cancelMidiNotes();
   if(pulseNum%24==0) {
-    if(stepNum==0) {
+    if(stepNum==0||(paramTimeSignature==4&&stepNum==96)||(paramTimeSignature==6&&stepNum==72)) {
       numSteps = paramTimeSignature * 24; // 24 pulses per beat
       activeDroneRoot = paramDroneRoot;
       if(numSteps == 96) numSteps = 192; // allow 4/4 signature to use two bars of defined beat
@@ -461,6 +461,7 @@ void updateParameters(byte thisControlSet) {
       specialLedDisplay(paramDroneRoot, false);
       previousDroneRoot = paramDroneRoot;
     }
+    if(!beatPlaying) activeDroneRoot = paramDroneRoot;
     paramDronePitch = rootNotes[activeDroneRoot] * (0.5f + (float) storedValues[DRONE_PITCH]/170.0f);// * 0.768f + 65.41f;
     droneOscillator1.setFreq(paramDronePitch);
     droneOscillator2.setFreq(paramDronePitch*1.5f);
@@ -720,13 +721,12 @@ void flashLeds() {
   displayLedNum(0);
 }
 
-// figure out better pattern for metronome flashing
 void updateLeds() {
-  if(millis() < specialLedDisplayTime + 2500UL && specialLedDisplayTime > 0) {
+  if(millis() < specialLedDisplayTime + 1500UL && specialLedDisplayTime > 0) {
     // show desired binary number for certain parameters where visual feedback is helpful
     displayLedNum(specialLedDisplayNum);
   } else if(beatPlaying) {
-    if(stepNum==0) displayLedNum(B00000011);
+    if(stepNum==0||(paramTimeSignature==4&&stepNum==96)||(paramTimeSignature==6&&stepNum==72)) displayLedNum(B00000011);
     else if(stepNum%24==0) displayLedNum(B00000010);
     else if(stepNum%24==3) displayLedNum(B00000000);
   } else {
