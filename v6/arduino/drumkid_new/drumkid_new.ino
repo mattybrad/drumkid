@@ -267,21 +267,14 @@ void updateControl(){
     readyToSave = false;
     readyToChooseLoadSlot = true;
     readyToChooseSaveSlot = false;
-    //tapTempo.update(false);
   } else if(!buttonC.read() && !buttonD.read()) {
     readyToSave = false;
     readyToLoad = false;
     readyToChooseSaveSlot = true;
     readyToChooseLoadSlot = false;
-    //tapTempo.update(false);
   } else {
     readyToSave = true;
     readyToLoad = true;
-    if(!readyToChooseLoadSlot&&!readyToChooseSaveSlot) {
-      //tapTempo.update(!buttonTapTempo.read());
-    } else {
-      //tapTempo.update(false);
-    }
 
     // handle button presses
     byte prevControlSet = controlSet;
@@ -458,10 +451,10 @@ void updateParameters(byte thisControlSet) {
     }
     paramDroneRoot = storedValues[DRONE_ROOT]/20;
     if(paramDroneRoot != previousDroneRoot) {
-      specialLedDisplay(paramDroneRoot, false);
+      if(!newStateLoaded) specialLedDisplay(paramDroneRoot, false);
       previousDroneRoot = paramDroneRoot;
     }
-    if(!beatPlaying) activeDroneRoot = paramDroneRoot;
+    if(!beatPlaying||newStateLoaded) activeDroneRoot = paramDroneRoot;
     paramDronePitch = rootNotes[activeDroneRoot] * (0.5f + (float) storedValues[DRONE_PITCH]/170.0f);// * 0.768f + 65.41f;
     droneOscillator1.setFreq(paramDronePitch);
     droneOscillator2.setFreq(paramDronePitch*1.5f);
@@ -470,13 +463,13 @@ void updateParameters(byte thisControlSet) {
     case 3:
     paramBeat = (NUM_BEATS * (int) storedValues[BEAT]) / 256;
     if(paramBeat != previousBeat) {
-      specialLedDisplay(paramBeat, false); // display current beat number using LEDs
+      if(!newStateLoaded) specialLedDisplay(paramBeat, false); // display current beat number using LEDs
       previousBeat = paramBeat;
     }
     tapTempo.setBPM((float) MIN_TEMPO + ((float) storedValues[TEMPO]));
     paramTimeSignature = map(storedValues[TIME_SIGNATURE],0,256,4,8);
     if(paramTimeSignature != previousTimeSignature) {
-      specialLedDisplay(paramTimeSignature-4, false); // display current beat number using LEDs
+      if(!newStateLoaded) specialLedDisplay(paramTimeSignature-4, false); // display current beat number using LEDs
       previousTimeSignature = paramTimeSignature;
     }
     paramSwing = storedValues[SWING] / 86; // gives range of 0 to 2
@@ -493,22 +486,13 @@ void doStartStop() {
     Serial.write(0xFA); // MIDI clock start
   } else {
     Serial.write(0xFC); // MIDI clock stop
-    updateLeds();
   }
 }
 
 void playPulseHits() {
-  byte tempDivider = 1;
-  if(pulseNum % tempDivider == 0) {
-    for(byte i=0; i<5; i++) {
-      if(bitRead(dropRef[i],paramDrop)) calculateNote(i);
-    }
+  for(byte i=0; i<5; i++) {
+    if(bitRead(dropRef[i],paramDrop)) calculateNote(i);
   }
-  /*if(pulseNum % 3 == 0) {
-    for(byte i=0; i<5; i++) {
-      if(bitRead(dropRef[i],paramDrop)) calculateNote(i);
-    }
-  }*/
 }
 
 void calculateNote(byte sampleNum) {
@@ -530,7 +514,7 @@ void calculateNote(byte sampleNum) {
   }
   byte testZoomMult = getZoomMultiplier();
   if(thisVelocity==0) {
-    byte yesNoRand = rand(0,255);
+    byte yesNoRand = rand(0,256);
     if(yesNoRand < paramChance) {
       int lowerBound = paramMidpoint - paramRange/2;
       int upperBound = paramMidpoint + paramRange/2;
@@ -714,7 +698,7 @@ void loop(){
 void flashLeds() {
   byte i, randByte;
   for(i=0;i<30;i++) {
-    randByte = rand(0,255);
+    randByte = rand(0,256);
     displayLedNum(randByte);
     delay(25);
   }
