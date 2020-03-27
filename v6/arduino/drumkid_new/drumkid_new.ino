@@ -285,6 +285,11 @@ void updateControl(){
         tapTempo.update(true);
         didTapHappen = true;
         storedValues[TEMPO] = tapTempo.getBPM() - MIN_TEMPO;
+        if(controlSet==TEMPO/NUM_KNOBS) {
+          byte tempoKnobNum = TEMPO%NUM_KNOBS;
+          bitWrite(knobLocked, tempoKnobNum, true);
+          initValues[tempoKnobNum] = analogValues[tempoKnobNum];
+        }
       }
     } else if(buttonA.fell()) {
       if(readyToChooseLoadSlot) loadParams(1);
