@@ -58,7 +58,7 @@ Bounce buttonD = Bounce();
 #define NUM_BUTTONS 6
 #define NUM_SAMPLES 5
 #define NUM_PARAM_GROUPS 4
-#define SAVED_STATE_SLOT_BYTES 32
+#define SAVED_STATE_SLOT_BYTES 24
 
 // define pin numbers
 // keep pin 9 for audio, but others can be changed to suit your breadboard layout
@@ -88,11 +88,11 @@ byte specialLedDisplayNum; // binary number to display on LEDs (when needed)
 unsigned long specialLedDisplayTime = 0; // the last time the LEDs were told to display a number
 
 // save/load variables
-bool readyToSave = true;
 bool readyToChooseSaveSlot = false;
-bool readyToLoad = true;
 bool readyToChooseLoadSlot = false;
+bool readyToChooseBank = false;
 bool newStateLoaded = false;
+byte activeBank = 0;
 
 // parameter variables, each with a range of 0-255 unless otherwise noted
 byte paramChance;
@@ -263,24 +263,24 @@ void updateControl(){
   buttonTapTempo.update();
 
   if(!buttonA.read() && !buttonB.read()) {
-    readyToLoad = false;
-    readyToSave = false;
     readyToChooseLoadSlot = true;
     readyToChooseSaveSlot = false;
+    readyToChooseBank = false;
   } else if(!buttonC.read() && !buttonD.read()) {
-    readyToSave = false;
-    readyToLoad = false;
     readyToChooseSaveSlot = true;
     readyToChooseLoadSlot = false;
+    readyToChooseBank = false;
+  } else if(!buttonB.read() && !buttonC.read()) {
+    readyToChooseLoadSlot = false;
+    readyToChooseSaveSlot = false;
+    readyToChooseBank = true;
   } else {
-    readyToSave = true;
-    readyToLoad = true;
-
     // handle button presses
     byte prevControlSet = controlSet;
     if(buttonTapTempo.fell()) {
       if(readyToChooseLoadSlot) loadParams(5);
       else if(readyToChooseSaveSlot) saveParams(5);
+      else if(readyToChooseBank) chooseBank(5);
       else {
         tapTempo.update(true);
         didTapHappen = true;
@@ -289,18 +289,22 @@ void updateControl(){
     } else if(buttonA.fell()) {
       if(readyToChooseLoadSlot) loadParams(1);
       else if(readyToChooseSaveSlot) saveParams(1);
+      else if(readyToChooseBank) chooseBank(1);
       else controlSet = 0;
     } else if(buttonB.fell()) {
       if(readyToChooseLoadSlot) loadParams(2);
       else if(readyToChooseSaveSlot) saveParams(2);
+      else if(readyToChooseBank) chooseBank(2);
       else controlSet = 1;
     } else if(buttonC.fell()) {
       if(readyToChooseLoadSlot) loadParams(3);
       else if(readyToChooseSaveSlot) saveParams(3);
+      else if(readyToChooseBank) chooseBank(3);
       else controlSet = 2;
     } else if(buttonD.fell()) {
       if(readyToChooseLoadSlot) loadParams(4);
       else if(readyToChooseSaveSlot) saveParams(4);
+      else if(readyToChooseBank) chooseBank(4);
       else controlSet = 3;
     }
     controlSetChanged = (prevControlSet != controlSet);
@@ -308,6 +312,7 @@ void updateControl(){
     if(buttonStartStop.fell()) {
       if(readyToChooseLoadSlot) loadParams(0);
       else if(readyToChooseSaveSlot) saveParams(0);
+      else if(readyToChooseBank) chooseBank(0);
       else doStartStop();
     }
     
@@ -737,11 +742,16 @@ void specialLedDisplay(byte displayNum, bool isBinary) {
   }
 }
 
+void chooseBank(byte newBank) {
+  activeBank = newBank;
+  readyToChooseBank = false;
+}
+
 void loadParams(byte slotNum) {
   readyToChooseLoadSlot = false;
   newStateLoaded = true;
   for(byte i=0; i<NUM_PARAM_GROUPS*NUM_KNOBS; i++) {
-    byte thisValue = EEPROM.read(slotNum*SAVED_STATE_SLOT_BYTES+i);
+    byte thisValue = EEPROM.read((slotNum+6*activeBank)*SAVED_STATE_SLOT_BYTES+i);
     storedValues[i] = thisValue;
   }
   for(byte i=0;i<NUM_PARAM_GROUPS;i++) {
@@ -750,13 +760,13 @@ void loadParams(byte slotNum) {
 }
 
 void saveParams(byte slotNum) {
-  // 1024 possible byte locations
-  // currently need 20 bytes per saved state
-  // currently planning choice of 6 slots for saved states (1 per button)
-  // need to leave space for some possible extra saved state data
-  // allot 32 bytes per saved state (nice round number), taking up total of 192 bytes
+  // 1024 possible byte locations in EEPROM
+  // currently need 16 bytes per saved state (4 groups of 4 params, 1 byte per param)
+  // 36 possible save slots (6 banks of 6 slots)
+  // need to leave space for some possible extra saved state data in future
+  // allot 24 bytes per saved state (vaguely round number in binary), taking up total of 864 bytes
   readyToChooseSaveSlot = false;
   for(byte i=0; i<NUM_PARAM_GROUPS*NUM_KNOBS; i++) {
-    EEPROM.write(slotNum*SAVED_STATE_SLOT_BYTES+i, storedValues[i]);
+    EEPROM.write((slotNum+6*activeBank)*SAVED_STATE_SLOT_BYTES+i, storedValues[i]);
   }
 }
