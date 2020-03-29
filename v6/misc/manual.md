@@ -69,7 +69,7 @@ You can try out each parameter by starting a rhythm (using the start/stop button
 
 **Drone tuning** - Controls the overall tuning of the drones (both the single and fifth tones).
 
-**Drone root note** - 
+**Drone root note** - Alter the root note of the drones, in semitone steps over an octave range.
 
 ## Other info
 Because DrumKid uses a lo-fi method (known as pulse width modulation) to generate its audio signal, there is a trace, high-frequency noise present in the output. While this signal is above most adults' range of hearing, and has been largely filtered out by DrumKid's own circuitry anyway, you may want to filter it out further if you are recording DrumKid in a studio, especially if you intend to pitch-shift the recording downwards (since this could bring the noise within human hearing range). To remove the noise, use a band stop filter with a frequency of 16384Hz.
