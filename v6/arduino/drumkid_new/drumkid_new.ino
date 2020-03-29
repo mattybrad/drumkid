@@ -165,21 +165,6 @@ float rootNotes[13] = {
   261.6255653f,
   277.182631f,
 };
-/*float rootNotes[13] = {
-  277.182631f,
-  184.9972114f,
-  246.9416506f,
-  164.8137785f,
-  220.0f,
-  146.832384f,
-  195.997718f,
-  261.6255653f,
-  174.6141157f,
-  233.0818808f,
-  155.5634919f,
-  207.6523488f,
-  138.5913155f,
-};*/
 
 // determines whether each sample is played or muted in a particular drop mode
 byte dropRef[NUM_SAMPLES] = {
@@ -226,19 +211,19 @@ void setup(){
   storedValues[CROP] = 255;
   storedValues[DROP] = 128;
 
-  storedValues[BEAT] = 27;
-  storedValues[TEMPO] = 64;
-  storedValues[SWING] = 0;
-
   storedValues[DRONE_MOD] = 127;
   storedValues[DRONE] = 127;
   storedValues[DRONE_ROOT] = 0;
   storedValues[DRONE_PITCH] = 127;
 
+  storedValues[BEAT] = 27;
+  storedValues[TIME_SIGNATURE] = 0; // equates to 4/4
+  storedValues[SWING] = 0;
+  storedValues[TEMPO] = 80; // equates to 120BPM (40 is minimum, 40+80=120)
+
   // initialise tempo (slightly different to other parameters)
   tapTempo.setMinBPM((float) MIN_TEMPO);
   tapTempo.setMaxBPM((float) MAX_TEMPO);
-  tapTempo.setBPM(120.0);
 
   for(byte i=0;i<NUM_PARAM_GROUPS;i++) {
     updateParameters(i); // set parameters to initial values defined above
