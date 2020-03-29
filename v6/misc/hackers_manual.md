@@ -32,3 +32,6 @@ If you encounter any problems uploading code to the Arduino, check the following
 - Detach any MIDI cables from DrumKid
 - Try (carefully) removing the Arduino Nano from DrumKid and uploading the "Blink" example sketch
 - Try a different USB cable
+
+## Hacking Drumkid's circuit
+...

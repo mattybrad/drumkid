@@ -61,7 +61,7 @@ public:
 	Sample(const int8_t * TABLE_NAME):table(TABLE_NAME),endpos_fractional((unsigned long) NUM_TABLE_CELLS << SAMPLE_F_BITS) // so isPlaying() will work
 	{
 		setLoopingOff();
-		direction = true; // play forwards by default
+		direction = true; // play forwards by default (MB)
 		//rangeWholeSample();
 	}
 
@@ -184,10 +184,10 @@ public:
 			out += diff_fraction;
 		}else{
 			if(direction) {
-        out = FLASH_OR_RAM_READ<const int8_t>(table + (phase_fractional >> SAMPLE_F_BITS)); // play forwards
-      } else {
-        out = FLASH_OR_RAM_READ<const int8_t>(table + NUM_TABLE_CELLS - (phase_fractional >> SAMPLE_F_BITS)); // play backwards
-      }
+        			out = FLASH_OR_RAM_READ<const int8_t>(table + (phase_fractional >> SAMPLE_F_BITS)); // play forwards
+      			} else {
+        			out = FLASH_OR_RAM_READ<const int8_t>(table + NUM_TABLE_CELLS - (phase_fractional >> SAMPLE_F_BITS)); // play backwards
+			}
 		}
 		incrementPhase();
 		return out;
@@ -219,7 +219,9 @@ public:
 	// 	return FLASH_OR_RAM_READ<const int8_t>(table + (((phase_fractional+(phmod_proportion * NUM_TABLE_CELLS))>>SAMPLE_SAMPLE_F_BITS) & (NUM_TABLE_CELLS - 1)));
 	// }
 
-  /** Set whether the sample should play forwards (true) or backwards (false) (for non-looping samples only) - added by Matt Bradshaw to allow the DrumKid drum machine to play reversed samples because they sound cool.
+	/** Set whether the sample should play forwards (true) or backwards (false) (for
+	non-looping samples only) - added by Matt Bradshaw to allow the DrumKid drum machine to
+	play reversed samples because they sound cool.
 	@param direction of playback
 	*/
 	inline
@@ -328,7 +330,7 @@ static const uint8_t ADJUST_FOR_NUM_TABLE_CELLS = (NUM_TABLE_CELLS<2048) ? 8 : 0
 	volatile unsigned long phase_increment_fractional;
 	const int8_t * table;
 	bool looping;
-	bool direction;
+	bool direction; // added by Matt Bradshaw to allow reverse sample playback
 	unsigned long startpos_fractional, endpos_fractional;
 };
 

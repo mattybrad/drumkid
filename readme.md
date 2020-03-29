@@ -1,9 +1,7 @@
 # DrumKid
 ## Lo-fi aleatoric Arduino drum machine
 
-### Please note, this project is under active development and a new, improved, more stable update is coming very soon! In the meantime, please refer to the V4 folder for the most recent fully working version. V6 will be ready by the end of March, including updated breadboard instructions and MIDI in/out support.
-
-![DrumKid](v4/misc/drumkid1.jpg?raw=true "DrumKid")
+![DrumKid](v4/misc/drumkid1.jpg?raw=true "DrumKid (V4)")
 
 ### Concept
 A drum machine which generates rhythms using probability. Imagine a traditional step-based drum machine, but where various dice are rolled for each step, with the resulting numbers used to determine the behaviour of the beat.
@@ -11,7 +9,7 @@ A drum machine which generates rhythms using probability. Imagine a traditional 
 ### Setup
 DrumKid is based around an Arduino, and coded using the Arduino IDE. Audio is produced by the Mozzi library. You can build a version of DrumKid using an Arduino, a breadboard, and standard electronic components, or you can build/buy the "full" version described below.
 
-![Breadboard layout](v4/breadboard/drumkid%20breadboard.png?raw=true "Breadboard layout")
+![Breadboard layout](v6/breadboard/breadboard_v6.png?raw=true "Breadboard layout (V6)")
 
 ### Design
 DrumKid is a portable, handheld, battery-powered instrument with a minimalist design. It consists of a PCB (printed circuit board) for the front panel, featuring knobs, buttons, LEDs, a power switch and a headphone/line output. The electronics are protected/enclosed by two laser-cut pieces and six metal standoffs.
@@ -28,4 +26,4 @@ Version 4 was the first successful working design, with full code, schematics, G
 
 Version 5 contained various PCB errors and has been superseded.
 
-Version 6 is under development right now and will hopefully be the basis of the first commercially available DrumKid - finalised breadboard files, BOM, etc will appear in due course.
+Version 6 is under development right now and will hopefully be the basis of the first commercially available DrumKid. As of March 2020, the Arduino code is working nicely, the breadboard layout has been updated, and I'm awaiting the new PCBs (i.e. they have not yet been tested!).
