@@ -12,7 +12,7 @@ DrumKid is based around an Arduino, and coded using the Arduino IDE. Audio is pr
 ![Breadboard layout](v6/breadboard/breadboard_v6.png?raw=true "Breadboard layout (V6)")
 
 ### Design
-DrumKid is a portable, handheld, battery-powered instrument with a minimalist design. It consists of a PCB (printed circuit board) for the front panel, featuring knobs, buttons, LEDs, a power switch and a headphone/line output. The electronics are protected/enclosed by two laser-cut pieces and six metal standoffs.
+DrumKid is a portable, handheld, battery-powered instrument with a minimalist design. It consists of a PCB (printed circuit board) for the front panel, featuring knobs, buttons, LEDs, a power switch and a headphone/line output. The electronics are protected/enclosed by two laser-cut acrylic pieces and six metal standoffs.
 
 ### Open Source
 This project is almost entirely open source. The code, breadboard layout, schematics, Gerber (PCB) files, and laser-cutter files are all included in the repository, with the aim of making this project easy to duplicate and adapt. Please note that the project depends on the Mozzi library, which is released under a Creative Commons non-commercial licence. I have used it here with kind permission from its creator, but please be aware that if you create a commercial product using this code, you will need to request permission from him. Go to <https://sensorium.github.io/Mozzi/> for more details.
