@@ -97,8 +97,8 @@ byte activeBank = 0;
 // parameter variables, each with a range of 0-255 unless otherwise noted
 byte paramChance;
 byte paramZoom;
-byte paramMidpoint;
-byte paramRange;
+int paramMidpoint; // -255 to 255
+int paramRange; // 0 to 510
 byte paramPitch;
 byte paramCrush;
 byte paramCrop;
@@ -201,10 +201,10 @@ void setup(){
   buttonD.attach(8, INPUT_PULLUP);
 
   // set starting values for each parameter
-  storedValues[CHANCE] = 31;
-  storedValues[ZOOM] = 194;
-  storedValues[RANGE] = 128;
-  storedValues[MIDPOINT] = 64;
+  storedValues[CHANCE] = 128;
+  storedValues[ZOOM] = 150;
+  storedValues[RANGE] = 0;
+  storedValues[MIDPOINT] = 128;
   
   storedValues[PITCH] = 170;
   storedValues[CRUSH] = 255;
@@ -380,8 +380,8 @@ void updateParameters(byte thisControlSet) {
     case 0:
     paramChance = storedValues[CHANCE];
     paramZoom = storedValues[ZOOM];
-    paramRange = storedValues[RANGE];
-    paramMidpoint = storedValues[MIDPOINT];
+    paramRange = 2 * storedValues[RANGE];
+    paramMidpoint = 2*storedValues[MIDPOINT] - 255;
     break;
 
     case 1:
@@ -508,18 +508,19 @@ void calculateNote(byte sampleNum) {
     if(bitRead(beatByte,7-((effectiveStepNum/6)%8))) thisVelocity = 255;
   }
   byte testZoomMult = getZoomMultiplier();
-  if(thisVelocity==0) {
-    byte yesNoRand = rand(0,256);
-    if(yesNoRand < paramChance) {
-      int lowerBound = paramMidpoint - paramRange/2;
-      int upperBound = paramMidpoint + paramRange/2;
-      thisVelocity = rand(lowerBound, upperBound);
-      thisVelocity = constrain(thisVelocity,0,255);
-      if(testZoomMult < 42) {
-        thisVelocity = thisVelocity * 6 * testZoomMult / 255;
-      }
+  byte yesNoRand = rand(0,256);
+  long randomVelocity = 0;
+  if(yesNoRand < paramChance) {
+    int lowerBound = paramMidpoint - paramRange/2;
+    int upperBound = paramMidpoint + paramRange/2;
+    randomVelocity = rand(lowerBound, upperBound);
+    randomVelocity = constrain(randomVelocity,-255,255);
+    if(testZoomMult < 42) {
+      randomVelocity = randomVelocity * 6 * testZoomMult / 255;
     }
   }
+  thisVelocity += randomVelocity;
+  thisVelocity = constrain(thisVelocity, 0, 255);
   triggerNote(sampleNum, thisVelocity);
 }
 
