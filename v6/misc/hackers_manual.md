@@ -1,17 +1,20 @@
 # DrumKid Hackers' Manual
 ## Introduction
-This manual is designed for advanced users of DrumKid who are already familiar with the instrument's basic features and would like to customise DrumKid. Most ideas described in this manual will require some skills in programming and/or electronics, but don't let that put you off - even if you don't currently have those skills, this might be a good way to learn!
+This manual is designed for advanced users of DrumKid who are already familiar with the instrument's basic features and would like to customise DrumKid (or for anyone who is just interested in how DrumKid works). Most ideas described in this manual will require some skills in programming and/or electronics, but don't let that put you off - even if you don't currently have those skills, this might be a good way to learn!
 
 ## What's possible?
 Here are a few examples of things that you could do with DrumKid using this guide:
+- Add your own preset beats
 - Load a different set of drum samples
 - Change the drone waveform
 - Allow DrumKid to play even more time signatures
-- Replace one of the parameters with an effect that you program yourself
+- Replace one of the parameters with an effect that you program yourself (e.g. delay or chorus)
 - Add a light sensor to control certain parameters
 - Add Eurorack CV control
+- Make your own case in your favourite colour
 - Mount DrumKid to a pedalboard or similar
 - Build an enclosed wooden case for DrumKid
+- 3D-print a custom case
 
 ## What's inside DrumKid?
 The front panel of DrumKid is a printed circuit board (PCB), with some components mounted on top (buttons, knobs, LEDs, power switch, headphone output) and some hidden underneath. The stuff underneath is what we're mainly concerned with in this hackers' manual.
