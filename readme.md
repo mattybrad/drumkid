@@ -19,7 +19,11 @@ This project is almost entirely open source. The code, breadboard layout, schema
 
 ### Versions
 Versions 1-3 were early prototypes.
+
 Version 4 was the first successful working design, with full code, schematics, Gerbers, etc available on GitHub.
+
 Version 5 contained various PCB errors and has been superseded.
+
 Version 6 has been tested and works nicely.
+
 Version 7 will be a minor revision of version 6.
