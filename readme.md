@@ -1,7 +1,7 @@
 # DrumKid
 ## Lo-fi aleatoric Arduino drum machine
 
-![DrumKid](v4/misc/drumkid1.jpg?raw=true "DrumKid (V4)")
+![DrumKid](images/dk6_1.jpg?raw=true "DrumKid (V6)")
 
 ### Concept
 A drum machine which generates rhythms using probability. Imagine a traditional step-based drum machine, but where various dice are rolled for each step, with the resulting numbers used to determine the behaviour of the beat.
@@ -9,7 +9,7 @@ A drum machine which generates rhythms using probability. Imagine a traditional 
 ### Setup
 DrumKid is based around an Arduino, and coded using the Arduino IDE. Audio is produced by the Mozzi library. You can build a version of DrumKid using an Arduino, a breadboard, and standard electronic components, or you can build/buy the "full" version described below.
 
-![Breadboard layout](v6/breadboard/breadboard_v6.png?raw=true "Breadboard layout (V6)")
+![Breadboard layout](breadboard/v6/breadboard_v6.png?raw=true "Breadboard layout (V6)")
 
 ### Design
 DrumKid is a portable, handheld, battery-powered instrument with a minimalist design. It consists of a PCB (printed circuit board) for the front panel, featuring knobs, buttons, LEDs, a power switch and a headphone/line output. The electronics are protected/enclosed by two laser-cut acrylic pieces and six metal standoffs.

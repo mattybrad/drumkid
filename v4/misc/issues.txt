@@ -1,2 +1,0 @@
-KNOWN ISSUES:
-- there are some conflicts between tap tempo and knob tempo; the tap tempo library is brilliant but it would be really useful to have a manual "setBPM" function so it could be overridden by the knob (or a saved value) when needed

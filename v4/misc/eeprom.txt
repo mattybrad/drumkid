@@ -1,3 +1,0 @@
-EEPROM PLAN
-
-ATmega328p chip has 1024 bytes of EEPROM. Want to be able to save current state. State will consist of approx 20 knob values plus maybe a few binary values. Knob value is either 1 or 2 bytes. Worst case, state might take up 50 bytes. Could actually store maybe 20 full states! Perhaps the most obvious use case is storing 6 states, one per button.
