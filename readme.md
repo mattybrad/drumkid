@@ -18,12 +18,8 @@ DrumKid is a portable, handheld, battery-powered instrument with a minimalist de
 This project is almost entirely open source. The code, breadboard layout, schematics, Gerber (PCB) files, and laser-cutter files are all included in the repository, with the aim of making this project easy to duplicate and adapt. Please note that the project depends on the Mozzi library, which is released under a Creative Commons non-commercial licence. I have used it here with kind permission from its creator, but please be aware that if you create a commercial product using this code, you will need to request permission from him. Go to <https://sensorium.github.io/Mozzi/> for more details.
 
 ### Versions
-DrumKid has been through various iterations, and I have taken to referring to each new PCB design as a new version. I will try not to make too many breaking changes from one version to the next, and I'm currently hoping that version 6 will be around for a long time, but please make sure to match the PCB/breadboard version number to the Arduino code version number.
-
 Versions 1-3 were early prototypes.
-
 Version 4 was the first successful working design, with full code, schematics, Gerbers, etc available on GitHub.
-
 Version 5 contained various PCB errors and has been superseded.
-
-Version 6 is under development right now and will hopefully be the basis of the first commercially available DrumKid. As of March 2020, the Arduino code is working nicely, the breadboard layout has been updated, and I'm awaiting the new PCBs (i.e. they have not yet been tested!).
+Version 6 has been tested and works nicely.
+Version 7 will be a minor revision of version 6.
