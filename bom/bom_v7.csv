@@ -1,0 +1,30 @@
+Item,Quantity,Notes
+DrumKid PCB,1,Not needed for breadboard version
+Battery box (3xAA),1,Not needed for breadboard version
+"Female header, 15x1",2,Not needed for breadboard version
+MIDI socket,2,
+EG1206 slide switch (SPDT),2,Not needed for breadboard version
+DIP socket (8 pin),1,Not needed for breadboard version
+6N138 optoisolator,1,
+1N5817 diode,1,
+1N4148 diode,1,
+Resistor (220),3,
+Resistor (470),1,
+Resistor (680),6,
+Resistor (10k),1,
+RK09K Potentiometer (10k linear taper),5,Use breadboard compatible 10k pots for breadboard
+LED (standard 5mm),6,
+Tayda A-853 stereo jack socket,1,Use breadboard-friendly 3.5mm jack socket for breadboard (or solder wires/header to standard 3.5mm socket)
+12mm tactile push button (Wurth 430476085716),6,
+Electrolytic capacitor (470uF),2,
+Arduino Nano or compatible,1,
+Laser-cut front panel cover (acrylic),1,Not needed for breadboard version
+Laser-cut rear panel (acrylic),1,Not needed for breadboard version
+"M3 thumb screw (nylon, 10mm)",8,Not needed for breadboard version
+"M3 machine screw (6mm, pan head)",4,Not needed for breadboard version
+"M3 machine screw (10mm, pan head)",2,Not needed for breadboard version
+"M3 machine screw (10mm, countersunk head)",2,Not needed for breadboard version
+M3 dome nut,2,Not needed for breadboard version
+M3 hex nut,4,Not needed for breadboard version
+"M3xM3 standoff (female/female, 25mm)",6,Not needed for breadboard version
+"M3xM3 standoff (male/female, 5mm)",4,Not needed for breadboard version
