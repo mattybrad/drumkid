@@ -73,6 +73,31 @@ You can try out each parameter by starting a rhythm (using the start/stop button
 **Tempo** - Alters the tempo (BPM) of the beat. Will override any tempo previously set using the tap tempo function.
 
 ## Other info
-Because DrumKid uses a lo-fi method (known as pulse width modulation) to generate its audio signal, there is a trace, high-frequency noise present in the output. While this signal should be above the human range of hearing, you may want to filter it out if you are recording DrumKid in a studio, especially if you intend to pitch-shift the recording downwards (since this could bring the noise within human hearing range). To remove the noise, use a band-stop or low-pass filter - the offending frequency should be at 32768Hz.
+Because DrumKid uses a lo-fi method (known as pulse width modulation) to generate its audio signal, there is a trace, high-frequency noise present in the output. While this signal should be above the human range of hearing, you may want to filter it out if you are recording DrumKid in a studio, especially if you intend to pitch-shift the recording downwards (since this could bring the noise within human hearing range). To remove the noise, use a band-stop or low-pass filter (before any pitch-shifting) - the offending frequency should be at 32768Hz.
 ## Hacking DrumKid
 DrumKid is an open source project, based on the Arduino Uno, and is designed in such a way that it can be modified and repaired. The source files for DrumKid are available from [https://github.com/mattybrad/drumkid/](https://github.com/mattybrad/drumkid/) - you will find the schematics, CAD files, parts list, source code and more. I have also written a "hackers' manual" to assist with modifying DrumKid's electronics and software.
+## Preset beat list
+1. You can leave your hat on
+2. Johnny Two-Hats
+3. Drum lesson
+4. Half-time rock
+5. There there
+6. Metal
+7. Four to the floor
+8. "Dance"
+9. Blue Monday
+10. Chime
+11. Funk Soul Brother
+12. Amen I
+13. Amen II
+14. Superstition
+15. Derribar el muro
+16. Hips don't lie
+17. Videotape
+18. Videotape (Bonnaroo)
+19. Military
+20. Ballad
+21. Waltz
+22. Take Five
+23. Unsquare
+24. Nihil
