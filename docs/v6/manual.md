@@ -83,7 +83,7 @@ DrumKid outputs note data on channel 10 (the standard MIDI drum channel). The no
 - Kick - C1 (36)
 - Click - C#1 (37)
 - Snare - D1 (38)
-- Closed hat - F#1 (42)
+- Closed hi-hat - F#1 (42)
 - Tom - G1 (43)
 
 ## Other info
