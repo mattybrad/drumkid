@@ -1,1 +1,1 @@
-touch test3.txt
+nano misc/gendocs/index.js
