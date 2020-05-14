@@ -1,4 +1,4 @@
-# DrumKid manual (work in progress, i.e. not gospel)
+# DrumKid manual
 ## Introduction
 Welcome to the DrumKid manual! DrumKid is a musical instrument that creates rhythms using random numbers. To get started with DrumKid, unscrew the six screws on the back of the unit, and carefully remove the back plate. Insert three AA batteries (you can use rechargeable or single-use), replace the back plate, and tighten the screws. Slide the power switch to "on" - you should see the lights flash briefly. After this, DrumKid is ready to use. Plug some headphones or a 3.5mm aux cable into the socket, and start playing.
 ## Philosophy
@@ -50,9 +50,9 @@ You can try out each parameter by starting a rhythm (using the start/stop button
 
 **Pitch** - Alters the playback speed of the samples. Will play samples backwards if you turn the knob below halfway.
 
-**Crush** - Reduces the number of bits used to calculate the audio output, creating a digital distortion effect. Higher values are clean, lower values are more distorted (fewer bits). CHECK THIS BEFORE RELEASE, MIGHT BE REVERSED
+**Crush** - Reduces the number of bits used to calculate the audio output, creating a digital distortion effect. Higher values are clean, lower values are more distorted (fewer bits).
 
-**Crop** - Crops the end of the samples, creating a staccato effect. Lower values are more cropped. CHECK THIS BEFORE RELEASE, MIGHT BE REVERSED
+**Crop** - Crops the end of the samples, creating a staccato effect. Lower values are more cropped.
 
 **Drop** - This control mutes some or all of the drum channels, allowing you to quickly "drop" everything except the hi-hat and snare, for example, or only retain the kick drum. Broadly, this control has "treble-y" channels at one end and "bass-y" channels at the other. The setting corresponding to all the channels being audible is somewhere in the middle.
 
@@ -71,6 +71,20 @@ You can try out each parameter by starting a rhythm (using the start/stop button
 **Swing** - Creates a swing feel to a beat by altering the timing of certain hits. There are three settings: straight, partial swing, and full (triplet) swing.
 
 **Tempo** - Alters the tempo (BPM) of the beat. Will override any tempo previously set using the tap tempo function.
+
+## MIDI
+DrumKid has MIDI in and out ports. These can be used to connect DrumKid to other MIDI equipment.
+
+### Synchronisation
+DrumKid sends and receives MIDI clock signals. A clock signal will be sent through the "MIDI out" socket whenever DrumKid is playing. If DrumKid detects a clock signal through the "MIDI in" socket, it will synchronise itself to this signal. Once a clock signal has been received, the tempo controls will stop having any effect (you can return to non-synchronised mode by turning DrumKid off and on again). In synchronised mode, the start/stop button acts slightly differently - it will still stop the beat as normal, but starting a beat will only work if there is an active clock signal. If you attempt to start the beat before a clock signal is present, DrumKid will wait for a clock signal before starting. This behaviour may change with future updates.
+
+### Note output
+DrumKid outputs note data on channel 10 (the standard MIDI drum channel). The note numbers are as follows:
+- Kick - C1 (36)
+- Click - C#1 (37)
+- Snare - D1 (38)
+- Closed hi-hat - F#1 (42)
+- Tom - G1 (43)
 
 ## Other info
 Because DrumKid uses a lo-fi method (known as pulse width modulation) to generate its audio signal, there is a trace, high-frequency noise present in the output. While this signal should be above the human range of hearing, you may want to filter it out if you are recording DrumKid in a studio, especially if you intend to pitch-shift the recording downwards (since this could bring the noise within human hearing range). To remove the noise, use a band-stop or low-pass filter (before any pitch-shifting) - the offending frequency should be at 32768Hz.

@@ -1,4 +1,4 @@
-# DrumKid Hackers' Manual
+# DrumKid Hackers' Manual (work in progress)
 ## Introduction
 This manual is designed for advanced users of DrumKid who are already familiar with the instrument's basic features and would like to customise DrumKid (or for anyone who is just interested in how DrumKid works). Most ideas described in this manual will require some skills in programming and/or electronics, but don't let that put you off - even if you don't currently have those skills, this might be a good way to learn!
 
@@ -32,7 +32,6 @@ Before you upload anything to the Arduino, make sure the switch on the underside
 
 If you encounter any problems uploading code to the Arduino, check the following:
 - The switch on the underside of the PCB should be set to "Arduino"
-- Detach any MIDI cables from DrumKid
 - Try (carefully) removing the Arduino Nano from DrumKid and uploading the "Blink" example sketch
 - Try a different USB cable
 

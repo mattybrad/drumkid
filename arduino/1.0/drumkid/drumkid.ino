@@ -623,7 +623,7 @@ void triggerNote(byte sampleNum, byte velocity) {
 }
 
 void playMidiNote(byte noteNum, byte velocity) {
-  Serial.write(0x90);
+  Serial.write(0x99); // note down, channel 10
   Serial.write(noteNum);
   Serial.write(velocity>>1);
 }
@@ -643,7 +643,7 @@ void cancelMidiNotes() {
   byte i;
   for(i=0; i<NUM_SAMPLES; i++) {
     if(bitRead(noteDown,i)) {
-      Serial.write(0x90);
+      Serial.write(0x99); // note down, channel 10
       Serial.write(midiNotes[i]);
       Serial.write(0x00);
       bitWrite(noteDown,i,false);
