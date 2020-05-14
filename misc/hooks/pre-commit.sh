@@ -1,1 +1,3 @@
-nano misc/gendocs/index.js
+node misc/gendocs/index.js
+git add manual.pdf
+git add hackers_manual.pdf
