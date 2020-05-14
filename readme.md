@@ -27,5 +27,3 @@ Version 5 contained various PCB errors and has been superseded.
 Version 6 has been tested and works nicely.
 
 Version 7 will be a minor revision of version 6.
-
-1111
