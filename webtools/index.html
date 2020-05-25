@@ -1,0 +1,50 @@
+<html>
+  <head>
+    <style>
+      body {
+        font-family: sans-serif;
+      }
+    </style>
+  </head>
+  <body>
+    <form action="http://localhost:3000/samplegen" method="post" encType="multipart/form-data">
+      <h1>File 1 (default = kick)</h1>
+      <input name="file1" type="file"><br/>
+      <select name="file1Source">
+        <option value="uploaded">Use uploaded file</option>
+        <option selected value="default">Use default file</option>
+        <option value="silent">Use silence</option>
+      </select>
+      <h1>File 2 (default = closed hat)</h1>
+      <input name="file2" type="file"><br/>
+      <select name="file2Source">
+        <option value="uploaded">Use uploaded file</option>
+        <option selected value="default">Use default file</option>
+        <option value="silent">Use silence</option>
+      </select>
+      <h1>File 3 (default = snare)</h1>
+      <input name="file3" type="file"><br/>
+      <select name="file3Source">
+        <option value="uploaded">Use uploaded file</option>
+        <option selected value="default">Use default file</option>
+        <option value="silent">Use silence</option>
+      </select>
+      <h1>File 4 (default = rim)</h1>
+      <input name="file4" type="file"><br/>
+      <select name="file4Source">
+        <option value="uploaded">Use uploaded file</option>
+        <option selected value="default">Use default file</option>
+        <option value="silent">Use silence</option>
+      </select>
+      <h1>File 5 (default = tom)</h1>
+      <input name="file5" type="file"><br/>
+      <select name="file5Source">
+        <option value="uploaded">Use uploaded file</option>
+        <option selected value="default">Use default file</option>
+        <option value="silent">Use silence</option>
+      </select>
+      <br/><br/>
+      <input type="submit">
+    </form>
+  </body>
+</html>
