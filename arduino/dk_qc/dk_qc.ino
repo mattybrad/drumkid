@@ -106,6 +106,7 @@ void setup() {
   MIDI.setHandleNoteOff(HandleNoteOff);  // Put only the name of the function
   // Initiate MIDI communications, listen to all channels (not needed with Teensy usbMIDI)
   MIDI.begin(MIDI_CHANNEL_OMNI);
+  MIDI.turnThruOff();
 
   envelope.setADLevels(255,64);
   envelope.setTimes(50,200,10000,200); // 10000 is so the note will sustain 10 seconds unless a noteOff comes
@@ -229,6 +230,7 @@ void flashLeds(int ledNum, int numFlashes) {
 
 void resetAllEepromSlots() {
   // write semi-random (curated random?!) data to the EEPROM
+  randomSeed(analogRead(5)); // A5 should be floating hence random
   for(byte i=0; i<6; i++) {
     for(byte j=0; j<6; j++) {
       storedValues[CHANCE] = random(64,192);
