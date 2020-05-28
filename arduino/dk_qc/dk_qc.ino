@@ -228,27 +228,32 @@ void flashLeds(int ledNum, int numFlashes) {
 }
 
 void resetAllEepromSlots() {
+  // write semi-random (curated random?!) data to the EEPROM
   for(byte i=0; i<6; i++) {
     for(byte j=0; j<6; j++) {
-      storedValues[CHANCE] = 128;
-      storedValues[ZOOM] = 150;
-      storedValues[RANGE] = 0;
-      storedValues[MIDPOINT] = 128;
+      storedValues[CHANCE] = random(64,192);
+      storedValues[ZOOM] = random(100,190);
+      storedValues[RANGE] = random(0,128);
+      storedValues[MIDPOINT] = random(80,190);
       
-      storedValues[PITCH] = 170;
-      storedValues[CRUSH] = 255;
-      storedValues[CROP] = 255;
+      storedValues[PITCH] = random(135,256);
+      if(random(0,6)==0) storedValues[PITCH] = random(0,120);
+      storedValues[CRUSH] = random(160,256);
+      storedValues[CROP] = random(128,256);
       storedValues[DROP] = 128;
-    
+      if(random(0,3)==0) storedValues[DROP] = random(32,256);
+
       storedValues[DRONE_MOD] = 127;
       storedValues[DRONE] = 127;
       storedValues[DRONE_ROOT] = 0;
       storedValues[DRONE_PITCH] = 127;
+      if(random(0,6)==0) storedValues[DRONE_MOD] = random(0,255);
+      if(random(0,4)==0) storedValues[DRONE] = random(64,192);
     
-      storedValues[BEAT] = 27;
+      storedValues[BEAT] = random(0,240);
       storedValues[TIME_SIGNATURE] = 0; // equates to 4/4
-      storedValues[SWING] = 0;
-      storedValues[TEMPO] = 80; // equates to 120BPM (40 is minimum, 40+80=120)
+      storedValues[SWING] = random(0,256);
+      storedValues[TEMPO] = random(40,120);
       
       saveEepromParams(j, i);
     }

@@ -14,6 +14,8 @@ DrumKid has six buttons and four knobs. The basic functions are as follows:
  - Press buttons A+B together to load a session, then choose which session to load by pressing any of the buttons
  - Press buttons C+D together to save a session, then choose which slot to save your session in by pressing any of the buttons
  - Press buttons B+C together to change the current active memory bank, then choose a specific memory bank by pressing any of the buttons
+## Presets
+In the aleatoric spirit of DrumKid, all 36 sessions stored when you first use the instrument are randomly generated when DrumKid is built. Try loading a few of them to get a feel for what DrumKid can do.
 ## Parameters
 There are 16 different parameters which can be adjusted on DrumKid, split into four groups, with each group's four parameters controlled by the four knobs. The parameters are grouped as follows:
 
