@@ -1,5 +1,7 @@
 // DrumKid quality control testing sketch (V6/V7)
 // This is probably not the sketch you're looking for!
+// I use it to test each DrumKid unit before shipping it
+// It also wipes the EEPROM (memory) so be careful ;)
 
 // testing sketch goes through a number of phases:
 // 0) flash all LEDs one by one
@@ -12,6 +14,11 @@
 // 3) play constant sound until button is pressed
 // 4) send repeated MIDI note sequence until button is pressed
 // 5) play notes when MIDI input received until button is pressed
+
+#define CLEAR_MEMORY 1
+
+// include EEPROM library for saving data
+#include <EEPROM.h>
 
 // include debouncing library to make buttons work reliably
 #include <Bounce2.h>
@@ -43,6 +50,29 @@ const byte ledPins[5] = {2,3,11,12,13};
 const byte buttonPins[6] = {4,5,6,7,8,10};
 const byte analogPins[4] = {A0,A1,A2,A3};
 
+// define knobs to help initialising EEPROM
+#define CHANCE 0
+#define ZOOM 1
+#define RANGE 2
+#define MIDPOINT 3
+#define PITCH 4
+#define CRUSH 5
+#define CROP 6
+#define DROP 7
+#define DRONE 8
+#define DRONE_MOD 9
+#define DRONE_PITCH 10
+#define DRONE_ROOT 11
+#define BEAT 12
+#define TIME_SIGNATURE 13
+#define SWING 14
+#define TEMPO 15
+
+#define NUM_KNOBS 4
+#define NUM_PARAM_GROUPS 4
+#define SAVED_STATE_SLOT_BYTES 24
+byte storedValues[NUM_PARAM_GROUPS*NUM_KNOBS];
+
 void HandleNoteOn(byte channel, byte note, byte velocity) {
   if(testPhase==5) {
     aSin.setFreq(mtof(float(note)));
@@ -59,6 +89,8 @@ void HandleNoteOff(byte channel, byte note, byte velocity) {
 }
 
 void setup() {
+  if(CLEAR_MEMORY == 1) resetAllEepromSlots();
+  
   // initialise pins
   for(int i=0; i<5; i++) {
     pinMode(ledPins[i], OUTPUT);
@@ -192,5 +224,41 @@ void flashLeds(int ledNum, int numFlashes) {
       }
     }
     flashState = !flashState;
+  }
+}
+
+void resetAllEepromSlots() {
+  for(byte i=0; i<6; i++) {
+    for(byte j=0; j<6; j++) {
+      storedValues[CHANCE] = 128;
+      storedValues[ZOOM] = 150;
+      storedValues[RANGE] = 0;
+      storedValues[MIDPOINT] = 128;
+      
+      storedValues[PITCH] = 170;
+      storedValues[CRUSH] = 255;
+      storedValues[CROP] = 255;
+      storedValues[DROP] = 128;
+    
+      storedValues[DRONE_MOD] = 127;
+      storedValues[DRONE] = 127;
+      storedValues[DRONE_ROOT] = 0;
+      storedValues[DRONE_PITCH] = 127;
+    
+      storedValues[BEAT] = 27;
+      storedValues[TIME_SIGNATURE] = 0; // equates to 4/4
+      storedValues[SWING] = 0;
+      storedValues[TEMPO] = 80; // equates to 120BPM (40 is minimum, 40+80=120)
+      
+      saveEepromParams(j, i);
+    }
+  }
+}
+
+void saveEepromParams(byte slotNum, byte bankNum) {
+  // 1024 possible byte locations in EEPROM
+  // currently need 16 bytes per saved state (4 groups of 4 params, 1 byte per param)
+  for(byte i=0; i<NUM_PARAM_GROUPS*NUM_KNOBS; i++) {
+    EEPROM.write((slotNum+6*bankNum)*SAVED_STATE_SLOT_BYTES+i, storedValues[i]);
   }
 }
