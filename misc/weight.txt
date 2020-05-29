@@ -1,0 +1,4 @@
+DK = 200g (no bats)
+box = 100g
+padding = 200g
+brown paper = 10g
