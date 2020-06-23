@@ -6,7 +6,7 @@ encoding utf-8
 Sheet 1 1
 Title "DrumKid"
 Date ""
-Rev "v6"
+Rev "v8"
 Comp "by Matt Bradshaw"
 Comment1 ""
 Comment2 ""
@@ -320,29 +320,22 @@ Wire Wire Line
 $Comp
 L drumkid-rescue:AudioJack3_Ground_Switch-Connector J9
 U 1 1 5CC95FE7
-P 8900 5500
-F 0 "J9" H 8667 5379 50  0000 R CNN
-F 1 "AudioJack3_Ground_Switch" H 8667 5470 50  0000 R CNN
-F 2 "drumkidcustom:Tayda_3.5mm_stereo_TRS_jack_A-853" H 8900 5500 50  0001 C CNN
-F 3 "~" H 8900 5500 50  0001 C CNN
-	1    8900 5500
+P 9850 5500
+F 0 "J9" H 9617 5379 50  0000 R CNN
+F 1 "AudioJack3_Ground_Switch" H 9617 5470 50  0000 R CNN
+F 2 "drumkidcustom:Tayda_3.5mm_stereo_TRS_jack_A-853" H 9850 5500 50  0001 C CNN
+F 3 "~" H 9850 5500 50  0001 C CNN
+	1    9850 5500
 	-1   0    0    1   
 $EndComp
-Wire Wire Line
-	8700 5500 8500 5500
-Wire Wire Line
-	8500 5500 8500 5300
-Wire Wire Line
-	8500 5300 8700 5300
-NoConn ~ 8700 5400
-NoConn ~ 8700 5200
+NoConn ~ 9650 5400
+NoConn ~ 9650 5200
 Text Notes 7850 1150 0    50   ~ 0
 Arduino pin breakouts for extra hackability
 Text Label 7350 5600 0    50   ~ 0
 DIGITAL_9
 Wire Wire Line
 	7350 5600 7850 5600
-Connection ~ 8500 5300
 $Comp
 L Switch:SW_Push SW6
 U 1 1 5CEECF1D
@@ -514,24 +507,17 @@ F 3 "~" H 10350 3250 50  0001 C CNN
 	1    10350 3250
 	1    0    0    -1  
 $EndComp
-Wire Wire Line
-	8000 5300 8500 5300
 $Comp
 L power:GND #PWR0103
 U 1 1 5E6F0EE1
-P 8700 5800
-F 0 "#PWR0103" H 8700 5550 50  0001 C CNN
-F 1 "GND" H 8705 5627 50  0000 C CNN
-F 2 "" H 8700 5800 50  0001 C CNN
-F 3 "" H 8700 5800 50  0001 C CNN
-	1    8700 5800
+P 9650 6000
+F 0 "#PWR0103" H 9650 5750 50  0001 C CNN
+F 1 "GND" H 9655 5827 50  0000 C CNN
+F 2 "" H 9650 6000 50  0001 C CNN
+F 3 "" H 9650 6000 50  0001 C CNN
+	1    9650 6000
 	1    0    0    -1  
 $EndComp
-Wire Wire Line
-	8700 5800 8700 5600
-Connection ~ 8700 5600
-Wire Wire Line
-	8150 5600 8700 5600
 Wire Wire Line
 	8000 5450 8000 5300
 $Comp
@@ -1036,7 +1022,7 @@ L Device:CP C1
 U 1 1 5E8C7A0F
 P 2950 1350
 F 0 "C1" H 3068 1396 50  0000 L CNN
-F 1 "CP" H 3068 1305 50  0000 L CNN
+F 1 "470uF" H 3068 1305 50  0000 L CNN
 F 2 "Capacitor_THT:CP_Radial_D6.3mm_P2.50mm" H 2988 1200 50  0001 C CNN
 F 3 "~" H 2950 1350 50  0001 C CNN
 	1    2950 1350
@@ -1126,7 +1112,7 @@ L Device:CP C3
 U 1 1 5E730EEC
 P 4800 5550
 F 0 "C3" H 4918 5596 50  0000 L CNN
-F 1 "CP" H 4918 5505 50  0000 L CNN
+F 1 "470uF" H 4918 5505 50  0000 L CNN
 F 2 "Capacitor_THT:CP_Radial_D6.3mm_P2.50mm" H 4838 5400 50  0001 C CNN
 F 3 "~" H 4800 5550 50  0001 C CNN
 	1    4800 5550
@@ -1206,4 +1192,61 @@ Wire Wire Line
 	2200 1000 2050 1000
 Wire Wire Line
 	2200 1000 2200 1450
+$Comp
+L Device:CP C5
+U 1 1 5EF27403
+P 8250 5300
+F 0 "C5" V 8505 5300 50  0000 C CNN
+F 1 "22uF" V 8414 5300 50  0000 C CNN
+F 2 "Capacitor_THT:CP_Radial_D6.3mm_P2.50mm" H 8288 5150 50  0001 C CNN
+F 3 "~" H 8250 5300 50  0001 C CNN
+	1    8250 5300
+	0    -1   -1   0   
+$EndComp
+$Comp
+L Device:R R13
+U 1 1 5EF29817
+P 9350 5500
+F 0 "R13" V 9450 5500 50  0000 C CNN
+F 1 "1k" V 9550 5500 50  0000 C CNN
+F 2 "drumkidcustom:R_Axial_DIN0207_L6.3mm_D2.5mm_P10.16mm_Horizontal" V 9280 5500 50  0001 C CNN
+F 3 "~" H 9350 5500 50  0001 C CNN
+	1    9350 5500
+	0    1    1    0   
+$EndComp
+$Comp
+L Device:R R12
+U 1 1 5EF282B1
+P 9350 5300
+F 0 "R12" V 9143 5300 50  0000 C CNN
+F 1 "1k" V 9234 5300 50  0000 C CNN
+F 2 "drumkidcustom:R_Axial_DIN0207_L6.3mm_D2.5mm_P10.16mm_Horizontal" V 9280 5300 50  0001 C CNN
+F 3 "~" H 9350 5300 50  0001 C CNN
+	1    9350 5300
+	0    1    1    0   
+$EndComp
+Wire Wire Line
+	9500 5300 9650 5300
+Wire Wire Line
+	9500 5500 9650 5500
+Wire Wire Line
+	8400 5300 8900 5300
+Wire Wire Line
+	8900 5300 8900 5500
+Wire Wire Line
+	8900 5500 9200 5500
+Connection ~ 8900 5300
+Wire Wire Line
+	8900 5300 9200 5300
+Wire Wire Line
+	8000 5300 8100 5300
+Wire Wire Line
+	8150 5600 8800 5600
+Wire Wire Line
+	8800 5600 8800 6000
+Wire Wire Line
+	8800 6000 9650 6000
+Wire Wire Line
+	9650 5600 9650 6000
+Connection ~ 9650 6000
 $EndSCHEMATC
