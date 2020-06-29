@@ -1,5 +1,5 @@
-/*  This code is for the version 6 (V6) DrumKid PCB and breadboard designs.
- *  It might work with other versions with a bit of tweaking   
+/*  This code should work for DrumKid boards from V6 onwards.
+ *  It might work with earlier versions with a bit of tweaking :) 
  */
 
 // include Mozzi library files for generating audio (custom version to allow reverse playback)
@@ -33,10 +33,6 @@ Oscil<SAW256_NUM_CELLS, AUDIO_RATE> droneOscillator2(SAW256_DATA);
 // include debouncing library to make buttons work reliably
 #include <Bounce2.h>
 
-// include tap tempo library (custom version to allow directly setting the tempo via knob)
-#include "ArduinoTapTempoDK/src/ArduinoTapTempo.cpp"
-ArduinoTapTempo tapTempo;
-
 // include EEPROM library for saving data
 #include <EEPROM.h>
 
@@ -59,6 +55,7 @@ Bounce buttonD = Bounce();
 #define NUM_SAMPLES 5
 #define NUM_PARAM_GROUPS 4
 #define SAVED_STATE_SLOT_BYTES 24
+#define NUM_TAP_TIMES 4
 
 // define pin numbers
 // keep pin 9 for audio, but others can be changed to suit your breadboard layout
@@ -68,7 +65,7 @@ const byte analogPins[4] = {A0,A1,A2,A3};
 
 // various other global variables
 float nextPulseTime = 0.0; // the time, in milliseconds, of the next pulse
-float msPerPulse; // time for one "pulse" (there are 24 pulses per quarter note, as defined in MIDI spec)
+float msPerPulse = 20.8333; // time for one "pulse" (there are 24 pulses per quarter note, as defined in MIDI spec)
 byte pulseNum = 0; // 0 to 23 (24ppqn, pulses per quarter note)
 byte stepNum = 0; // 0 to 192 (max two bars of 8 beats, aka 192 pulses)
 byte numSteps; // number of steps used - dependent on time signature
@@ -94,6 +91,10 @@ bool readyToChooseBank = false;
 bool newStateLoaded = false;
 byte activeBank = 0;
 
+// tempo variables
+float tapTimes[NUM_TAP_TIMES];
+byte nextTapIndex = 0;
+
 // parameter variables, each with a range of 0-255 unless otherwise noted
 byte paramChance;
 byte paramZoom;
@@ -105,7 +106,7 @@ byte paramCrop;
 byte paramDrop;
 byte paramBeat; // 0 to 23 (24 beats in total)
 byte paramTimeSignature; // 3 to 7 (3/4, 4/4, 5/4, 6/4, 7/4)
-// N.B. no such variable as paramTempo - handled by TapTempo library
+float paramTempo; 
 byte paramSwing = 0; // 0 to 2 (0=straight, 1=approx quintuplet swing, 2=triplet swing)
 byte paramDroneRoot; // 0 to 11 (all 12 possible semitones in an octave)
 float paramDronePitch;
@@ -221,22 +222,18 @@ void setup(){
   storedValues[SWING] = 0;
   storedValues[TEMPO] = 80; // equates to 120BPM (40 is minimum, 40+80=120)
 
-  // initialise tempo (slightly different to other parameters)
-  tapTempo.setMinBPM((float) MIN_TEMPO);
-  tapTempo.setMaxBPM((float) MAX_TEMPO);
-
   for(byte i=0;i<NUM_PARAM_GROUPS;i++) {
     updateParameters(i); // set parameters to initial values defined above
   }
   
-  Serial.begin(31250); // begin serial communication for MIDI input/output
+  //Serial.begin(31250); // begin serial communication for MIDI input/output
+  Serial.begin(9600);
 
   flashLeds(); // do a brief LED light show to show the unit is working
 }
 
 void updateControl(){
   byte i;
-  bool didTapHappen = false;
   bool controlSetChanged = false;
   newStateLoaded = false;
   
@@ -267,9 +264,20 @@ void updateControl(){
       else if(readyToChooseSaveSlot) saveParams(5);
       else if(readyToChooseBank) chooseBank(5);
       else {
-        tapTempo.update(true);
-        didTapHappen = true;
-        storedValues[TEMPO] = tapTempo.getBPM() - MIN_TEMPO;
+        tapTimes[nextTapIndex] = (float) millis();
+
+        // temporary
+        byte prevTapIndex = (nextTapIndex == 0) ? NUM_TAP_TIMES - 1 : nextTapIndex - 1;
+        float tap1 = tapTimes[nextTapIndex];
+        float tap2 = tapTimes[prevTapIndex];
+        if(tap1 > 0.0 && tap2 > 0.0) {
+          float newPulseLength = (tap1 - tap2) / 24.0;
+          paramTempo = 2500.0 / newPulseLength;
+          storedValues[TEMPO] = paramTempo - MIN_TEMPO;
+        }
+        nextTapIndex = (nextTapIndex + 1) % NUM_TAP_TIMES;
+        // end temporary
+        
         if(controlSet==TEMPO/NUM_KNOBS) {
           byte tempoKnobNum = TEMPO%NUM_KNOBS;
           bitWrite(knobLocked, tempoKnobNum, true);
@@ -308,9 +316,9 @@ void updateControl(){
     
   }
 
-  if(!didTapHappen) tapTempo.update(false);
-  
-  msPerPulse = tapTempo.getBeatLength() / 24.0;
+  msPerPulse = 2500.0 / paramTempo;
+
+  // perform pulse actions inside loop - stop beat if everything gets super overloaded
   byte numLoops = 0;
   while(!syncReceived && beatPlaying && millis()>=nextPulseTime) {
     if(numLoops<5) doPulseActions();
@@ -361,7 +369,7 @@ void updateControl(){
 }
 
 void doPulseActions() {
-  Serial.write(0xF8); // MIDI clock continue
+  //Serial.write(0xF8); // MIDI clock continue
   cancelMidiNotes();
   if(pulseNum%24==0) {
     if(stepNum==0||(paramTimeSignature==4&&stepNum==96)||(paramTimeSignature==6&&stepNum==72)) {
@@ -461,7 +469,8 @@ void updateParameters(byte thisControlSet) {
       if(!newStateLoaded) specialLedDisplay(paramBeat, false); // display current beat number using LEDs
       previousBeat = paramBeat;
     }
-    tapTempo.setBPM((float) MIN_TEMPO + ((float) storedValues[TEMPO]));
+    //tapTempo.setBPM((float) MIN_TEMPO + ((float) storedValues[TEMPO]));
+    paramTempo = MIN_TEMPO + storedValues[TEMPO];
     paramTimeSignature = map(storedValues[TIME_SIGNATURE],0,256,4,8);
     if(paramTimeSignature != previousTimeSignature) {
       if(!newStateLoaded) specialLedDisplay(paramTimeSignature-4, false); // display current beat number using LEDs
@@ -478,9 +487,9 @@ void doStartStop() {
     pulseNum = 0;
     stepNum = 0;
     nextPulseTime = millis();
-    Serial.write(0xFA); // MIDI clock start
+    //Serial.write(0xFA); // MIDI clock start
   } else {
-    Serial.write(0xFC); // MIDI clock stop
+    //Serial.write(0xFC); // MIDI clock stop
   }
 }
 
@@ -623,9 +632,9 @@ void triggerNote(byte sampleNum, byte velocity) {
 }
 
 void playMidiNote(byte noteNum, byte velocity) {
-  Serial.write(0x99); // note down, channel 10
-  Serial.write(noteNum);
-  Serial.write(velocity>>1);
+  //Serial.write(0x99); // note down, channel 10
+  //Serial.write(noteNum);
+  //Serial.write(velocity>>1);
 }
 
 void incrementPulse() {
@@ -643,9 +652,9 @@ void cancelMidiNotes() {
   byte i;
   for(i=0; i<NUM_SAMPLES; i++) {
     if(bitRead(noteDown,i)) {
-      Serial.write(0x99); // note down, channel 10
-      Serial.write(midiNotes[i]);
-      Serial.write(0x00);
+      //Serial.write(0x99); // note down, channel 10
+      //Serial.write(midiNotes[i]);
+      //Serial.write(0x00);
       bitWrite(noteDown,i,false);
     }
   }
@@ -701,8 +710,9 @@ void flashLeds() {
   displayLedNum(0);
 }
 
+// led display time temporarily changing from 1500UL to 50UL
 void updateLeds() {
-  if(millis() < specialLedDisplayTime + 1500UL && specialLedDisplayTime > 0) {
+  if(millis() < specialLedDisplayTime + 50UL && specialLedDisplayTime > 0) {
     // show desired binary number for certain parameters where visual feedback is helpful
     displayLedNum(specialLedDisplayNum);
   } else if(beatPlaying) {
