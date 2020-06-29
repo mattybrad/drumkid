@@ -1,0 +1,33 @@
+#######################################
+# Syntax Coloring Map
+#######################################
+
+#######################################
+# Datatypes 
+#######################################
+
+ArduinoTapTempo	KEYWORD1
+
+#######################################
+# Methods and Functions 
+#######################################
+onBeat	KEYWORD2
+isChainActive	KEYWORD2
+isChainActive	KEYWORD2
+getBPM	KEYWORD2
+beatProgress	KEYWORD2
+resetTapChain	KEYWORD2
+resetTapChain	KEYWORD2
+getBeatLength	KEYWORD2
+getLastTapTime	KEYWORD2
+update	KEYWORD2
+enableSkippedTapDetection	KEYWORD2
+disableSkippedTapDetection	KEYWORD2
+setSkippedTapThresholdLow	KEYWORD2
+setSkippedTapThresholdHigh	KEYWORD2
+setBeatsUntilChainReset	KEYWORD2
+setTotalTapValues	KEYWORD2
+setMaxBeatLengthMS	KEYWORD2
+setMinBeatLengthMS	KEYWORD2
+setMaxBPM	KEYWORD2
+setMinBPM	KEYWORD2
