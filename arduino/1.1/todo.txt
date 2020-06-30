@@ -13,3 +13,5 @@
 - update manual with new features
 - include hackers' manual in regular manual
 - make it easier to load custom samples
+- MIDI in (drums, drone, knob CC?)
+- MIDI out (CC from knobs?)

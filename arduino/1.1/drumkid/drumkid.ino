@@ -226,8 +226,8 @@ void setup(){
     updateParameters(i); // set parameters to initial values defined above
   }
   
-  //Serial.begin(31250); // begin serial communication for MIDI input/output
-  Serial.begin(9600);
+  Serial.begin(31250); // begin serial communication for MIDI input/output
+  //Serial.begin(9600);
 
   flashLeds(); // do a brief LED light show to show the unit is working
 }
@@ -287,22 +287,9 @@ void updateControl(){
         if(validTimes>=2) {
           float newPulseLength = (timeTally / validTimes) / 24;
           paramTempo = 2500.0 / newPulseLength;
-          storedValues[TEMPO] = paramTempo - MIN_TEMPO;
+          storedValues[TEMPO] = tempoToByte(paramTempo);
         }
-
         nextTapIndex = (nextTapIndex + 1) % NUM_TAP_TIMES;
-        
-        // temporary
-        /*byte prevTapIndex = (nextTapIndex == 0) ? NUM_TAP_TIMES - 1 : nextTapIndex - 1;
-        float tap1 = tapTimes[nextTapIndex];
-        float tap2 = tapTimes[prevTapIndex];
-        if(tap1 > 0.0 && tap2 > 0.0) {
-          float newPulseLength = (tap1 - tap2) / 24.0;
-          paramTempo = 2500.0 / newPulseLength;
-          storedValues[TEMPO] = paramTempo - MIN_TEMPO;
-        }
-        nextTapIndex = (nextTapIndex + 1) % NUM_TAP_TIMES;*/
-        // end temporary
         
         if(controlSet==TEMPO/NUM_KNOBS) {
           byte tempoKnobNum = TEMPO%NUM_KNOBS;
@@ -395,7 +382,7 @@ void updateControl(){
 }
 
 void doPulseActions() {
-  //Serial.write(0xF8); // MIDI clock continue
+  Serial.write(0xF8); // MIDI clock continue
   cancelMidiNotes();
   if(pulseNum%24==0) {
     if(stepNum==0||(paramTimeSignature==4&&stepNum==96)||(paramTimeSignature==6&&stepNum==72)) {
@@ -495,8 +482,7 @@ void updateParameters(byte thisControlSet) {
       if(!newStateLoaded) specialLedDisplay(paramBeat, false); // display current beat number using LEDs
       previousBeat = paramBeat;
     }
-    //tapTempo.setBPM((float) MIN_TEMPO + ((float) storedValues[TEMPO]));
-    paramTempo = MIN_TEMPO + storedValues[TEMPO];
+    paramTempo = byteToTempo(storedValues[TEMPO]);
     paramTimeSignature = map(storedValues[TIME_SIGNATURE],0,256,4,8);
     if(paramTimeSignature != previousTimeSignature) {
       if(!newStateLoaded) specialLedDisplay(paramTimeSignature-4, false); // display current beat number using LEDs
@@ -513,9 +499,9 @@ void doStartStop() {
     pulseNum = 0;
     stepNum = 0;
     nextPulseTime = millis();
-    //Serial.write(0xFA); // MIDI clock start
+    Serial.write(0xFA); // MIDI clock start
   } else {
-    //Serial.write(0xFC); // MIDI clock stop
+    Serial.write(0xFC); // MIDI clock stop
   }
 }
 
@@ -658,9 +644,9 @@ void triggerNote(byte sampleNum, byte velocity) {
 }
 
 void playMidiNote(byte noteNum, byte velocity) {
-  //Serial.write(0x99); // note down, channel 10
-  //Serial.write(noteNum);
-  //Serial.write(velocity>>1);
+  Serial.write(0x99); // note down, channel 10
+  Serial.write(noteNum);
+  Serial.write(velocity>>1);
 }
 
 void incrementPulse() {
@@ -678,9 +664,9 @@ void cancelMidiNotes() {
   byte i;
   for(i=0; i<NUM_SAMPLES; i++) {
     if(bitRead(noteDown,i)) {
-      //Serial.write(0x99); // note down, channel 10
-      //Serial.write(midiNotes[i]);
-      //Serial.write(0x00);
+      Serial.write(0x99); // note down, channel 10
+      Serial.write(midiNotes[i]);
+      Serial.write(0x00);
       bitWrite(noteDown,i,false);
     }
   }
@@ -766,6 +752,26 @@ void specialLedDisplay(byte displayNum, bool isBinary) {
     }
     specialLedDisplayTime = millis();
   }
+}
+
+float byteToTempo(byte tempoByte) {
+  float tempoFloat;
+  if(tempoByte<=192) {
+    tempoFloat = 10.0 + tempoByte;
+  } else {
+    tempoFloat = 202.0 + 12.66667 * (tempoByte - 192.0);
+  }
+  return tempoFloat;
+}
+
+byte tempoToByte(float tempoFloat) {
+  byte tempoByte;
+  if(tempoFloat<=202.0) {
+    tempoByte = ((byte) tempoFloat) - 10;
+  } else {
+    tempoByte = (byte) ((tempoFloat - 202.0) / 12.66667) + 192;
+  }
+  return tempoByte;
 }
 
 void chooseBank(byte newBank) {
