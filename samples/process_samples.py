@@ -18,7 +18,7 @@ for filename in os.listdir('wavfiles'):
     mozzi_command = ['python',
                      'char2mozzi.py',
                      'rawfiles/'+base_filename+'.raw',
-                     '../arduino/drumkid_new/'+base_filename+'.h',
+                     '../arduino/1.1/drumkid/'+base_filename+'.h',
                      base_filename,
                      '16384']
     subprocess.check_output(mozzi_command)

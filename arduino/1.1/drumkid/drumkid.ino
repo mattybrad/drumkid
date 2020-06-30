@@ -55,7 +55,7 @@ Bounce buttonD = Bounce();
 #define NUM_SAMPLES 5
 #define NUM_PARAM_GROUPS 4
 #define SAVED_STATE_SLOT_BYTES 24
-#define NUM_TAP_TIMES 4
+#define NUM_TAP_TIMES 8
 
 // define pin numbers
 // keep pin 9 for audio, but others can be changed to suit your breadboard layout
@@ -207,7 +207,7 @@ void setup(){
   storedValues[RANGE] = 0;
   storedValues[MIDPOINT] = 128;
   
-  storedValues[PITCH] = 170;
+  storedValues[PITCH] = 160;
   storedValues[CRUSH] = 255;
   storedValues[CROP] = 255;
   storedValues[DROP] = 128;
@@ -266,8 +266,34 @@ void updateControl(){
       else {
         tapTimes[nextTapIndex] = (float) millis();
 
+        float firstTime;
+        float timeTally = 0.0;
+        byte validTimes = 0;
+        bool keepChecking = true;
+        for(i=0;i<NUM_TAP_TIMES-1 && keepChecking;i++) {
+          byte thisTapIndex = (nextTapIndex + NUM_TAP_TIMES - i) % NUM_TAP_TIMES;
+          byte lastTapIndex = (nextTapIndex + NUM_TAP_TIMES - i - 1) % NUM_TAP_TIMES;
+
+          float thisTime = tapTimes[thisTapIndex] - tapTimes[lastTapIndex];
+          if(i==0) firstTime = thisTime;
+          float timeCompare = firstTime/thisTime;
+          if(tapTimes[lastTapIndex] > 0.0 && timeCompare > 0.8 && timeCompare < 1.2) {
+            timeTally += thisTime;
+            validTimes ++;
+          } else {
+            keepChecking = false;
+          }
+        }
+        if(validTimes>=2) {
+          float newPulseLength = (timeTally / validTimes) / 24;
+          paramTempo = 2500.0 / newPulseLength;
+          storedValues[TEMPO] = paramTempo - MIN_TEMPO;
+        }
+
+        nextTapIndex = (nextTapIndex + 1) % NUM_TAP_TIMES;
+        
         // temporary
-        byte prevTapIndex = (nextTapIndex == 0) ? NUM_TAP_TIMES - 1 : nextTapIndex - 1;
+        /*byte prevTapIndex = (nextTapIndex == 0) ? NUM_TAP_TIMES - 1 : nextTapIndex - 1;
         float tap1 = tapTimes[nextTapIndex];
         float tap2 = tapTimes[prevTapIndex];
         if(tap1 > 0.0 && tap2 > 0.0) {
@@ -275,7 +301,7 @@ void updateControl(){
           paramTempo = 2500.0 / newPulseLength;
           storedValues[TEMPO] = paramTempo - MIN_TEMPO;
         }
-        nextTapIndex = (nextTapIndex + 1) % NUM_TAP_TIMES;
+        nextTapIndex = (nextTapIndex + 1) % NUM_TAP_TIMES;*/
         // end temporary
         
         if(controlSet==TEMPO/NUM_KNOBS) {
@@ -710,9 +736,8 @@ void flashLeds() {
   displayLedNum(0);
 }
 
-// led display time temporarily changing from 1500UL to 50UL
 void updateLeds() {
-  if(millis() < specialLedDisplayTime + 50UL && specialLedDisplayTime > 0) {
+  if(millis() < specialLedDisplayTime + 1500UL && specialLedDisplayTime > 0) {
     // show desired binary number for certain parameters where visual feedback is helpful
     displayLedNum(specialLedDisplayNum);
   } else if(beatPlaying) {
