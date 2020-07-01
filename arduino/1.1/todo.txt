@@ -1,5 +1,5 @@
 - more comments in code
-- read sync stop signal
++ read sync stop signal
 + don't change tempo on load while already playing
 + tap tempo goes weird at high tempos
 - don't switch to group A when loading a beat (or group C when saving, etc)
@@ -7,8 +7,8 @@
 + add more time signatures, especially 3/4
 + add random time signature
 + with "drop" function, middle setting should be no muting, both ends should be silent, switch left-right (kick on left)
-- make it easier to change output channels
-- make it easier to change note mapping
++ make it easier to change output channels
++ make it easier to change note mapping
 + add an optional clap
 - generate random session
 - update manual with new features
@@ -16,5 +16,6 @@
 - make it easier to load custom samples
 - MIDI in (drums, drone, knob CC?)
 - MIDI out (CC from knobs?)
-- update default beat for new params
-- update qc random beats for new params
++ update default beat for new params
++ update qc random beats for new params
+- had to reduce control rate to 128, 256 would be better (better float maths? less faffing with random time signature?)

@@ -45,8 +45,8 @@ Bounce buttonC = Bounce();
 Bounce buttonD = Bounce();
 
 // Mozzi control rate, measured in Hz, must be power of 2
-// try to keep this value as high as possible but reduce if having performance issues
-#define CONTROL_RATE 256
+// try to keep this value as high as possible (256 is good) but reduce if having performance issues
+#define CONTROL_RATE 128
 
 // define various values
 #define NUM_KNOBS 4
@@ -74,7 +74,8 @@ unsigned int specialOffset = 0; // number of steps to offset pattern in random t
 bool beatPlaying = false; // true when beat is playing, false when not
 byte noteDown = B00000000; // keeps track of whether a MIDI note is currently down or up
 bool syncReceived = false; // has a sync/clock signal been received? (IMPROVE THIS LATER)
-const byte midiNotes[NUM_SAMPLES] = {36,42,38,37,43}; // MIDI note numbers, currently set to kick, closed hat, snare, click, tom - feel free to change
+const byte midiNotes[NUM_SAMPLES] = {36,42,38,37,43}; // MIDI note numbers, currently set to kick, closed hat, snare, click, tom - feel free to change these (e.g. the Nord Drum uses notes 36, 38, 59 and 47)
+const byte midiNoteCommands[NUM_SAMPLES] = {0x99,0x99,0x99,0x99,0x99}; // MIDI note on commands - feel free to change (channels 1-16 are 0x90,0x91,0x92,0x93,0x94,0x95,0x96,0x97,0x98,0x99,0x9a,0x9b,0x9c,0x9d,0x9e,0x9f)
 byte sampleVolumes[NUM_SAMPLES] = {0,0,0,0,0}; // current sample volumes
 byte storedValues[NUM_PARAM_GROUPS*NUM_KNOBS]; // analog knob values, one for each parameter (so the value can be remembered even after switching groups)
 byte firstLoop = true; // allows special actions on first loop
@@ -170,13 +171,6 @@ float rootNotes[13] = {
 };
 
 // determines whether each sample is played or muted in a particular drop mode
-/*byte dropRef[NUM_SAMPLES] = {
-  B11110000, // kick
-  B00111110, // hat
-  B01111000, // snare
-  B00011100, // rim
-  B00010000, // tom
-};*/
 byte dropRef[NUM_SAMPLES] = {
   B00011110, // kick
   B11111000, // hat
@@ -391,7 +385,7 @@ void updateControl(){
 }
 
 void doPulseActions() {
-  Serial.write(0xF8); // MIDI clock continue
+  Serial.write(0xF8); // MIDI clock
   cancelMidiNotes();
   if(pulseNum%24==0) {
     //if(stepNum==0||(paramTimeSignature==4&&stepNum==96)||(paramTimeSignature==6&&stepNum==72)) {
@@ -660,14 +654,14 @@ void triggerNote(byte sampleNum, byte velocity) {
     }
     sampleVolumes[sampleNum] = velocity;
     bitWrite(noteDown,sampleNum,true);
-    playMidiNote(midiNotes[sampleNum], velocity);
+    playMidiNote(sampleNum, velocity);
   }
 }
 
-void playMidiNote(byte noteNum, byte velocity) {
-  Serial.write(0x99); // note down, channel 10
-  Serial.write(noteNum);
-  Serial.write(velocity>>1);
+void playMidiNote(byte sampleNum, byte velocity) {
+  Serial.write(midiNoteCommands[sampleNum]); // note down command
+  Serial.write(midiNotes[sampleNum]); // note number
+  Serial.write(velocity>>1); // velocity (scaled down to MIDI standard, 0-127)
 }
 
 void incrementPulse() {
@@ -685,9 +679,9 @@ void cancelMidiNotes() {
   byte i;
   for(i=0; i<NUM_SAMPLES; i++) {
     if(bitRead(noteDown,i)) {
-      Serial.write(0x99); // note down, channel 10
-      Serial.write(midiNotes[i]);
-      Serial.write(0x00);
+      Serial.write(midiNoteCommands[i]); // note down command (zero velocity is equivalent to note up)
+      Serial.write(midiNotes[i]); // note number
+      Serial.write(0x00); // zero velocity
       bitWrite(noteDown,i,false);
     }
   }
@@ -722,8 +716,8 @@ void loop(){
       doStartStop();
     } else if(thisMidiByte==0xFC) {
       // stop beat (also hacky)
-      //beatPlaying = true;
-      //doStartStop();
+      beatPlaying = true;
+      doStartStop();
     } else if(thisMidiByte==0xF8) {
       syncReceived = true;
       if(beatPlaying) {

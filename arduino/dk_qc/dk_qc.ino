@@ -243,20 +243,21 @@ void resetAllEepromSlots() {
       storedValues[CRUSH] = random(160,256);
       storedValues[CROP] = random(128,256);
       storedValues[DROP] = 128;
-      if(random(0,3)==0) storedValues[DROP] = random(32,256);
+      if(random(0,3)==0) storedValues[DROP] = random(29,226);
 
       storedValues[DRONE_MOD] = 127;
       storedValues[DRONE] = 127;
-      storedValues[DRONE_ROOT] = 0;
+      storedValues[DRONE_ROOT] = random(0,256);
       storedValues[DRONE_PITCH] = 127;
-      if(random(0,6)==0) storedValues[DRONE_MOD] = random(0,255);
+      if(random(0,6)==0) storedValues[DRONE_MOD] = random(0,256);
       if(random(0,4)==0) storedValues[DRONE] = random(64,192);
     
       storedValues[BEAT] = random(0,240);
-      storedValues[TIME_SIGNATURE] = 0; // equates to 4/4
+      storedValues[TIME_SIGNATURE] = 64; // equates to 4/4
+      if(random(0,3)==0) storedValues[TIME_SIGNATURE] = random(0,256);
       storedValues[SWING] = random(0,256);
-      storedValues[TEMPO] = random(40,120);
-      
+      storedValues[TEMPO] = random(70,160);
+      if(random(0,4)==0) storedValues[TEMPO] = random(0,256);
       saveEepromParams(j, i);
     }
   }
