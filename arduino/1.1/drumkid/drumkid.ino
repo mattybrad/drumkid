@@ -170,12 +170,19 @@ float rootNotes[13] = {
 };
 
 // determines whether each sample is played or muted in a particular drop mode
-byte dropRef[NUM_SAMPLES] = {
+/*byte dropRef[NUM_SAMPLES] = {
   B11110000, // kick
   B00111110, // hat
   B01111000, // snare
   B00011100, // rim
   B00010000, // tom
+};*/
+byte dropRef[NUM_SAMPLES] = {
+  B00011110, // kick
+  B11111000, // hat
+  B00110000, // snare
+  B01111000, // rim
+  B00011100, // tom
 };
 
 void setup(){
@@ -220,9 +227,9 @@ void setup(){
   storedValues[DRONE_PITCH] = 127;
 
   storedValues[BEAT] = 27;
-  storedValues[TIME_SIGNATURE] = 0; // equates to 4/4
+  storedValues[TIME_SIGNATURE] = 64; // equates to 4/4
   storedValues[SWING] = 0;
-  storedValues[TEMPO] = 80; // equates to 120BPM (40 is minimum, 40+80=120)
+  storedValues[TEMPO] = 110; // actually equates to 120BPM
 
   for(byte i=0;i<NUM_PARAM_GROUPS;i++) {
     updateParameters(i); // set parameters to initial values defined above
@@ -454,7 +461,8 @@ void updateParameters(byte thisControlSet) {
       rim.setStart(!thisDirection ? map(paramCrop,255,0,100,rim_NUM_CELLS) : 0);
       tom.setStart(!thisDirection ? map(paramCrop,255,0,100,tom_NUM_CELLS) : 0);
       
-      paramDrop = storedValues[DROP] >> 5; // range of 0 to 7
+      //paramDrop = storedValues[DROP] >> 5; // range of 0 to 7
+      paramDrop = map(storedValues[DROP],0,256,0,9);
     }
     break;
 

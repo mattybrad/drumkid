@@ -6,7 +6,7 @@
 - investigate memory issue; possible wiping of all beats?
 + add more time signatures, especially 3/4
 + add random time signature
-- with "drop" function, middle setting should be no muting, both ends should be silent, switch left-right (kick on left)
++ with "drop" function, middle setting should be no muting, both ends should be silent, switch left-right (kick on left)
 - make it easier to change output channels
 - make it easier to change note mapping
 + add an optional clap
