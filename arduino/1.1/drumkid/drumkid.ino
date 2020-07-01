@@ -56,6 +56,7 @@ Bounce buttonD = Bounce();
 #define NUM_PARAM_GROUPS 4
 #define SAVED_STATE_SLOT_BYTES 24
 #define NUM_TAP_TIMES 8
+#define MAX_BEATS_PER_BAR 13
 
 // define pin numbers
 // keep pin 9 for audio, but others can be changed to suit your breadboard layout
@@ -67,8 +68,9 @@ const byte analogPins[4] = {A0,A1,A2,A3};
 float nextPulseTime = 0.0; // the time, in milliseconds, of the next pulse
 float msPerPulse = 20.8333; // time for one "pulse" (there are 24 pulses per quarter note, as defined in MIDI spec)
 byte pulseNum = 0; // 0 to 23 (24ppqn, pulses per quarter note)
-byte stepNum = 0; // 0 to 192 (max two bars of 8 beats, aka 192 pulses)
-byte numSteps; // number of steps used - dependent on time signature
+unsigned int stepNum = 0; // 0 to 192 (max two bars of 8 beats, aka 192 pulses)
+unsigned int numSteps; // number of steps used - dependent on time signature
+unsigned int specialOffset = 0; // number of steps to offset pattern in random time signature mode
 bool beatPlaying = false; // true when beat is playing, false when not
 byte noteDown = B00000000; // keeps track of whether a MIDI note is currently down or up
 bool syncReceived = false; // has a sync/clock signal been received? (IMPROVE THIS LATER)
@@ -105,7 +107,7 @@ byte paramCrush;
 byte paramCrop;
 byte paramDrop;
 byte paramBeat; // 0 to 23 (24 beats in total)
-byte paramTimeSignature; // 3 to 7 (3/4, 4/4, 5/4, 6/4, 7/4)
+byte paramTimeSignature; // 1 to 13 (3/4, 4/4, 5/4, 6/4, 7/4)
 float paramTempo; 
 byte paramSwing = 0; // 0 to 2 (0=straight, 1=approx quintuplet swing, 2=triplet swing)
 byte paramDroneRoot; // 0 to 11 (all 12 possible semitones in an octave)
@@ -385,10 +387,17 @@ void doPulseActions() {
   Serial.write(0xF8); // MIDI clock continue
   cancelMidiNotes();
   if(pulseNum%24==0) {
-    if(stepNum==0||(paramTimeSignature==4&&stepNum==96)||(paramTimeSignature==6&&stepNum==72)) {
-      numSteps = paramTimeSignature * 24; // 24 pulses per beat
+    //if(stepNum==0||(paramTimeSignature==4&&stepNum==96)||(paramTimeSignature==6&&stepNum==72)) {
+    if(stepNum==0) {
+      if(paramTimeSignature==MAX_BEATS_PER_BAR+1) {
+        numSteps = rand(1,8) * 24;
+        specialOffset = rand(1,8) * 24;
+      } else {
+        numSteps = paramTimeSignature * 24; // 24 pulses per beat
+        specialOffset = 0;
+      }
       activeDroneRoot = paramDroneRoot;
-      if(numSteps == 96) numSteps = 192; // allow 4/4 signature to use two bars of defined beat
+      //if(numSteps == 96) numSteps = 192; // allow 4/4 signature to use two bars of defined beat
     }
   } 
   playPulseHits();
@@ -483,9 +492,12 @@ void updateParameters(byte thisControlSet) {
       previousBeat = paramBeat;
     }
     paramTempo = byteToTempo(storedValues[TEMPO]);
-    paramTimeSignature = map(storedValues[TIME_SIGNATURE],0,256,4,8);
+    paramTimeSignature = map(storedValues[TIME_SIGNATURE],0,256,1,MAX_BEATS_PER_BAR+2);
     if(paramTimeSignature != previousTimeSignature) {
-      if(!newStateLoaded) specialLedDisplay(paramTimeSignature-4, false); // display current beat number using LEDs
+      if(!newStateLoaded) {
+        if(paramTimeSignature==MAX_BEATS_PER_BAR+1) specialLedDisplay(B11111111, true); // display current time signature using LEDs
+        else specialLedDisplay(paramTimeSignature - 1, false); // display current time signature using LEDs
+      }
       previousTimeSignature = paramTimeSignature;
     }
     paramSwing = storedValues[SWING] / 86; // gives range of 0 to 2
@@ -515,7 +527,7 @@ void calculateNote(byte sampleNum) {
   
   long thisVelocity = 0;
   // first, check for notes which are defined in the beat
-  byte effectiveStepNum = stepNum;
+  unsigned int effectiveStepNum = stepNum;
   if(paramSwing==1) {
     if(stepNum%12==6) effectiveStepNum = stepNum - 1; // arbitrary...
     if(stepNum%12==7) effectiveStepNum = stepNum - 1;
@@ -523,6 +535,7 @@ void calculateNote(byte sampleNum) {
     if(stepNum%12==6) effectiveStepNum = stepNum - 1; // arbitrary...
     if(stepNum%12==8) effectiveStepNum = stepNum - 2;
   }
+  effectiveStepNum = (specialOffset + effectiveStepNum) % 192;
   if(effectiveStepNum%6==0) {
     // beats only defined down to 16th notes not 32nd, hence %2 (CHANGE COMMENT)
     byte beatByte = pgm_read_byte(&beats[paramBeat][sampleNum][effectiveStepNum/48]); // 48...? was 16
@@ -727,7 +740,8 @@ void updateLeds() {
     // show desired binary number for certain parameters where visual feedback is helpful
     displayLedNum(specialLedDisplayNum);
   } else if(beatPlaying) {
-    if(stepNum==0||(paramTimeSignature==4&&stepNum==96)||(paramTimeSignature==6&&stepNum==72)) displayLedNum(B00000011);
+    //if(stepNum==0||(paramTimeSignature==4&&stepNum==96)||(paramTimeSignature==6&&stepNum==72)) displayLedNum(B00000011);
+    if(stepNum==0) displayLedNum(B00000011);
     else if(stepNum%24==0) displayLedNum(B00000010);
     else if(stepNum%24==3) displayLedNum(B00000000);
   } else {
@@ -783,8 +797,10 @@ void loadParams(byte slotNum) {
   readyToChooseLoadSlot = false;
   newStateLoaded = true;
   for(byte i=0; i<NUM_PARAM_GROUPS*NUM_KNOBS; i++) {
-    byte thisValue = EEPROM.read((slotNum+6*activeBank)*SAVED_STATE_SLOT_BYTES+i);
-    storedValues[i] = thisValue;
+    if(!(i==TEMPO&&beatPlaying)) {
+      byte thisValue = EEPROM.read((slotNum+6*activeBank)*SAVED_STATE_SLOT_BYTES+i);
+      storedValues[i] = thisValue;
+    }
   }
   for(byte i=0;i<NUM_PARAM_GROUPS;i++) {
     updateParameters(i);
