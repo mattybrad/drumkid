@@ -706,22 +706,45 @@ int updateAudio(){
 }
 
 byte thisMidiByte;
+bool isCC = false;
+byte ccNum;
+byte byteNum = 0;
 void loop(){
   audioHook(); // main Mozzi function, calls updateAudio and updateControl
   while(Serial.available()) {
     thisMidiByte = Serial.read();
-    if(thisMidiByte==0xFA) {
-      // start beat (redo this later, bit hacky, separate start/stop funcs)
-      beatPlaying = false;
-      doStartStop();
-    } else if(thisMidiByte==0xFC) {
-      // stop beat (also hacky)
-      beatPlaying = true;
-      doStartStop();
-    } else if(thisMidiByte==0xF8) {
-      syncReceived = true;
-      if(beatPlaying) {
-        doPulseActions();
+    if(isCC) {
+      if(byteNum==1) {
+        ccNum = thisMidiByte;
+      } else if(byteNum==2) {
+        if(ccNum==71) {
+          // temp
+          specialLedDisplay(thisMidiByte,false);
+          storedValues[DRONE] = thisMidiByte * 2;
+          updateParameters(2);
+        }
+      }
+      byteNum ++;
+      if(byteNum >= 3) isCC = false;
+    } else {
+      if(thisMidiByte==0xFA) {
+        // start beat
+        beatPlaying = false;
+        doStartStop();
+      } else if(thisMidiByte==0xFC) {
+        // stop beat
+        beatPlaying = true;
+        doStartStop();
+      } else if(thisMidiByte==0xF8) {
+        syncReceived = true;
+        if(beatPlaying) {
+          doPulseActions();
+        }
+      } else if((thisMidiByte>>4)==0xB) {
+        // detect CC on any channel
+        byteNum = 0;
+        isCC = true;
+        byteNum ++;
       }
     }
   }
