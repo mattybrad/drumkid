@@ -2,6 +2,9 @@
  *  It might work with earlier versions with a bit of tweaking :) 
  */
 
+// include debouncing library to make buttons work reliably
+#include "src/Bounce2/src/Bounce2.h"
+
 // include Mozzi library files for generating audio (custom version to allow reverse playback)
 #include "MozziDK/MozziGuts.h"
 #include "MozziDK/Sample.h"
@@ -29,9 +32,6 @@ Sample <tom_NUM_CELLS, AUDIO_RATE> tom(tom_DATA);
 // define oscillators for drone
 Oscil<SAW256_NUM_CELLS, AUDIO_RATE> droneOscillator1(SAW256_DATA);
 Oscil<SAW256_NUM_CELLS, AUDIO_RATE> droneOscillator2(SAW256_DATA);
-
-// include debouncing library to make buttons work reliably
-#include <Bounce2.h>
 
 // include EEPROM library for saving data
 #include <EEPROM.h>

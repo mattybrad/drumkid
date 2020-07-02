@@ -28,12 +28,19 @@ Each of the Arduino's pins (the metal bits along the edges) corresponds to a dif
 ## Reprogramming DrumKid
 The most common modification is probably to upload new code to the Arduino Nano, either to upgrade the firmware (software) to the most recent version, to add your own drum samples, or to edit some other part of the code. To do this, you will need a computer running the latest Arduino IDE software (download from https://www.arduino.cc/) and a USB "mini-B" cable to connect the computer to the Arduino Nano.
 
-Before you upload anything to the Arduino, make sure the switch on the underside of the PCB is set to "Arduino" rather than "MIDI" (and remember to switch it back to "MIDI" when you're done). To test that you're able to upload code, try uploading the "Blink" example sketch (there are various tutorials online to help you with this). If successful, one of the LEDs should start flashing on and off. Then try uploading the latest DrumKid code from https://github.com/mattybrad/drumkid - start by downloading the whole project (repository) as a ZIP file, then unzip it to a folder on your computer and open the v6/arduino/drumkid/drumkid.ino file and upload this sketch to the Arduino.
+Before you upload anything to the Arduino, unplug any MIDI cables and make sure the switch on the underside of the PCB is set to "Arduino" rather than "MIDI" (and remember to switch it back to "MIDI" when you're done). You should also check that the "board", "processor" and "port" settings are correct in the Arduino software. Click on the "Tools" menu to check this:
+- "Board" should be "Arduino Nano"
+- "Processor" should be "ATmega328P (Old Bootloader)" - please note that it needs to be the old bootloader specifically!
+- "Port" will depend on your setup - try changing this if you're having trouble
+
+To test that you're able to upload code, try uploading the "Blink" example sketch (there are various tutorials online to help you with this). If successful, one of the LEDs should start flashing on and off. Then try uploading the latest DrumKid code from https://github.com/mattybrad/drumkid - start by downloading the whole project (repository) as a ZIP file, then unzip it to a folder on your computer and open the v6/arduino/drumkid/drumkid.ino file and upload this sketch to the Arduino.
 
 If you encounter any problems uploading code to the Arduino, check the following:
 - The switch on the underside of the PCB should be set to "Arduino"
 - Try (carefully) removing the Arduino Nano from DrumKid and uploading the "Blink" example sketch
 - Try a different USB cable
+- Double-check the "board" and "processor" settings (see above)
+- Try a different port
 
 ## Hacking Drumkid's circuit
 ...
