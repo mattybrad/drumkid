@@ -19,8 +19,7 @@
 + update qc random beats for new params
 - had to reduce control rate to 128, 256 would be better (better float maths? less faffing with random time signature?)
 + MIDI clock continue
-- bigger dead zone for drone and drone mod
-- reset function
++ bigger dead zone for drone and drone mod
++ reset function
 - adjust note/channel mapping from drumkid directly
 - don't lock up when no longer using MIDI clock
-- only hold drone until stop button released

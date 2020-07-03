@@ -190,29 +190,7 @@ void setup(){
   }
 
   // set starting values for each parameter
-  storedValues[CHANCE] = 128;
-  storedValues[ZOOM] = 150;
-  storedValues[RANGE] = 0;
-  storedValues[MIDPOINT] = 128;
-  
-  storedValues[PITCH] = 160;
-  storedValues[CRUSH] = 255;
-  storedValues[CROP] = 255;
-  storedValues[DROP] = 128;
-
-  storedValues[DRONE_MOD] = 127;
-  storedValues[DRONE] = 127;
-  storedValues[DRONE_ROOT] = 0;
-  storedValues[DRONE_PITCH] = 127;
-
-  storedValues[BEAT] = 27;
-  storedValues[TIME_SIGNATURE] = 64; // equates to 4/4
-  storedValues[SWING] = 0;
-  storedValues[TEMPO] = 110; // actually equates to 120BPM
-
-  for(byte i=0;i<NUM_PARAM_GROUPS;i++) {
-    updateParameters(i); // set parameters to initial values defined above
-  }
+  resetToDefaults();
   
   Serial.begin(31250); // begin serial communication for MIDI input/output
   //Serial.begin(9600);
@@ -278,7 +256,6 @@ void updateControl(){
           initValues[tempoKnobNum] = analogValues[tempoKnobNum];
         }
       }
-      //if(buttons[0].rose() && !playing) Serial.println("Drone off");
       if(buttonsPressed == 0) {
         if(buttonGroup == B00000010) controlSet = 0;
         else if(buttonGroup == B00000100) controlSet = 1;
@@ -298,9 +275,10 @@ void updateControl(){
         }
         else if(buttonGroup == B00001110) {
           // reset
+          resetToDefaults();
         }
         else if(buttonGroup == B00010110) {
-          // random session
+          createRandomSession();
         }
         else if(buttonGroup == B00011100) {
           // MIDI settings
@@ -639,20 +617,20 @@ void updateParameters(byte thisControlSet) {
     break;
 
     case 2:
-    // using values of 270 and 240 (i.e. 255±15) to give a decent "dead zone" in the middle of the knob
-    oscilGain2 = constrain(2*storedValues[DRONE]-270, 0, 255);
+    // using values of 305 and 205 (i.e. 255±50) to give a decent "dead zone" in the middle of the knob
+    oscilGain2 = constrain(2*storedValues[DRONE]-305, 0, 255);
     if(storedValues[DRONE] < 128) {
-      oscilGain1 = constrain(240-2*storedValues[DRONE], 0, 255);
+      oscilGain1 = constrain(205-2*storedValues[DRONE], 0, 255);
     } else {
       oscilGain1 = oscilGain2;
     }
     // do same thing for drone modulation gains
     if(storedValues[DRONE_MOD] < 128) {
       droneMod2Active = false;
-      paramDroneMod = constrain(240-2*storedValues[DRONE_MOD], 0, 255);
+      paramDroneMod = constrain(205-2*storedValues[DRONE_MOD], 0, 255);
     } else {
       droneMod2Active = true;
-      paramDroneMod = constrain(2*storedValues[DRONE_MOD]-270, 0, 255);;
+      paramDroneMod = constrain(2*storedValues[DRONE_MOD]-305, 0, 255);;
     }
     paramDroneRoot = storedValues[DRONE_ROOT]/20;
     if(paramDroneRoot != previousDroneRoot) {
@@ -1085,6 +1063,71 @@ byte tempoToByte(float tempoFloat) {
 void chooseBank(byte newBank) {
   activeBank = newBank;
   readyToChooseBank = false;
+}
+
+void resetToDefaults() {
+  // set starting values for each parameter
+  storedValues[CHANCE] = 128;
+  storedValues[ZOOM] = 150;
+  storedValues[RANGE] = 0;
+  storedValues[MIDPOINT] = 128;
+  
+  storedValues[PITCH] = 160;
+  storedValues[CRUSH] = 255;
+  storedValues[CROP] = 255;
+  storedValues[DROP] = 128;
+
+  storedValues[DRONE_MOD] = 127;
+  storedValues[DRONE] = 127;
+  storedValues[DRONE_ROOT] = 0;
+  storedValues[DRONE_PITCH] = 127;
+
+  storedValues[BEAT] = 27;
+  storedValues[TIME_SIGNATURE] = 64; // equates to 4/4
+  storedValues[SWING] = 0;
+  storedValues[TEMPO] = 110; // actually equates to 120BPM
+
+  newStateLoaded = true;
+  for(byte i=0;i<NUM_PARAM_GROUPS;i++) {
+    updateParameters(i); // set parameters to initial values defined above
+  }
+}
+
+void createRandomSession() {
+  storedValues[CHANCE] = random(64,192);
+  storedValues[ZOOM] = random(100,190);
+  storedValues[RANGE] = random(0,128);
+  storedValues[MIDPOINT] = random(80,190);
+  
+  storedValues[PITCH] = random(135,256);
+  if(random(0,6)==0) storedValues[PITCH] = random(0,120);
+  storedValues[CRUSH] = random(160,256);
+  storedValues[CROP] = random(128,256);
+  storedValues[DROP] = 128;
+  if(random(0,3)==0) storedValues[DROP] = random(29,226);
+
+  storedValues[DRONE_MOD] = 127;
+  storedValues[DRONE] = 127;
+  storedValues[DRONE_ROOT] = random(0,256);
+  storedValues[DRONE_PITCH] = 127;
+  if(random(0,6)==0) storedValues[DRONE_MOD] = random(0,256);
+  if(random(0,4)==0) storedValues[DRONE] = random(64,192);
+
+  storedValues[BEAT] = random(0,240);
+
+  if(!beatPlaying) {
+    // don't randomise time signature and tempo unless stopped
+    storedValues[TIME_SIGNATURE] = 64; // equates to 4/4
+    if(random(0,3)==0) storedValues[TIME_SIGNATURE] = random(0,256);
+    storedValues[TEMPO] = random(70,160);
+    if(random(0,4)==0) storedValues[TEMPO] = random(0,256);
+  }
+  storedValues[SWING] = random(0,256);
+
+  newStateLoaded = true;
+  for(byte i=0;i<NUM_PARAM_GROUPS;i++) {
+    updateParameters(i); // set parameters to initial values defined above
+  }
 }
 
 void loadParams(byte slotNum) {
