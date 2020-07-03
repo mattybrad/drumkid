@@ -80,6 +80,7 @@ byte sampleVolumes[NUM_SAMPLES] = {0,0,0,0,0}; // current sample volumes
 byte storedValues[NUM_PARAM_GROUPS*NUM_KNOBS]; // analog knob values, one for each parameter (so the value can be remembered even after switching groups)
 byte firstLoop = true; // allows special actions on first loop
 byte secondLoop = false; // allows special actions on second loop
+bool newMidiDroneRoot = false;
 byte controlSet = 0; // current active set of parameters
 byte knobLocked = B11111111; // record whether a knob's value is currently "locked" (i.e. won't alter effect until moved by a threshold amount)
 byte analogValues[NUM_KNOBS]; // current analog (knob) values
@@ -481,7 +482,7 @@ void updateParameters(byte thisControlSet) {
       if(!newStateLoaded) specialLedDisplay(paramDroneRoot, false);
       previousDroneRoot = paramDroneRoot;
     }
-    if(!beatPlaying||newStateLoaded) activeDroneRoot = paramDroneRoot;
+    if(!beatPlaying||newStateLoaded||newMidiDroneRoot) activeDroneRoot = paramDroneRoot;
     paramDronePitch = rootNotes[activeDroneRoot] * (0.5f + (float) storedValues[DRONE_PITCH]/170.0f);// * 0.768f + 65.41f;
     droneOscillator1.setFreq(paramDronePitch);
     droneOscillator2.setFreq(paramDronePitch*1.5f);
@@ -708,14 +709,19 @@ int updateAudio(){
 byte thisMidiByte;
 byte statusByte;
 byte byteNum = 0;
-bool readyForCCNum = false;
-bool readyForCCVal = false;
+byte dataByte1;
+byte dataByte2;
 void loop(){
   audioHook(); // main Mozzi function, calls updateAudio and updateControl
   while(Serial.available()) {
     thisMidiByte = Serial.read();
     if(thisMidiByte==0xFA) {
       // start beat
+      beatPlaying = false;
+      doStartStop();
+      statusByte = thisMidiByte;
+    } else if(thisMidiByte==0xFB) {
+      // continue beat
       beatPlaying = false;
       doStartStop();
       statusByte = thisMidiByte;
@@ -735,53 +741,47 @@ void loop(){
       byteNum = 1;
     } else {
       if((statusByte>>4)==0xB) {
-        // CC message
+        // CC message (any channel)
         if(byteNum == 1) {
+          dataByte1 = thisMidiByte;
           byteNum = 2;
         } else {
-          specialLedDisplay(thisMidiByte,false);
-          storedValues[DRONE] = thisMidiByte * 2;
-          updateParameters(2);
+          if(dataByte1>=16&&dataByte1<32) {
+            byte paramNum = dataByte1 - 16;
+            byte paramSet = paramNum / 4;
+            byte paramSetNum = paramNum % 4;
+            storedValues[paramNum] = thisMidiByte * 2;
+            if(controlSet==paramSet) {
+              bitWrite(knobLocked, paramSetNum, true);
+              initValues[paramSetNum] = analogValues[paramSetNum];
+            }
+            updateParameters(paramSet);
+          }
+          byteNum = 0;
+        }
+      } else if((statusByte>>4)==0x9) {
+        // note on command (any channel)
+        if(byteNum == 1) {
+          dataByte1 = thisMidiByte;
+          byteNum = 2;
+        } else {
+          if(thisMidiByte > 0) {
+            newMidiDroneRoot = true;
+            byte paramSet = DRONE_ROOT / 4;
+            byte paramSetNum = DRONE_ROOT % 4;
+            storedValues[DRONE_ROOT] = (dataByte1 % 12) * 20;
+            if(controlSet==paramSet) {
+              bitWrite(knobLocked, paramSetNum, true);
+              initValues[paramSetNum] = analogValues[paramSetNum];
+            }
+            updateParameters(paramSet);
+            newMidiDroneRoot = false;
+          }
           byteNum = 0;
         }
       }
     }
   }
-    /*if(isCC) {
-      if(byteNum==1) {
-        ccNum = thisMidiByte;
-      } else if(byteNum==2) {
-        if(ccNum==71) {
-          // temp
-          specialLedDisplay(thisMidiByte,false);
-          storedValues[DRONE] = thisMidiByte * 2;
-          updateParameters(2);
-        }
-      }
-      byteNum ++;
-      if(byteNum >= 3) isCC = false;
-    } else {
-      if(thisMidiByte==0xFA) {
-        // start beat
-        beatPlaying = false;
-        doStartStop();
-      } else if(thisMidiByte==0xFC) {
-        // stop beat
-        beatPlaying = true;
-        doStartStop();
-      } else if(thisMidiByte==0xF8) {
-        syncReceived = true;
-        if(beatPlaying) {
-          doPulseActions();
-        }
-      } else if((thisMidiByte>>4)==0xB) {
-        // detect CC on any channel
-        byteNum = 0;
-        isCC = true;
-        byteNum ++;
-      }
-    }
-  }*/
 }
 
 void flashLeds() {
