@@ -14,11 +14,11 @@
 - update manual with new features
 - include hackers' manual in regular manual
 - make it easier to load custom samples
-- MIDI in (drums, drone, knob CC?)
++ MIDI in (drone, knob CC)
 + update default beat for new params
 + update qc random beats for new params
 - had to reduce control rate to 128, 256 would be better (better float maths? less faffing with random time signature?)
-- MIDI clock continue
++ MIDI clock continue
 - bigger dead zone for drone and drone mod
 - reset function
 - adjust note/channel mapping from drumkid directly

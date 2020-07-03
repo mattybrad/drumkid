@@ -328,7 +328,10 @@ void updateControl(){
       if(readyToChooseLoadSlot) loadParams(0);
       else if(readyToChooseSaveSlot) saveParams(0);
       else if(readyToChooseBank) chooseBank(0);
-      else doStartStop();
+      else {
+        if(!beatPlaying) startBeat();
+        else stopBeat();
+      }
     }
     
   }
@@ -479,7 +482,7 @@ void updateParameters(byte thisControlSet) {
     }
     paramDroneRoot = storedValues[DRONE_ROOT]/20;
     if(paramDroneRoot != previousDroneRoot) {
-      if(!newStateLoaded) specialLedDisplay(paramDroneRoot, false);
+      if(!newStateLoaded && !newMidiDroneRoot) specialLedDisplay(paramDroneRoot, false);
       previousDroneRoot = paramDroneRoot;
     }
     if(!beatPlaying||newStateLoaded||newMidiDroneRoot) activeDroneRoot = paramDroneRoot;
@@ -508,7 +511,20 @@ void updateParameters(byte thisControlSet) {
   }
 }
 
-void doStartStop() {
+void startBeat() {
+  beatPlaying = true;
+  pulseNum = 0;
+  stepNum = 0;
+  nextPulseTime = millis();
+  Serial.write(0xFA); // MIDI clock start
+}
+
+void stopBeat() {
+  beatPlaying = false;
+  Serial.write(0xFC); // MIDI clock stop
+}
+
+/*void doStartStop() {
   beatPlaying = !beatPlaying;
   if(beatPlaying) {
     pulseNum = 0;
@@ -518,7 +534,7 @@ void doStartStop() {
   } else {
     Serial.write(0xFC); // MIDI clock stop
   }
-}
+}*/
 
 void playPulseHits() {
   for(byte i=0; i<5; i++) {
@@ -711,24 +727,73 @@ byte statusByte;
 byte byteNum = 0;
 byte dataByte1;
 byte dataByte2;
+
+byte midiBytes[3];
+byte currentMidiByte = 0;
 void loop(){
-  audioHook(); // main Mozzi function, calls updateAudio and updateControl
   while(Serial.available()) {
     thisMidiByte = Serial.read();
+    if(bitRead(thisMidiByte,7)) {
+      // status byte
+      midiBytes[0] = thisMidiByte;
+      if(thisMidiByte==0xFA) {
+        // clock start signal received
+        startBeat();
+      } else if(thisMidiByte==0xFB) {
+        // clock continue signal received
+        startBeat();
+      } else if(thisMidiByte==0xFC) {
+        // clock stop signal received
+        stopBeat();
+      } else if(thisMidiByte==0xF8) {
+        // clock signal received
+        syncReceived = true;
+        if(beatPlaying) {
+          doPulseActions();
+        }
+      }
+      currentMidiByte = 1;
+    } else {
+      // data byte
+      midiBytes[currentMidiByte] = thisMidiByte;
+      if((midiBytes[0]>>4)==0xB && currentMidiByte == 2) {
+        // CC message (any channel)
+        if(midiBytes[1]>=16&&midiBytes[1]<32) {
+          byte paramNum = midiBytes[1] - 16;
+          byte paramSet = paramNum / 4;
+          byte paramSetNum = paramNum % 4;
+          storedValues[paramNum] = midiBytes[2] * 2;
+          if(controlSet==paramSet) {
+            bitWrite(knobLocked, paramSetNum, true);
+            initValues[paramSetNum] = analogValues[paramSetNum];
+          }
+          updateParameters(paramSet);
+        }
+      } else if((midiBytes[0]>>4)==0x9 && currentMidiByte == 2) {
+        if(midiBytes[2] > 0) {
+          newMidiDroneRoot = true;
+          byte paramSet = DRONE_ROOT / 4;
+          byte paramSetNum = DRONE_ROOT % 4;
+          storedValues[DRONE_ROOT] = (midiBytes[1] % 12) * 20;
+          if(controlSet==paramSet) {
+            bitWrite(knobLocked, paramSetNum, true);
+            initValues[paramSetNum] = analogValues[paramSetNum];
+          }
+          updateParameters(paramSet);
+          newMidiDroneRoot = false;
+        }
+      }
+      currentMidiByte ++;
+    }
+    /*thisMidiByte = Serial.read();
     if(thisMidiByte==0xFA) {
-      // start beat
-      beatPlaying = false;
-      doStartStop();
+      startBeat();
       statusByte = thisMidiByte;
     } else if(thisMidiByte==0xFB) {
-      // continue beat
-      beatPlaying = false;
-      doStartStop();
+      continueBeat();
       statusByte = thisMidiByte;
     } else if(thisMidiByte==0xFC) {
-      // stop beat
-      beatPlaying = true;
-      doStartStop();
+      stopBeat();
       statusByte = thisMidiByte;
     } else if(thisMidiByte==0xF8) {
       syncReceived = true;
@@ -780,8 +845,9 @@ void loop(){
           byteNum = 0;
         }
       }
-    }
+    }*/
   }
+  audioHook(); // main Mozzi function, calls updateAudio and updateControl
 }
 
 void flashLeds() {
