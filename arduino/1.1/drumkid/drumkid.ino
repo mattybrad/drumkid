@@ -37,12 +37,7 @@ Oscil<SAW256_NUM_CELLS, AUDIO_RATE> droneOscillator2(SAW256_DATA);
 #include <EEPROM.h>
 
 // declare buttons as Bounce objects
-Bounce buttonStartStop = Bounce();
-Bounce buttonTapTempo = Bounce();
-Bounce buttonA = Bounce();
-Bounce buttonB = Bounce();
-Bounce buttonC = Bounce();
-Bounce buttonD = Bounce();
+Bounce buttons[6];
 
 // Mozzi control rate, measured in Hz, must be power of 2
 // try to keep this value as high as possible (256 is good) but reduce if having performance issues
@@ -185,25 +180,14 @@ void setup(){
   for(i=0;i<NUM_LEDS;i++) {
     pinMode(ledPins[i],OUTPUT); // set LED pins as outputs
   }
-  for(i=0;i<NUM_BUTTONS;i++) {
-    pinMode(buttonPins[i],INPUT_PULLUP); // set button pins as inputs
-  }
   
   startMozzi(CONTROL_RATE);
 
   // initialise all buttons using Bounce2 library
-  buttonStartStop.interval(25);
-  buttonTapTempo.interval(25);
-  buttonA.interval(25);
-  buttonB.interval(25);
-  buttonC.interval(25);
-  buttonD.interval(25);
-  buttonStartStop.attach(4, INPUT_PULLUP);
-  buttonTapTempo.attach(10, INPUT_PULLUP);
-  buttonA.attach(5, INPUT_PULLUP);
-  buttonB.attach(6, INPUT_PULLUP);
-  buttonC.attach(7, INPUT_PULLUP);
-  buttonD.attach(8, INPUT_PULLUP);
+  for(i=0; i<NUM_BUTTONS; i++) {
+    buttons[i].interval(25);
+    buttons[i].attach(buttonPins[i], INPUT_PULLUP);
+  }
 
   // set starting values for each parameter
   storedValues[CHANCE] = 128;
@@ -236,8 +220,198 @@ void setup(){
   flashLeds(); // do a brief LED light show to show the unit is working
 }
 
+byte buttonsPressed = 0;
+byte buttonGroup = 0;
+byte lastButtonsPressed = 0;
+byte menuState = 0;
+
 void updateControl(){
   byte i;
+  bool controlSetChanged = false;
+  newStateLoaded = false;
+  byte prevControlSet = controlSet;
+  
+  for(i=0; i<6; i++) {
+    buttons[i].update();
+  }
+  for(i=0; i<6; i++) {
+    bitWrite(buttonsPressed,i,!buttons[i].read());
+    buttonGroup = buttonsPressed | buttonGroup;
+  }
+  if(buttonsPressed != lastButtonsPressed) {
+    if(menuState == 0) {
+      if(buttons[0].fell()) {
+        if(!beatPlaying) startBeat();
+        else stopBeat();
+      }
+      if(buttons[5].fell()) {
+        tapTimes[nextTapIndex] = (float) millis();
+
+        float firstTime;
+        float timeTally = 0.0;
+        byte validTimes = 0;
+        bool keepChecking = true;
+        for(i=0;i<NUM_TAP_TIMES-1 && keepChecking;i++) {
+          byte thisTapIndex = (nextTapIndex + NUM_TAP_TIMES - i) % NUM_TAP_TIMES;
+          byte lastTapIndex = (nextTapIndex + NUM_TAP_TIMES - i - 1) % NUM_TAP_TIMES;
+
+          float thisTime = tapTimes[thisTapIndex] - tapTimes[lastTapIndex];
+          if(i==0) firstTime = thisTime;
+          float timeCompare = firstTime/thisTime;
+          if(tapTimes[lastTapIndex] > 0.0 && timeCompare > 0.8 && timeCompare < 1.2) {
+            timeTally += thisTime;
+            validTimes ++;
+          } else {
+            keepChecking = false;
+          }
+        }
+        if(validTimes>=2) {
+          float newPulseLength = (timeTally / validTimes) / 24;
+          paramTempo = 2500.0 / newPulseLength;
+          storedValues[TEMPO] = tempoToByte(paramTempo);
+        }
+        nextTapIndex = (nextTapIndex + 1) % NUM_TAP_TIMES;
+        
+        if(controlSet==TEMPO/NUM_KNOBS) {
+          byte tempoKnobNum = TEMPO%NUM_KNOBS;
+          bitWrite(knobLocked, tempoKnobNum, true);
+          initValues[tempoKnobNum] = analogValues[tempoKnobNum];
+        }
+      }
+      //if(buttons[0].rose() && !playing) Serial.println("Drone off");
+      if(buttonsPressed == 0) {
+        if(buttonGroup == B00000010) controlSet = 0;
+        else if(buttonGroup == B00000100) controlSet = 1;
+        else if(buttonGroup == B00001000) controlSet = 2;
+        else if(buttonGroup == B00010000) controlSet = 3;
+        else if(buttonGroup == B00000110) {
+          // load...
+          menuState = 1;
+        }
+        else if(buttonGroup == B00011000) {
+          // save...
+          menuState = 2;
+        }
+        else if(buttonGroup == B00001100) {
+          // change bank...
+          menuState = 3;
+        }
+        else if(buttonGroup == B00001110) {
+          // reset
+        }
+        else if(buttonGroup == B00010110) {
+          // random session
+        }
+        else if(buttonGroup == B00011100) {
+          // MIDI settings
+          menuState = 4;
+        }
+        buttonGroup = 0;
+      }
+    } else if(menuState==1) {
+      if(buttonsPressed == 0) {
+        if(buttonGroup == B00000001) loadParams(0);
+        else if(buttonGroup == B00000010) loadParams(1);
+        else if(buttonGroup == B00000100) loadParams(2);
+        else if(buttonGroup == B00001000) loadParams(3);
+        else if(buttonGroup == B00010000) loadParams(4);
+        else if(buttonGroup == B00100000) loadParams(5);
+        menuState = 0;
+        buttonGroup = 0;
+      }
+    } else if(menuState==2) {
+      if(buttonsPressed == 0) {
+        if(buttonGroup == B00000001) saveParams(0);
+        else if(buttonGroup == B00000010) saveParams(1);
+        else if(buttonGroup == B00000100) saveParams(2);
+        else if(buttonGroup == B00001000) saveParams(3);
+        else if(buttonGroup == B00010000) saveParams(4);
+        else if(buttonGroup == B00100000) saveParams(5);
+        menuState = 0;
+        buttonGroup = 0;
+      }
+    } else if(menuState==3) {
+      if(buttonsPressed == 0) {
+        if(buttonGroup == B00000001) chooseBank(0);
+        else if(buttonGroup == B00000010) chooseBank(1);
+        else if(buttonGroup == B00000100) chooseBank(2);
+        else if(buttonGroup == B00001000) chooseBank(3);
+        else if(buttonGroup == B00010000) chooseBank(4);
+        else if(buttonGroup == B00100000) chooseBank(5);
+        menuState = 0;
+        buttonGroup = 0;
+      }
+    } else if(menuState==4) {
+      if(buttonsPressed == 0) {
+        /*if(buttonGroup == B00000001) Serial.println("MIDI settings 1");
+        else if(buttonGroup == B00000010) Serial.println("MIDI settings 2");
+        else if(buttonGroup == B00000100) Serial.println("MIDI settings 3");
+        else if(buttonGroup == B00001000) Serial.println("MIDI settings 4");
+        else if(buttonGroup == B00010000) Serial.println("MIDI settings 5");
+        else if(buttonGroup == B00100000) {
+          Serial.println("Confirm MIDI settings");
+          menuState = 0;
+        }*/
+        buttonGroup = 0;
+      }
+    }
+  }
+  
+  lastButtonsPressed = buttonsPressed;
+  controlSetChanged = (prevControlSet != controlSet);
+
+  msPerPulse = 2500.0 / paramTempo;
+
+  // perform pulse actions inside loop - stop beat if everything gets super overloaded
+  byte numLoops = 0;
+  while(!syncReceived && beatPlaying && millis()>=nextPulseTime) {
+    if(numLoops<5) doPulseActions();
+    nextPulseTime = nextPulseTime + msPerPulse;
+    if(numLoops>=100) beatPlaying = false;
+    numLoops ++;
+  }
+
+  for(i=0;i<NUM_KNOBS;i++) {
+    if(firstLoop) {
+      byte dummyReading = mozziAnalogRead(analogPins[i]); // need to read pin once because first reading is not accurate
+    } else {
+      analogValues[i] = mozziAnalogRead(analogPins[i])>>2;
+    }
+  }
+  if(controlSetChanged||secondLoop||newStateLoaded) {
+    for(i=0;i<NUM_KNOBS;i++) {
+      bitWrite(knobLocked, i, true);
+      initValues[i] = analogValues[i];
+    }
+  } else {
+    for(i=0;i<NUM_KNOBS;i++) {
+      if(bitRead(knobLocked, i)) {
+        int diff = initValues[i] - analogValues[i];
+        if(diff<-5||diff>5) bitWrite(knobLocked, i, false);
+      }
+      if(!bitRead(knobLocked, i)) {
+        storedValues[NUM_KNOBS*controlSet+i] = analogValues[i];
+      }
+    }
+  }
+  if(secondLoop) {
+    for(i=0;i<NUM_PARAM_GROUPS;i++) {
+      updateParameters(i);
+    }
+  } else {
+    updateParameters(controlSet);
+  }
+
+  if(firstLoop) {
+    firstLoop = false;
+    secondLoop = true;
+  } else {
+    secondLoop = false;
+  }
+
+  if(!beatPlaying) updateLeds();
+  
+  /*byte i;
   bool controlSetChanged = false;
   newStateLoaded = false;
   
@@ -385,7 +559,7 @@ void updateControl(){
     secondLoop = false;
   }
 
-  if(!beatPlaying) updateLeds();
+  if(!beatPlaying) updateLeds();*/
 }
 
 void doPulseActions() {
@@ -723,11 +897,6 @@ int updateAudio(){
 }
 
 byte thisMidiByte;
-byte statusByte;
-byte byteNum = 0;
-byte dataByte1;
-byte dataByte2;
-
 byte midiBytes[3];
 byte currentMidiByte = 0;
 void loop(){
