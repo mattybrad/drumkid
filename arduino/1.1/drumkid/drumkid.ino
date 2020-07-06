@@ -69,8 +69,8 @@ unsigned int specialOffset = 0; // number of steps to offset pattern in random t
 bool beatPlaying = false; // true when beat is playing, false when not
 byte noteDown = B00000000; // keeps track of whether a MIDI note is currently down or up
 bool syncReceived = false; // has a sync/clock signal been received? (IMPROVE THIS LATER)
-const byte midiNotes[NUM_SAMPLES] = {36,42,38,37,43}; // MIDI note numbers, currently set to kick, closed hat, snare, click, tom - feel free to change these (e.g. the Nord Drum uses notes 36, 38, 59 and 47)
-const byte midiNoteCommands[NUM_SAMPLES] = {0x99,0x99,0x99,0x99,0x99}; // MIDI note on commands - feel free to change (channels 1-16 are 0x90,0x91,0x92,0x93,0x94,0x95,0x96,0x97,0x98,0x99,0x9a,0x9b,0x9c,0x9d,0x9e,0x9f)
+byte midiNotes[NUM_SAMPLES] = {36,42,38,37,43}; // MIDI note numbers, currently set to kick, closed hat, snare, click, tom
+byte midiNoteCommands[NUM_SAMPLES]; // MIDI note on commands
 byte sampleVolumes[NUM_SAMPLES] = {0,0,0,0,0}; // current sample volumes
 byte storedValues[NUM_PARAM_GROUPS*NUM_KNOBS]; // analog knob values, one for each parameter (so the value can be remembered even after switching groups)
 byte firstLoop = true; // allows special actions on first loop
@@ -89,6 +89,7 @@ bool readyToChooseLoadSlot = false;
 bool readyToChooseBank = false;
 bool newStateLoaded = false;
 byte activeBank = 0;
+byte activeMidiSettingsNum = 0;
 
 // tempo variables
 float tapTimes[NUM_TAP_TIMES];
@@ -177,6 +178,10 @@ byte dropRef[NUM_SAMPLES] = {
 
 void setup(){
   byte i;
+
+  checkEepromScheme(); // write defaults to memory if not previously done
+  initialiseSettings();
+  
   for(i=0;i<NUM_LEDS;i++) {
     pinMode(ledPins[i],OUTPUT); // set LED pins as outputs
   }
@@ -321,15 +326,39 @@ void updateControl(){
       }
     } else if(menuState==4) {
       if(buttonsPressed == 0) {
-        /*if(buttonGroup == B00000001) Serial.println("MIDI settings 1");
-        else if(buttonGroup == B00000010) Serial.println("MIDI settings 2");
-        else if(buttonGroup == B00000100) Serial.println("MIDI settings 3");
-        else if(buttonGroup == B00001000) Serial.println("MIDI settings 4");
-        else if(buttonGroup == B00010000) Serial.println("MIDI settings 5");
-        else if(buttonGroup == B00100000) {
-          Serial.println("Confirm MIDI settings");
+        menuState = 5; // single button presses for buttons 1-5 take you to menuState 5
+        if(buttonGroup == B00000001) activeMidiSettingsNum = 0;
+        else if(buttonGroup == B00000010) activeMidiSettingsNum = 1;
+        else if(buttonGroup == B00000100) activeMidiSettingsNum = 2;
+        else if(buttonGroup == B00001000) activeMidiSettingsNum = 3;
+        else if(buttonGroup == B00010000) activeMidiSettingsNum = 4;
+        else if(buttonGroup == B00100000) menuState = 0; // tap tempo button exits to main menu state
+        buttonGroup = 0;
+      }
+    } else if(menuState==5) {
+      if(buttonsPressed == 0) {
+        int newMidiNote = midiNotes[activeMidiSettingsNum];
+        int newMidiChannel = midiNoteCommands[activeMidiSettingsNum] - 0x90;
+        if(buttonGroup == B00000001) {
+          if(newMidiNote>0) newMidiNote --;
+          specialLedDisplay(newMidiNote, false);
+        } else if(buttonGroup == B00000010) {
+          if(newMidiNote<127) newMidiNote ++;
+          specialLedDisplay(newMidiNote, false);
+        } else if(buttonGroup == B00000100) {
+          if(newMidiChannel>0) newMidiChannel --;
+          specialLedDisplay(newMidiChannel, false);
+        } else if(buttonGroup == B00001000) {
+          if(newMidiChannel<15) newMidiChannel ++;
+          specialLedDisplay(newMidiChannel, false);
+        }
+        else {
+          EEPROM.write(872+activeMidiSettingsNum, newMidiNote);
+          EEPROM.write(880+activeMidiSettingsNum, newMidiChannel);
           menuState = 0;
-        }*/
+        }
+        midiNotes[activeMidiSettingsNum] = newMidiNote;
+        midiNoteCommands[activeMidiSettingsNum] = 0x90 + newMidiChannel;
         buttonGroup = 0;
       }
     }
@@ -1153,5 +1182,42 @@ void saveParams(byte slotNum) {
   readyToChooseSaveSlot = false;
   for(byte i=0; i<NUM_PARAM_GROUPS*NUM_KNOBS; i++) {
     EEPROM.write((slotNum+6*activeBank)*SAVED_STATE_SLOT_BYTES+i, storedValues[i]);
+  }
+}
+
+// prior to firmware version 1.1, no way of knowing whether older firmware was previously installed
+// from V1.1 onwards, new special address beyond the 864 bytes reserved for storing sessions
+// Slot 864-865: if these bytes have values 119 and 206 respectively, we are using the new memory system (1 in 65,025 chance of these being randomly correct)
+// Slot 866: current version (0 = V1.1)
+// Slots 867-871: reserved for other version stuff if needed
+// Slots 872-879: MIDI note numbers for channels 1 through 5 (and another 3 reserved)
+// Slots 880-887: MIDI channel numbers for channels 1 through 5 (and another 3 reserved)
+// Slots 888+: free for future features
+
+void checkEepromScheme() {
+  byte i;
+  byte check1 = EEPROM.read(864);
+  byte check2 = EEPROM.read(865);
+  if(check1==119&&check2==206) {
+    // all good, already using the new EEPROM scheme
+  } else {
+    // prepare EEPROM for new scheme
+    EEPROM.write(864, 119);
+    EEPROM.write(865, 206);
+    EEPROM.write(866, 0);
+    // write default MIDI note/channel settings
+    for(i=0; i<NUM_SAMPLES; i++) {
+      EEPROM.write(872+i, midiNotes[i]);
+      EEPROM.write(880+i, 9); // channel 10 (actually 9 because zero-indexed) is default channel to use
+    }
+  }
+}
+
+void initialiseSettings() {
+  // must run checkEepromScheme() BEFORE this function
+  byte i;
+  for(i=0; i<NUM_SAMPLES; i++) {
+    midiNotes[i] = EEPROM.read(872+i);
+    midiNoteCommands[i] = 0x90 + EEPROM.read(880+i);
   }
 }
