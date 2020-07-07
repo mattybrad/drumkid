@@ -1,3 +1,4 @@
+
 import subprocess, os
 for filename in os.listdir('wavfiles'):
     base_filename = filename.split('.')[0]
@@ -11,9 +12,7 @@ for filename in os.listdir('wavfiles'):
                    'signed-integer',
                    '--endian',
                    'little',
-                   'rawfiles/'+base_filename+'.raw',
-                   'bass',
-                   '-5']
+                   'rawfiles/'+base_filename+'.raw']
     subprocess.check_output(sox_command)
     mozzi_command = ['python',
                      'char2mozzi.py',
@@ -22,4 +21,3 @@ for filename in os.listdir('wavfiles'):
                      base_filename,
                      '16384']
     subprocess.check_output(mozzi_command)
-    
