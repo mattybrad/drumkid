@@ -15,13 +15,12 @@
 + bigger dead zone for drone and drone mod
 + reset function
 + don't switch to group A when loading a beat (or group C when saving, etc)
++ adjust note/channel mapping from drumkid directly
++ reset MIDI note mapping to default
 - investigate memory issue; possible wiping of all beats?
 - update manual with new features
 - include hackers' manual in regular manual
 - make it easier to load custom samples
 - had to reduce control rate to 128, 256 would be better (better float maths? less faffing with random time signature?)
 - more comments in code
-- adjust note/channel mapping from drumkid directly
 - don't lock up when no longer using MIDI clock
-- reset MIDI note mapping to default
-- reset session should work in all menu states

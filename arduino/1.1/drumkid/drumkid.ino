@@ -201,7 +201,7 @@ void setup(){
   Serial.begin(31250); // begin serial communication for MIDI input/output
   //Serial.begin(9600);
 
-  //flashLeds(); // do a brief LED light show to show the unit is working
+  flashLeds(); // do a brief LED light show to show the unit is working
 }
 
 byte buttonsPressed = 0;
@@ -265,16 +265,12 @@ void updateControl(){
       if(buttonsPressed == 0) {
         if(buttonGroup == B00000010) {
           controlSet = 0;
-          specialLedDisplay(0,false);
         } else if(buttonGroup == B00000100) {
           controlSet = 1;
-          specialLedDisplay(1,false);
         } else if(buttonGroup == B00001000) {
           controlSet = 2;
-          specialLedDisplay(2,false);
         } else if(buttonGroup == B00010000) {
           controlSet = 3;
-          specialLedDisplay(3,false);
         } else if(buttonGroup == B00000110) {
           // load...
           menuState = 1;
@@ -578,6 +574,7 @@ void startBeat() {
 void stopBeat() {
   beatPlaying = false;
   Serial.write(0xFC); // MIDI clock stop
+  syncReceived = false;
 }
 
 void playPulseHits() {
@@ -824,67 +821,6 @@ void loop(){
       }
       currentMidiByte ++;
     }
-    /*thisMidiByte = Serial.read();
-    if(thisMidiByte==0xFA) {
-      startBeat();
-      statusByte = thisMidiByte;
-    } else if(thisMidiByte==0xFB) {
-      continueBeat();
-      statusByte = thisMidiByte;
-    } else if(thisMidiByte==0xFC) {
-      stopBeat();
-      statusByte = thisMidiByte;
-    } else if(thisMidiByte==0xF8) {
-      syncReceived = true;
-      if(beatPlaying) {
-        doPulseActions();
-      }
-      statusByte = thisMidiByte;
-    } else if(thisMidiByte>=128) {
-      statusByte = thisMidiByte;
-      byteNum = 1;
-    } else {
-      if((statusByte>>4)==0xB) {
-        // CC message (any channel)
-        if(byteNum == 1) {
-          dataByte1 = thisMidiByte;
-          byteNum = 2;
-        } else {
-          if(dataByte1>=16&&dataByte1<32) {
-            byte paramNum = dataByte1 - 16;
-            byte paramSet = paramNum / 4;
-            byte paramSetNum = paramNum % 4;
-            storedValues[paramNum] = thisMidiByte * 2;
-            if(controlSet==paramSet) {
-              bitWrite(knobLocked, paramSetNum, true);
-              initValues[paramSetNum] = analogValues[paramSetNum];
-            }
-            updateParameters(paramSet);
-          }
-          byteNum = 0;
-        }
-      } else if((statusByte>>4)==0x9) {
-        // note on command (any channel)
-        if(byteNum == 1) {
-          dataByte1 = thisMidiByte;
-          byteNum = 2;
-        } else {
-          if(thisMidiByte > 0) {
-            newMidiDroneRoot = true;
-            byte paramSet = DRONE_ROOT / 4;
-            byte paramSetNum = DRONE_ROOT % 4;
-            storedValues[DRONE_ROOT] = (dataByte1 % 12) * 20;
-            if(controlSet==paramSet) {
-              bitWrite(knobLocked, paramSetNum, true);
-              initValues[paramSetNum] = analogValues[paramSetNum];
-            }
-            updateParameters(paramSet);
-            newMidiDroneRoot = false;
-          }
-          byteNum = 0;
-        }
-      }
-    }*/
   }
   audioHook(); // main Mozzi function, calls updateAudio and updateControl
 }
@@ -894,7 +830,11 @@ void flashLeds() {
   for(i=0;i<30;i++) {
     randByte = rand(0,256);
     displayLedNum(randByte);
-    delay(25);
+    while(millis()<(i+1)*25) {
+      // do nothing here
+      // this is a silly hack so that the delay() function doesn't get compiled
+      // this is what happens when your program takes up 99%+ of the storage space
+    }
   }
   displayLedNum(0);
 }
@@ -903,7 +843,7 @@ void updateLeds() {
   if(millis() < specialLedDisplayTime + 750UL && specialLedDisplayTime > 0) {
     // show desired binary number for certain parameters where visual feedback is helpful
     displayLedNum(specialLedDisplayNum);
-  } else if(beatPlaying) {
+  } else if(beatPlaying && menuState == 0) {
     //if(stepNum==0||(paramTimeSignature==4&&stepNum==96)||(paramTimeSignature==6&&stepNum==72)) displayLedNum(B00000011);
     if(stepNum==0) displayLedNum(B00000011);
     else if(stepNum%24==0) displayLedNum(B00000010);
