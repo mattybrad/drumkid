@@ -6,7 +6,7 @@
 #else
 #include "WProgram.h"
 #endif
-#include "mozzi_pgmspace.h"
+#include "src/MozziDK/src/mozzi_pgmspace.h"
  
 #define rim_NUM_CELLS 427
 #define rim_SAMPLERATE 16384

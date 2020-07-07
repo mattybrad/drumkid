@@ -6,7 +6,7 @@
 #else
 #include "WProgram.h"
 #endif
-#include "mozzi_pgmspace.h"
+#include "src/MozziDK/src/mozzi_pgmspace.h"
  
 #define snare_NUM_CELLS 2840
 #define snare_SAMPLERATE 16384

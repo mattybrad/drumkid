@@ -34,7 +34,7 @@
 
 #include <avr/pgmspace.h>
 #include <avr/interrupt.h>
-#include <TimerZero.h>
+#include "TimerZero.h"
 #include <Arduino.h>
 
 // allowed prescale factors

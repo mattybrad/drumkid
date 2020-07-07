@@ -6,7 +6,7 @@
 #else
  #include "WProgram.h"
 #endif
-#include "mozzi_pgmspace.h"
+#include "../mozzi_pgmspace.h"
 
 #define SAW256_NUM_CELLS 256
 #define SAW256_SAMPLERATE 256

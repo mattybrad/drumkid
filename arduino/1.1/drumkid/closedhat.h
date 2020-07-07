@@ -6,7 +6,7 @@
 #else
 #include "WProgram.h"
 #endif
-#include "mozzi_pgmspace.h"
+#include "src/MozziDK/src/mozzi_pgmspace.h"
  
 #define closedhat_NUM_CELLS 1527
 #define closedhat_SAMPLERATE 16384

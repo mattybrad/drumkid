@@ -23,8 +23,8 @@
 //#include "mozzi_utils.h"
 
 #if IS_AVR()
-#include "FrequencyTimer2.h"
-#include "TimerOne.h"
+#include "utility/FrequencyTimer2.h"
+#include "utility/TimerOne.h"
 #elif IS_TEENSY3()
 // required from http://github.com/pedvide/ADC for Teensy 3.*
 #include "IntervalTimer.h"

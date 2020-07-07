@@ -6,11 +6,11 @@
 #include "src/Bounce2/src/Bounce2.h"
 
 // include Mozzi library files for generating audio (custom version to allow reverse playback)
-#include "MozziDK/MozziGuts.h"
-#include "MozziDK/Sample.h"
-#include "MozziDK/mozzi_rand.h"
-#include "MozziDK/Oscil.h"
-#include "MozziDK/tables/saw256_int8.h"
+#include "src/MozziDK/src/MozziGuts.h"
+#include "src/MozziDK/src/Sample.h"
+#include "src/MozziDK/src/mozzi_rand.h"
+#include "src/MozziDK/src/Oscil.h"
+#include "src/MozziDK/src/tables/saw256_int8.h"
 
 // include drum beat pattern definitions from separate file
 #include "beats.h"
