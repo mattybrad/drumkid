@@ -157,7 +157,7 @@ Because DrumKid uses a lo-fi method (known as pulse width modulation) to generat
 The first versions of DrumKid (those made before July 2020) used firmware version 1.0. This manual refers to firmware version 1.1, which is now available and is included with newer DrumKids. Please note that updating to the new firmware may alter some settings in your saved beats, particularly the time signature, tempo, and "drop" settings.
 
 ### Updating firmware
-To upload new firmware, you will need a computer running the latest Arduino IDE software (download from https://www.arduino.cc/) and a USB "mini-B" cable to connect the computer to the Arduino Nano.
+DrumKid's "brain" is a tiny computer called an Arduino Nano clone - this is the board inside DrumKid with a mini USB port on it. To upload new firmware, you will need a computer running the latest Arduino IDE software (download from https://www.arduino.cc/) and a USB "mini-B" cable to connect the computer to the Arduino Nano.
 
 Before you upload anything to the Arduino, unplug any MIDI cables and make sure the switch on the underside of the PCB is set to "Arduino" rather than "MIDI" (and remember to switch it back to "MIDI" when you're done). You should also check that the "board", "processor" and "port" settings are correct in the Arduino software. Click on the "Tools" menu to check this:
 - "Board" should be "Arduino Nano"
