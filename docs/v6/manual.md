@@ -1,19 +1,24 @@
-# DrumKid manual
+# DrumKid manual (V1.1)
 ## Introduction
 Welcome to the DrumKid manual! DrumKid is a musical instrument that creates rhythms using random numbers. To get started with DrumKid, unscrew the six screws on the back of the unit (you should be able to do this by hand), and carefully remove the back plate. Insert three AA batteries (you can use rechargeable or single-use), replace the back plate, and tighten the screws. Slide the power switch to "on" - you should see the lights flash briefly. After this, DrumKid is ready to use. Plug some headphones or a 3.5mm stereo aux cable into the socket (mono won't work), and start playing. If you would prefer not to use batteries, you can also power DrumKid by connecting a USB mini cable to the socket recessed on the right hand side of the device.
 ## Philosophy
 DrumKid is designed around a very basic computer chip with limited memory and processing power. My idea was to squeeze as much cool sound out of this chip as possible, but it has its limits. Rather than try and hide from these limits, I decided to embrace them. This means that it is absolutely possible to make horrible, distorted, broken noises using DrumKid. Some of these horrible noises will sound cool, others will not. DrumKid is a playable instrument like any other - experiment with it and see what happens.
 ## Demo videos and resources
 You can find demo videos and other resources at <https://www.mattbradshawdesign.com/projects/drumkid>, or more technical info (source code, schematics, etc) at <https://github.com/mattybrad/drumkid>.
-## Basics
+## Basic functions
 DrumKid has six buttons and four knobs. The basic functions are as follows:
  - Press the start/stop button to start or stop the rhythm
  - Press buttons A/B/C/D to select different knob functions (see table below)
  - Turn any of the four knobs to alter the parameters in the current selected group (see table below)
  - Tap the tap tempo button repeatedly to set the tempo
- - Press buttons A+B together to load a session, then choose which session to load by pressing any of the buttons
- - Press buttons C+D together to save a session, then choose which slot to save your session in by pressing any of the buttons
+ - Press buttons A+B together to load a session, then choose which session to load by pressing any of the buttons (or press multiple buttons together to cancel)
+ - Press buttons C+D together to save a session, then choose which slot to save your session in by pressing any of the buttons (or press multiple buttons together to cancel)
  - Press buttons B+C together to change the current active memory bank, then choose a specific memory bank by pressing any of the buttons
+## Other functions
+DrumKid has a few extra hidden functions:
+- Press buttons A+B+C together to reset your beat to default values. This will not affect any saved beats.
+- Press buttons A+B+D together to generate a random beat. This will also not affect any saved beats.
+- Press buttons B+C+D together to enter the MIDI settings menu (more details in the MIDI section of the manual)
 ## Presets
 In the aleatoric spirit of DrumKid, all 36 sessions stored when you first use the instrument are randomly generated when DrumKid is built. Try loading a few of them to get a feel for what DrumKid can do.
 ## Parameters
@@ -66,32 +71,62 @@ You can try out each parameter by starting a rhythm (using the start/stop button
 
 **Note** - Alter the root note of the drones, in semitone steps over an octave range.
 
-**Beat** - Chooses between a series of basic underlying drum patterns.
+**Beat** - Chooses between a series of basic underlying drum patterns (see "preset beat list" below).
 
-**Beats/bar** - Alters the time signature of the beat, i.e. the number of steps in the pattern. The possible values are 4/4, 5/4, 6/4 and 7/4.
+**Beats/bar** - Alters the time signature of the beat, i.e. the number of steps in the pattern. You can have between 1 and 13 beats in a bar, or if you turn the knob all the way to the right, the time signature will be randomised at the start of each bar.
 
 **Swing** - Creates a swing feel to a beat by altering the timing of certain hits. There are three settings: straight, partial swing, and full (triplet) swing.
 
-**Tempo** - Alters the tempo (BPM) of the beat. Will override any tempo previously set using the tap tempo function.
+**Tempo** - Alters the tempo (BPM) of the beat. Will override any tempo previously set using the tap tempo function. Has a range of 10BPM to ~1000BPM, with the "sensible" tempos grouped in the middle of the range.
 
 ## MIDI
 DrumKid has MIDI in and out ports. These can be used to connect DrumKid to other MIDI equipment.
 
 ### Synchronisation
-DrumKid sends and receives MIDI clock signals. A clock signal will be sent through the "MIDI out" socket whenever DrumKid is playing. If DrumKid detects a clock signal through the "MIDI in" socket, it will synchronise itself to this signal. Once a clock signal has been received, the tempo controls will stop having any effect (you can return to non-synchronised mode by turning DrumKid off and on again). In synchronised mode, the start/stop button acts slightly differently - it will still stop the beat as normal, but starting a beat will only work if there is an active clock signal. If you attempt to start the beat before a clock signal is present, DrumKid will wait for a clock signal before starting. This behaviour may change with future updates.
+DrumKid sends and receives MIDI clock signals. A clock signal will be sent through the "MIDI out" socket whenever DrumKid is playing. If DrumKid detects a clock signal through the "MIDI in" socket, it will synchronise itself to this signal. Once a clock signal has been received, the tempo controls will stop having any effect until a clock "stop" command is received.
 
 ### Note output
-DrumKid outputs note data on channel 10 (the standard MIDI drum channel). The note numbers are as follows:
+By default, DrumKid outputs note data on channel 10 (the standard MIDI drum channel). The default note numbers are as follows:
 - Kick - C1 (36)
 - Click - C#1 (37)
 - Snare - D1 (38)
 - Closed hi-hat - F#1 (42)
 - Tom - G1 (43)
 
+### CC/note input
+DrumKid responds to MIDI CC (control change) messages on any channel. DrumKid responds to CC numbers between 16 and 31, in order, as follows:
+- Chance (CC 16)
+- Zoom (CC 17)
+- Range (CC 18)
+- Midpoint (CC 19)
+- Pitch (CC 20)
+- Crush (CC 21)
+- Crop (CC 22)
+- Drop (CC 23)
+- Drone (CC 24)
+- Modulate (CC 25)
+- Tuning (CC 26)
+- Note (CC 27) (almost certainly better to just control this with regular note commands - see below)
+- Beat (CC 28)
+- Beats/bar (time signature) (CC 29)
+- Swing (CC 30)
+- Tempo (CC 31) (disabled when using sync)
+
+You can also control the drone's base note using MIDI note commands on any channel.
+
+### MIDI settings menu
+If you press buttons B+C+D together, you can access the MIDI settings menu, which allows you to change the note and MIDI channel for each of the five drum channels used by DrumKid. Once you enter the menu, you can:
+- Press any of the first five buttons (start/stop, A, B, C or D) to choose one of the five drum channels, or press the tap tempo button to exit the settings menu
+- Once you have selected a drum, you can edit it as follows:
+- Use the first two buttons (start/stop and A) to increase or decrease the MIDI note number
+- Use the middle two buttons (B and C) to increase of decrease the MIDI channel
+- Use button D to test the current note number and channel (i.e. send a MIDI note command with the new settings)
+- Use the tap tempo button to confirm your selection and save it to DrumKid's memory. You will then have to enter the settings menu again using B+C+D if you want to change another drum channel
+- At any time when in the MIDI settings menu, you can press all six buttons together to reset all MIDI settings to the defaults (see "note output" section above) - this will also exit the settings menu
+
 ## Other info
 Because DrumKid uses a lo-fi method (known as pulse width modulation) to generate its audio signal, there is a trace, high-frequency noise present in the output. While this signal should be above the human range of hearing, you may want to filter it out if you are recording DrumKid in a studio, especially if you intend to pitch-shift the recording downwards (since this could bring the noise within human hearing range). To remove the noise, use a band-stop or low-pass filter (before any pitch-shifting) - the offending frequency should be at 32768Hz.
-## Hacking DrumKid
-DrumKid is an open source project, based on the Arduino Uno, and is designed in such a way that it can be modified and repaired. The source files for DrumKid are available from [https://github.com/mattybrad/drumkid/](https://github.com/mattybrad/drumkid/) - you will find the schematics, CAD files, parts list, source code and more. I have also written a "hackers' manual" to assist with modifying DrumKid's electronics and software.
+
 ## Preset beat list (X denotes LED)
 1. You can leave your hat on (X----)
 2. Johnny Two-Hats (-X---)
@@ -117,3 +152,48 @@ DrumKid is an open source project, based on the Arduino Uno, and is designed in 
 22. Take Five (-X---)
 23. Unsquare (--X--)
 24. Nihil (---X-)
+
+## Firmware versions
+The first versions of DrumKid (those made before July 2020) used firmware version 1.0. This manual refers to firmware version 1.1, which is now available and is included with newer DrumKids. Please note that updating to the new firmware may alter some settings in your saved beats, particularly the time signature, tempo, and "drop" settings.
+
+### Updating firmware
+To upload new firmware, you will need a computer running the latest Arduino IDE software (download from https://www.arduino.cc/) and a USB "mini-B" cable to connect the computer to the Arduino Nano.
+
+Before you upload anything to the Arduino, unplug any MIDI cables and make sure the switch on the underside of the PCB is set to "Arduino" rather than "MIDI" (and remember to switch it back to "MIDI" when you're done). You should also check that the "board", "processor" and "port" settings are correct in the Arduino software. Click on the "Tools" menu to check this:
+- "Board" should be "Arduino Nano"
+- "Processor" should be "ATmega328P (Old Bootloader)" - please note that it needs to be the old bootloader specifically!
+- "Port" will depend on your setup - try changing this if you're having trouble
+
+To test that you're able to upload code, try opening the "Blink" example sketch (File > Examples > Basics > Blink) then uploading it to DrumKid (Sketch > Upload). If successful, one of the LEDs should start flashing on and off. Next, try uploading the latest DrumKid code from https://github.com/mattybrad/drumkid - start by downloading the whole project (repository) as a ZIP file, then unzip it to a folder on your computer, open the arduino/1.1/drumkid/drumkid.ino file, and upload this sketch to the Arduino.
+
+If you encounter any problems uploading code to the Arduino, check the following:
+- The switch on the underside of the PCB should be set to "Arduino"
+- Try (carefully) removing the Arduino Nano from DrumKid and uploading the "Blink" example sketch
+- Try a different USB cable
+- Double-check the "board" and "processor" settings (see above)
+- Try a different port
+
+## Hacking DrumKid (this section is a work in progress!)
+DrumKid is an open source project, based on the Arduino Nano, and is designed in such a way that it can be modified and repaired. The source files for DrumKid are available from [https://github.com/mattybrad/drumkid/](https://github.com/mattybrad/drumkid/) - you will find the schematics, CAD files, parts list, source code and more. The rest of this manual is aimed at advanced users of DrumKid who are already familiar with the instrument's basic features and would like to customise DrumKid (or for anyone who is just interested in how DrumKid works). Most ideas described in this manual will require some skills in programming and/or electronics, but don't let that put you off - even if you don't currently have those skills, this might be a good way to learn!
+
+## What's possible?
+Here are a few examples of things that you could do with DrumKid:
+- Add your own preset beats
+- Load a different set of drum samples
+- Change the drone waveform
+- Replace one of the parameters with an effect that you program yourself (e.g. delay or chorus)
+- Add a light sensor to control certain parameters
+- Add Eurorack CV control
+- Make your own case in your favourite colour
+- Mount DrumKid to a pedalboard or similar
+- Build an enclosed wooden case for DrumKid
+- 3D-print a custom case
+
+## What's inside DrumKid?
+The front panel of DrumKid is a printed circuit board (PCB), with some components mounted on top (buttons, knobs, LEDs, power switch, headphone output) and some hidden underneath. The stuff underneath is what we're mainly concerned with in this hackers' manual.
+
+If you're only modifying DrumKid's software/code, you won't even need to do any disassembly, but it's useful to see and understand what you're modifying before you get stuck in. Using a cross-head screwdriver, unscrew the six machine screws on the back of DrumKid, and remove the rear cover. You should now be able to see all the circuitry, including the Arduino Nano board which controls everything.
+
+The Arduino Nano is a microcontroller - basically a small, low-powered computer. This computer runs a single "sketch", which is the name for a piece of software running on an Arduino. This sketch monitors DrumKid's buttons and knobs, controls its LEDs, sends and receives data via the MIDI ports, and (most importantly) generates an audio signal.
+
+Each of the Arduino's pins (the metal bits along the edges) corresponds to a different signal either going into or out of the board, and there is a spare set of "breakout" holes that you can use to solder extra components which will connect to any of the pins. To access the other side of the board for soldering, simply unscrew the four machine screws on the front of DrumKid which hold the plastic cover in place.
