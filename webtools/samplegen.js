@@ -15,9 +15,36 @@ order of operations:
 
 */
 
+const { spawn } = require('child_process');
+
 function generateArduinoFile(path, callback) {
   console.log("run on this path:",path);
-  setTimeout(callback, 5000);
+  const soxProcess = spawn('sox', [
+    path,
+    '--bits',
+    '8',
+    '-r',
+    '16384',
+    '--encoding',
+    'signed-integer',
+    '--endian',
+    'little',
+    'rawfiles/test.raw'
+  ]);
+  soxProcess.on('exit', function(code, signal) {
+    // should really check code/signal here, but it's late
+
+    const mozziProcess = spawn('python', [
+      'char2mozzi.py',
+      'rawfiles/'+"test"+'.raw',
+      'arduinofiles/'+"raw"+'.h',
+      "testing",
+      '16384'
+    ]);
+    mozziProcess.on('exit', function(code, signal) {
+      callback();
+    });
+  })
 }
 
 exports.generateArduinoFiles = function(filePaths, callback) {
