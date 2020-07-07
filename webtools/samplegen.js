@@ -15,6 +15,19 @@ order of operations:
 
 */
 
-exports.generateArduinoFiles = function(fileData, callback) {
-  callback(JSON.stringify(fileData));
+function generateArduinoFile(path, callback) {
+  console.log("run on this path:",path);
+  setTimeout(callback, 5000);
+}
+
+exports.generateArduinoFiles = function(filePaths, callback) {
+  var filesDone = 0;
+  for(var i=0; i<filePaths.length; i++) {
+    generateArduinoFile(filePaths[i], function() {
+      filesDone ++;
+      if(filesDone == filePaths.length) {
+        callback("done all the files yeah");
+      }
+    });
+  }
 }
