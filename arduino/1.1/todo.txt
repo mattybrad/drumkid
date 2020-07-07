@@ -23,3 +23,4 @@
 - more comments in code
 - adjust note/channel mapping from drumkid directly
 - don't lock up when no longer using MIDI clock
+- reset MIDI note mapping to default

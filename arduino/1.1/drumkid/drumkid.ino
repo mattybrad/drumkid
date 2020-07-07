@@ -262,32 +262,41 @@ void updateControl(){
         }
       }
       if(buttonsPressed == 0) {
-        if(buttonGroup == B00000010) controlSet = 0;
-        else if(buttonGroup == B00000100) controlSet = 1;
-        else if(buttonGroup == B00001000) controlSet = 2;
-        else if(buttonGroup == B00010000) controlSet = 3;
-        else if(buttonGroup == B00000110) {
+        if(buttonGroup == B00000010) {
+          controlSet = 0;
+          specialLedDisplay(0,false);
+        } else if(buttonGroup == B00000100) {
+          controlSet = 1;
+          specialLedDisplay(1,false);
+        } else if(buttonGroup == B00001000) {
+          controlSet = 2;
+          specialLedDisplay(2,false);
+        } else if(buttonGroup == B00010000) {
+          controlSet = 3;
+          specialLedDisplay(3,false);
+        } else if(buttonGroup == B00000110) {
           // load...
           menuState = 1;
-        }
-        else if(buttonGroup == B00011000) {
+          specialLedDisplay(B00000011,true);
+        } else if(buttonGroup == B00011000) {
           // save...
           menuState = 2;
-        }
-        else if(buttonGroup == B00001100) {
+          specialLedDisplay(B00001100,true);
+        } else if(buttonGroup == B00001100) {
           // change bank...
           menuState = 3;
-        }
-        else if(buttonGroup == B00001110) {
+          specialLedDisplay(B00000110,true);
+        } else if(buttonGroup == B00001110) {
           // reset
           resetToDefaults();
-        }
-        else if(buttonGroup == B00010110) {
+          specialLedDisplay(B00011111,true);
+        } else if(buttonGroup == B00010110) {
           createRandomSession();
-        }
-        else if(buttonGroup == B00011100) {
+          specialLedDisplay(B00011111,true);
+        } else if(buttonGroup == B00011100) {
           // MIDI settings
           menuState = 4;
+          specialLedDisplay(B00001110,true);
         }
         buttonGroup = 0;
       }
@@ -333,6 +342,7 @@ void updateControl(){
         else if(buttonGroup == B00001000) activeMidiSettingsNum = 3;
         else if(buttonGroup == B00010000) activeMidiSettingsNum = 4;
         else if(buttonGroup == B00100000) menuState = 0; // tap tempo button exits to main menu state
+        if(menuState==5) specialLedDisplay(activeMidiSettingsNum,false); // show which button was pressed
         buttonGroup = 0;
       }
     } else if(menuState==5) {
@@ -351,15 +361,18 @@ void updateControl(){
         } else if(buttonGroup == B00001000) {
           if(newMidiChannel<15) newMidiChannel ++;
           specialLedDisplay(newMidiChannel, false);
-        }
-        else {
+        } else if(buttonGroup == B00100000) {
           EEPROM.write(872+activeMidiSettingsNum, newMidiNote);
           EEPROM.write(880+activeMidiSettingsNum, newMidiChannel);
           menuState = 0;
+          specialLedDisplay(B00011111,true);
         }
         midiNotes[activeMidiSettingsNum] = newMidiNote;
         midiNoteCommands[activeMidiSettingsNum] = 0x90 + newMidiChannel;
         buttonGroup = 0;
+      } else if(buttonsPressed == B00010000) {
+        // play test MIDI note
+        triggerNote(activeMidiSettingsNum,255);
       }
     }
   }
@@ -417,156 +430,6 @@ void updateControl(){
   }
 
   if(!beatPlaying) updateLeds();
-  
-  /*byte i;
-  bool controlSetChanged = false;
-  newStateLoaded = false;
-  
-  buttonStartStop.update();
-  buttonA.update();
-  buttonB.update();
-  buttonC.update();
-  buttonD.update();
-  buttonTapTempo.update();
-
-  if(!buttonA.read() && !buttonB.read()) {
-    readyToChooseLoadSlot = true;
-    readyToChooseSaveSlot = false;
-    readyToChooseBank = false;
-  } else if(!buttonC.read() && !buttonD.read()) {
-    readyToChooseSaveSlot = true;
-    readyToChooseLoadSlot = false;
-    readyToChooseBank = false;
-  } else if(!buttonB.read() && !buttonC.read()) {
-    readyToChooseLoadSlot = false;
-    readyToChooseSaveSlot = false;
-    readyToChooseBank = true;
-  } else {
-    // handle button presses
-    byte prevControlSet = controlSet;
-    if(buttonTapTempo.fell()) {
-      if(readyToChooseLoadSlot) loadParams(5);
-      else if(readyToChooseSaveSlot) saveParams(5);
-      else if(readyToChooseBank) chooseBank(5);
-      else {
-        tapTimes[nextTapIndex] = (float) millis();
-
-        float firstTime;
-        float timeTally = 0.0;
-        byte validTimes = 0;
-        bool keepChecking = true;
-        for(i=0;i<NUM_TAP_TIMES-1 && keepChecking;i++) {
-          byte thisTapIndex = (nextTapIndex + NUM_TAP_TIMES - i) % NUM_TAP_TIMES;
-          byte lastTapIndex = (nextTapIndex + NUM_TAP_TIMES - i - 1) % NUM_TAP_TIMES;
-
-          float thisTime = tapTimes[thisTapIndex] - tapTimes[lastTapIndex];
-          if(i==0) firstTime = thisTime;
-          float timeCompare = firstTime/thisTime;
-          if(tapTimes[lastTapIndex] > 0.0 && timeCompare > 0.8 && timeCompare < 1.2) {
-            timeTally += thisTime;
-            validTimes ++;
-          } else {
-            keepChecking = false;
-          }
-        }
-        if(validTimes>=2) {
-          float newPulseLength = (timeTally / validTimes) / 24;
-          paramTempo = 2500.0 / newPulseLength;
-          storedValues[TEMPO] = tempoToByte(paramTempo);
-        }
-        nextTapIndex = (nextTapIndex + 1) % NUM_TAP_TIMES;
-        
-        if(controlSet==TEMPO/NUM_KNOBS) {
-          byte tempoKnobNum = TEMPO%NUM_KNOBS;
-          bitWrite(knobLocked, tempoKnobNum, true);
-          initValues[tempoKnobNum] = analogValues[tempoKnobNum];
-        }
-      }
-    } else if(buttonA.fell()) {
-      if(readyToChooseLoadSlot) loadParams(1);
-      else if(readyToChooseSaveSlot) saveParams(1);
-      else if(readyToChooseBank) chooseBank(1);
-      else controlSet = 0;
-    } else if(buttonB.fell()) {
-      if(readyToChooseLoadSlot) loadParams(2);
-      else if(readyToChooseSaveSlot) saveParams(2);
-      else if(readyToChooseBank) chooseBank(2);
-      else controlSet = 1;
-    } else if(buttonC.fell()) {
-      if(readyToChooseLoadSlot) loadParams(3);
-      else if(readyToChooseSaveSlot) saveParams(3);
-      else if(readyToChooseBank) chooseBank(3);
-      else controlSet = 2;
-    } else if(buttonD.fell()) {
-      if(readyToChooseLoadSlot) loadParams(4);
-      else if(readyToChooseSaveSlot) saveParams(4);
-      else if(readyToChooseBank) chooseBank(4);
-      else controlSet = 3;
-    }
-    controlSetChanged = (prevControlSet != controlSet);
-    
-    if(buttonStartStop.fell()) {
-      if(readyToChooseLoadSlot) loadParams(0);
-      else if(readyToChooseSaveSlot) saveParams(0);
-      else if(readyToChooseBank) chooseBank(0);
-      else {
-        if(!beatPlaying) startBeat();
-        else stopBeat();
-      }
-    }
-    
-  }
-
-  msPerPulse = 2500.0 / paramTempo;
-
-  // perform pulse actions inside loop - stop beat if everything gets super overloaded
-  byte numLoops = 0;
-  while(!syncReceived && beatPlaying && millis()>=nextPulseTime) {
-    if(numLoops<5) doPulseActions();
-    nextPulseTime = nextPulseTime + msPerPulse;
-    if(numLoops>=100) beatPlaying = false;
-    numLoops ++;
-  }
-
-  for(i=0;i<NUM_KNOBS;i++) {
-    if(firstLoop) {
-      byte dummyReading = mozziAnalogRead(analogPins[i]); // need to read pin once because first reading is not accurate
-    } else {
-      analogValues[i] = mozziAnalogRead(analogPins[i])>>2;
-    }
-  }
-  if(controlSetChanged||secondLoop||newStateLoaded) {
-    for(i=0;i<NUM_KNOBS;i++) {
-      bitWrite(knobLocked, i, true);
-      initValues[i] = analogValues[i];
-    }
-  } else {
-    for(i=0;i<NUM_KNOBS;i++) {
-      if(bitRead(knobLocked, i)) {
-        int diff = initValues[i] - analogValues[i];
-        if(diff<-5||diff>5) bitWrite(knobLocked, i, false);
-      }
-      if(!bitRead(knobLocked, i)) {
-        storedValues[NUM_KNOBS*controlSet+i] = analogValues[i];
-      }
-    }
-  }
-  if(secondLoop) {
-    for(i=0;i<NUM_PARAM_GROUPS;i++) {
-      updateParameters(i);
-    }
-  } else {
-    updateParameters(controlSet);
-  }
-
-  if(firstLoop) {
-    firstLoop = false;
-    secondLoop = true;
-  } else {
-    secondLoop = false;
-  }
-
-  if(!beatPlaying) updateLeds();*/
 }
 
 void doPulseActions() {
@@ -704,18 +567,6 @@ void stopBeat() {
   beatPlaying = false;
   Serial.write(0xFC); // MIDI clock stop
 }
-
-/*void doStartStop() {
-  beatPlaying = !beatPlaying;
-  if(beatPlaying) {
-    pulseNum = 0;
-    stepNum = 0;
-    nextPulseTime = millis();
-    Serial.write(0xFA); // MIDI clock start
-  } else {
-    Serial.write(0xFC); // MIDI clock stop
-  }
-}*/
 
 void playPulseHits() {
   for(byte i=0; i<5; i++) {
@@ -1037,7 +888,7 @@ void flashLeds() {
 }
 
 void updateLeds() {
-  if(millis() < specialLedDisplayTime + 1500UL && specialLedDisplayTime > 0) {
+  if(millis() < specialLedDisplayTime + 750UL && specialLedDisplayTime > 0) {
     // show desired binary number for certain parameters where visual feedback is helpful
     displayLedNum(specialLedDisplayNum);
   } else if(beatPlaying) {
