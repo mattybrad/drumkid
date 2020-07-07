@@ -6,7 +6,7 @@
 #else
 #include "WProgram.h"
 #endif
-#include "mozzi_pgmspace.h"
+#include "src/MozziDK/src/mozzi_pgmspace.h"
  
 #define clap_NUM_CELLS 2751
 #define clap_SAMPLERATE 16384
