@@ -69,7 +69,8 @@ unsigned int specialOffset = 0; // number of steps to offset pattern in random t
 bool beatPlaying = false; // true when beat is playing, false when not
 byte noteDown = B00000000; // keeps track of whether a MIDI note is currently down or up
 bool syncReceived = false; // has a sync/clock signal been received? (IMPROVE THIS LATER)
-byte midiNotes[NUM_SAMPLES] = {36,42,38,37,43}; // MIDI note numbers, currently set to kick, closed hat, snare, click, tom
+byte midiNotes[NUM_SAMPLES]; // MIDI note numbers
+const byte defaultMidiNotes[NUM_SAMPLES] = {36,42,38,37,43}; // default MIDI note numbers
 byte midiNoteCommands[NUM_SAMPLES]; // MIDI note on commands
 byte sampleVolumes[NUM_SAMPLES] = {0,0,0,0,0}; // current sample volumes
 byte storedValues[NUM_PARAM_GROUPS*NUM_KNOBS]; // analog knob values, one for each parameter (so the value can be remembered even after switching groups)
@@ -180,7 +181,7 @@ void setup(){
   byte i;
 
   checkEepromScheme(); // write defaults to memory if not previously done
-  initialiseSettings();
+  initialiseSettings(false);
   
   for(i=0;i<NUM_LEDS;i++) {
     pinMode(ledPins[i],OUTPUT); // set LED pins as outputs
@@ -195,12 +196,12 @@ void setup(){
   }
 
   // set starting values for each parameter
-  resetToDefaults();
+  resetSessionToDefaults();
   
   Serial.begin(31250); // begin serial communication for MIDI input/output
   //Serial.begin(9600);
 
-  flashLeds(); // do a brief LED light show to show the unit is working
+  //flashLeds(); // do a brief LED light show to show the unit is working
 }
 
 byte buttonsPressed = 0;
@@ -288,7 +289,7 @@ void updateControl(){
           specialLedDisplay(B00000110,true);
         } else if(buttonGroup == B00001110) {
           // reset
-          resetToDefaults();
+          resetSessionToDefaults();
           specialLedDisplay(B00011111,true);
         } else if(buttonGroup == B00010110) {
           createRandomSession();
@@ -342,6 +343,11 @@ void updateControl(){
         else if(buttonGroup == B00001000) activeMidiSettingsNum = 3;
         else if(buttonGroup == B00010000) activeMidiSettingsNum = 4;
         else if(buttonGroup == B00100000) menuState = 0; // tap tempo button exits to main menu state
+        else if(buttonGroup == B00111111) {
+          initialiseSettings(true);
+          menuState = 0;
+          specialLedDisplay(B00011111,true);
+        }
         if(menuState==5) specialLedDisplay(activeMidiSettingsNum,false); // show which button was pressed
         buttonGroup = 0;
       }
@@ -366,9 +372,15 @@ void updateControl(){
           EEPROM.write(880+activeMidiSettingsNum, newMidiChannel);
           menuState = 0;
           specialLedDisplay(B00011111,true);
+        } else if(buttonGroup == B00111111) {
+          initialiseSettings(true);
+          menuState = 0;
+          specialLedDisplay(B00011111,true);
         }
-        midiNotes[activeMidiSettingsNum] = newMidiNote;
-        midiNoteCommands[activeMidiSettingsNum] = 0x90 + newMidiChannel;
+        if(menuState==5) {
+          midiNotes[activeMidiSettingsNum] = newMidiNote;
+          midiNoteCommands[activeMidiSettingsNum] = 0x90 + newMidiChannel;
+        }
         buttonGroup = 0;
       } else if(buttonsPressed == B00010000) {
         // play test MIDI note
@@ -945,7 +957,7 @@ void chooseBank(byte newBank) {
   readyToChooseBank = false;
 }
 
-void resetToDefaults() {
+void resetSessionToDefaults() {
   // set starting values for each parameter
   storedValues[CHANCE] = 128;
   storedValues[ZOOM] = 150;
@@ -1058,16 +1070,20 @@ void checkEepromScheme() {
     EEPROM.write(866, 0);
     // write default MIDI note/channel settings
     for(i=0; i<NUM_SAMPLES; i++) {
-      EEPROM.write(872+i, midiNotes[i]);
+      EEPROM.write(872+i, defaultMidiNotes[i]);
       EEPROM.write(880+i, 9); // channel 10 (actually 9 because zero-indexed) is default channel to use
     }
   }
 }
 
-void initialiseSettings() {
+void initialiseSettings(bool isReset) {
   // must run checkEepromScheme() BEFORE this function
   byte i;
   for(i=0; i<NUM_SAMPLES; i++) {
+    if(isReset) {
+      EEPROM.write(872+i, defaultMidiNotes[i]);
+      EEPROM.write(880+i, 9);
+    }
     midiNotes[i] = EEPROM.read(872+i);
     midiNoteCommands[i] = 0x90 + EEPROM.read(880+i);
   }

@@ -1,5 +1,7 @@
 // order of samples: kick, hat, snare, rim, tom
 
+// note to self - this is not a great use of space and could maybe be compressed in future
+
 #define NUM_BEATS 24
 
 const byte beats[NUM_BEATS][5][4] PROGMEM = {
