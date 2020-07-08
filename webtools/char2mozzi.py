@@ -43,7 +43,7 @@ if len(sys.argv) != 5:
 
 def char2mozzi(infile, outfile, tablename, samplerate):
 	fin = open(os.path.expanduser(infile), "rb")
-	print ("opened " + infile)
+	#print ("opened " + infile)
 	uint8_tstoread = os.path.getsize(os.path.expanduser(infile))
 	##print uint8_tstoread
 	valuesfromfile = array.array('b') # array of signed int8_t ints
@@ -77,6 +77,7 @@ def char2mozzi(infile, outfile, tablename, samplerate):
 		fout.write(outstring)
 		fout.write('\n\n#endif /* ' + tablename + '_H_ */\n')
 		fout.close()
-		print ("wrote " + outfile)
+		#print ("wrote " + outfile)
+        print(str(len(values)))
 
 char2mozzi(infile, outfile, tablename, samplerate)

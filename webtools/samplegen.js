@@ -10,6 +10,7 @@ order of operations:
 - move chosen files to temporary folder
 - run sox to generate 8-bit raw files
 - run char2mozzi on each file
+- check size, alert if too large for sketch
 - zip all .h files
 - download zip to user's computer
 
@@ -17,10 +18,10 @@ order of operations:
 
 const { spawn } = require('child_process');
 
-function generateArduinoFile(path, callback) {
-  console.log("run on this path:",path);
+function generateArduinoFile(sourcePath, baseName, callback) {
+  console.log("run on this path/name:",sourcePath, baseName);
   const soxProcess = spawn('sox', [
-    path,
+    sourcePath,
     '--bits',
     '8',
     '-r',
@@ -29,31 +30,39 @@ function generateArduinoFile(path, callback) {
     'signed-integer',
     '--endian',
     'little',
-    'rawfiles/test.raw'
+    'rawfiles/' + baseName + '.raw'
   ]);
   soxProcess.on('exit', function(code, signal) {
     // should really check code/signal here, but it's late
 
     const mozziProcess = spawn('python', [
       'char2mozzi.py',
-      'rawfiles/'+"test"+'.raw',
-      'arduinofiles/'+"raw"+'.h',
-      "testing",
+      'rawfiles/'+baseName+'.raw',
+      'arduinofiles/'+baseName+'.h',
+      baseName,
       '16384'
     ]);
+    var numCells = 0;
+    mozziProcess.stdout.on('data', function(data) {
+      console.log(baseName,'...received stdout:',data.toString());
+      numCells = parseInt(data.toString());
+    });
     mozziProcess.on('exit', function(code, signal) {
-      callback();
+      console.log(baseName, '...exited',code,signal,numCells);
+      callback(numCells);
     });
   })
 }
 
 exports.generateArduinoFiles = function(filePaths, callback) {
   var filesDone = 0;
+  var totalNumCells = 0;
   for(var i=0; i<filePaths.length; i++) {
-    generateArduinoFile(filePaths[i], function() {
+    generateArduinoFile(filePaths[i], "sample"+i, function(numCells) {
       filesDone ++;
+      totalNumCells += numCells;
       if(filesDone == filePaths.length) {
-        callback("done all the files yeah");
+        callback("done all the files yeah, num cells = "+totalNumCells);
       }
     });
   }
