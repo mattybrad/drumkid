@@ -7,6 +7,7 @@ const { v4: uuidv4 } = require('uuid');
 var zip = require('cross-zip');
 const fs = require('fs');
 const path = require('path');
+const del = require('del');
 const app = express();
 const port = 3000;
 
@@ -14,7 +15,7 @@ app.use(fileUpload({
   limits: { fileSize: 10 * 1024 * 1024 },
 }));
 
-app.use('downloads', express.static('downloads'));
+app.use('/downloads', express.static('downloads'));
 app.use(express.static('app'));
 
 app.get('/samplegen', function(req, res) {
@@ -26,13 +27,13 @@ app.post('/samplegen', function(req, res) {
   var filePaths = [];
   var filesMoved = 0;
   var tempFolderName = uuidv4();
-  fs.mkdirSync('./tempFolders/'+tempFolderName);
-  fs.mkdirSync('./tempFolders/'+tempFolderName+'/uploads');
-  fs.mkdirSync('./tempFolders/'+tempFolderName+'/rawfiles');
-  fs.mkdirSync('./tempFolders/'+tempFolderName+'/arduino');
+  fs.mkdirSync('./tempfolders/'+tempFolderName);
+  fs.mkdirSync('./tempfolders/'+tempFolderName+'/uploads');
+  fs.mkdirSync('./tempfolders/'+tempFolderName+'/rawfiles');
+  fs.mkdirSync('./tempfolders/'+tempFolderName+'/arduino');
   for(var i=0; i<5; i++) {
     var thisFile = null;
-    var thisPath = './tempFolders/'+tempFolderName+'/uploads/'+i+".wav";
+    var thisPath = './tempfolders/'+tempFolderName+'/uploads/'+i+".wav";
     var thisSource = req.body['file'+(i+1)+'Source'];
     switch(thisSource) {
       case "default":
@@ -72,13 +73,24 @@ app.post('/samplegen', function(req, res) {
         )
 
         // delete temp folder
-
+        var folderToDelete = path.join(__dirname, 'tempfolders', tempFolderName);
+        del.sync(folderToDelete);
 
         var msg = numCells + " cells";
-        res.send(JSON.stringify({
-          numCells: numCells,
-          fileName: outFileName
-        }));
+
+        var outputHTML = "<html><body>";
+        var maxCells = 15245;
+        var percentage = Math.ceil(100*numCells/maxCells)+"%";
+        if(numCells <= maxCells) {
+          outputHTML += "These samples use " + percentage + " of the available space and should work fine";
+        } else {
+          outputHTML += "These samples use " + percentage + " of the available space and therefore may not compile";
+        }
+        outputHTML += "<br/>";
+        outputHTML += "<a href='downloads/"+outFileName+"'>Download samples</a>";
+        outputHTML += "</body></html>";
+
+        res.send(outputHTML);
       });
     }
   }
