@@ -1,1 +1,5 @@
 node_modules
+tempfolders/*
+!tempfolders/.keep
+downloads/*
+!downloads/.keep

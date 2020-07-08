@@ -11,10 +11,11 @@ const app = express();
 const port = 3000;
 
 app.use(fileUpload({
-  useTempFiles : true,
-  tempFileDir : '/tmp/',
   limits: { fileSize: 10 * 1024 * 1024 },
 }));
+
+app.use('downloads', express.static('downloads'));
+app.use(express.static('app'));
 
 app.get('/samplegen', function(req, res) {
   res.send("the server works");
