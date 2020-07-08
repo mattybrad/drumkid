@@ -1,4 +1,4 @@
-// order of samples: kick, hat, snare, rim, tom
+// default order of samples: kick, hat, snare, rim, tom
 
 // note to self - this is not a great use of space and could maybe be compressed in future
 

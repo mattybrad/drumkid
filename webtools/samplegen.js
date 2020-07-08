@@ -18,7 +18,7 @@ order of operations:
 
 const { spawn } = require('child_process');
 
-function generateArduinoFile(sourcePath, baseName, callback) {
+function generateArduinoFile(tempFolderName, sourcePath, baseName, callback) {
   console.log("run on this path/name:",sourcePath, baseName);
   const soxProcess = spawn('sox', [
     sourcePath,
@@ -30,15 +30,15 @@ function generateArduinoFile(sourcePath, baseName, callback) {
     'signed-integer',
     '--endian',
     'little',
-    'rawfiles/' + baseName + '.raw'
+    'tempfolders/'+tempFolderName + '/rawfiles/' + baseName + '.raw'
   ]);
   soxProcess.on('exit', function(code, signal) {
     // should really check code/signal here, but it's late
 
     const mozziProcess = spawn('python', [
       'char2mozzi.py',
-      'rawfiles/'+baseName+'.raw',
-      'arduinofiles/'+baseName+'.h',
+      'tempfolders/'+tempFolderName + '/rawfiles/'+baseName+'.raw',
+      'tempfolders/'+tempFolderName + '/arduino/'+baseName+'.h',
       baseName,
       '16384'
     ]);
@@ -54,15 +54,15 @@ function generateArduinoFile(sourcePath, baseName, callback) {
   })
 }
 
-exports.generateArduinoFiles = function(filePaths, callback) {
+exports.generateArduinoFiles = function(tempFolderName, filePaths, callback) {
   var filesDone = 0;
   var totalNumCells = 0;
   for(var i=0; i<filePaths.length; i++) {
-    generateArduinoFile(filePaths[i], "sample"+i, function(numCells) {
+    generateArduinoFile(tempFolderName, filePaths[i], "sample"+i, function(numCells) {
       filesDone ++;
       totalNumCells += numCells;
       if(filesDone == filePaths.length) {
-        callback("done all the files yeah, num cells = "+totalNumCells);
+        callback(totalNumCells);
       }
     });
   }

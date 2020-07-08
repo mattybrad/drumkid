@@ -3,22 +3,35 @@
 const express = require('express');
 const fileUpload = require('express-fileupload');
 const sampleGen = require('./samplegen.js');
+const { v4: uuidv4 } = require('uuid');
+var zip = require('cross-zip');
+const fs = require('fs');
+const path = require('path');
 const app = express();
 const port = 3000;
 
-app.use(fileUpload());
+app.use(fileUpload({
+  useTempFiles : true,
+  tempFileDir : '/tmp/',
+  limits: { fileSize: 10 * 1024 * 1024 },
+}));
 
 app.get('/samplegen', function(req, res) {
-  res.send("this works");
+  res.send("the server works");
 });
 
 app.post('/samplegen', function(req, res) {
 
   var filePaths = [];
   var filesMoved = 0;
+  var tempFolderName = uuidv4();
+  fs.mkdirSync('./tempFolders/'+tempFolderName);
+  fs.mkdirSync('./tempFolders/'+tempFolderName+'/uploads');
+  fs.mkdirSync('./tempFolders/'+tempFolderName+'/rawfiles');
+  fs.mkdirSync('./tempFolders/'+tempFolderName+'/arduino');
   for(var i=0; i<5; i++) {
     var thisFile = null;
-    var thisPath = "./uploadtest/"+i+".wav";
+    var thisPath = './tempFolders/'+tempFolderName+'/uploads/'+i+".wav";
     var thisSource = req.body['file'+(i+1)+'Source'];
     switch(thisSource) {
       case "default":
@@ -47,8 +60,24 @@ app.post('/samplegen', function(req, res) {
   function incrementFilesMoved() {
     filesMoved ++;
     if(filesMoved == 5) {
-      sampleGen.generateArduinoFiles(filePaths, function(returnData){
-        res.send(returnData);
+      sampleGen.generateArduinoFiles(tempFolderName, filePaths, function(numCells){
+        // make zip file
+        var inPath = path.join(__dirname, 'tempfolders', tempFolderName, 'arduino');
+        var outFileName = 'drumkid_samples_'+tempFolderName+'.zip';
+        var outPath = path.join(__dirname, 'downloads', outFileName);
+        zip.zipSync(
+          inPath,
+          outPath
+        )
+
+        // delete temp folder
+
+
+        var msg = numCells + " cells";
+        res.send(JSON.stringify({
+          numCells: numCells,
+          fileName: outFileName
+        }));
       });
     }
   }
