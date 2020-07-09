@@ -3,40 +3,44 @@
     <style>
       body {
         font-family: sans-serif;
+        max-width: 700px;
       }
     </style>
   </head>
   <body>
+    <h1>Generate DrumKid samples</h1>
+    <p>This tool helps you generate samples to load into DrumKid. For each channel, you can either use the default sample or upload your own. If you're struggling to fit larger samples into DrumKid, you can choose to load silence into any of the channels to make some extra room. If the total size of your five samples is too large, the tool will warn you after generating them (and the Arduino software will not let you upload them).</p>
+    <p>The tool will generate a ZIP file containing five Arduino .h files. Copy these files into your DrumKid firmware folder (firmware version 1.2+) and upload your firmware as normal.</p>
     <form id="mainForm" action="generatesamples" method="post" encType="multipart/form-data">
-      <h1>File 1 (default = kick)</h1>
+      <h3>Channel 1 (default = kick)</h3>
       <input name="file1" type="file" onchange="testChange(1)"><br/>
       <select name="file1Source">
         <option value="uploaded">Use uploaded file</option>
         <option selected value="default">Use default file</option>
         <option value="silent">Use silence</option>
       </select>
-      <h1>File 2 (default = closed hat)</h1>
+      <h3>Channel 2 (default = closed hat)</h3>
       <input name="file2" type="file" onchange="testChange(2)"><br/>
       <select name="file2Source">
         <option value="uploaded">Use uploaded file</option>
         <option selected value="default">Use default file</option>
         <option value="silent">Use silence</option>
       </select>
-      <h1>File 3 (default = snare)</h1>
+      <h3>Channel 3 (default = snare)</h3>
       <input name="file3" type="file" onchange="testChange(3)"><br/>
       <select name="file3Source">
         <option value="uploaded">Use uploaded file</option>
         <option selected value="default">Use default file</option>
         <option value="silent">Use silence</option>
       </select>
-      <h1>File 4 (default = rim)</h1>
+      <h3>Channel 4 (default = rim)</h3>
       <input name="file4" type="file" onchange="testChange(4)"><br/>
       <select name="file4Source">
         <option value="uploaded">Use uploaded file</option>
         <option selected value="default">Use default file</option>
         <option value="silent">Use silence</option>
       </select>
-      <h1>File 5 (default = tom)</h1>
+      <h3>Channel 5 (default = tom)</h3>
       <input name="file5" type="file" onchange="testChange(5)"><br/>
       <select name="file5Source">
         <option value="uploaded">Use uploaded file</option>
@@ -44,7 +48,7 @@
         <option value="silent">Use silence</option>
       </select>
       <br/><br/>
-      <input type="submit">
+      <input type="submit" value="Generate samples">
     </form>
     <script>
       function testChange(fileNum) {

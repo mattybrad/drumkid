@@ -83,7 +83,7 @@ app.post('/generatesamples', function(req, res) {
 
         var msg = numCells + " cells";
 
-        var outputHTML = "<html><body>";
+        var outputHTML = "<html><head><style>body { font-family: sans-serif; max-width: 700px; }</style></head><body>";
         var maxCells = 15245;
         var percentage = Math.ceil(100*numCells/maxCells)+"%";
         if(numCells <= maxCells) {
@@ -91,7 +91,7 @@ app.post('/generatesamples', function(req, res) {
         } else {
           outputHTML += "These samples use " + percentage + " of the available space and therefore may not compile";
         }
-        outputHTML += "<br/>";
+        outputHTML += "<br/><br/>";
         outputHTML += "<a href='./downloads/"+outFileName+"'>Download samples</a>";
         outputHTML += "</body></html>";
 
