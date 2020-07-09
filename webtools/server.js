@@ -79,7 +79,7 @@ app.post('/samplegen', function(req, res) {
 
         // delete temp folder
         var folderToDelete = path.join(__dirname, 'tempfolders', tempFolderName);
-        //del.sync(folderToDelete);
+        del.sync(folderToDelete);
 
         var msg = numCells + " cells";
 
