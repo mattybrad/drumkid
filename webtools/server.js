@@ -34,6 +34,7 @@ app.post('/samplegen', function(req, res) {
   for(var i=0; i<5; i++) {
     var thisFile = null;
     var thisPath = './tempfolders/'+tempFolderName+'/uploads/'+i+".wav";
+    var uploadPath = thisPath;
     var thisSource = req.body['file'+(i+1)+'Source'];
     switch(thisSource) {
       case "default":
@@ -44,19 +45,23 @@ app.post('/samplegen', function(req, res) {
       thisPath = "./defaultsamples/silent.wav";
       break;
     }
+    filePaths[i] = thisPath;
     if(req.files) {
       if(req.files['file'+(i+1)]) {
         thisFile = req.files['file'+(i+1)];
-        thisFile.mv(thisPath, function(){
+        console.log(i, "req.files exists, attempting to move...")
+        thisFile.mv(uploadPath, function(){
+          console.log("..moved");
           incrementFilesMoved();
         })
       } else {
+        console.log(i, "req.files exists but no file with this name");
         incrementFilesMoved();
       }
     } else {
+      console.log(i, "no req.files");
       incrementFilesMoved();
     }
-    filePaths[i] = thisPath;
   }
 
   function incrementFilesMoved() {
@@ -74,7 +79,7 @@ app.post('/samplegen', function(req, res) {
 
         // delete temp folder
         var folderToDelete = path.join(__dirname, 'tempfolders', tempFolderName);
-        del.sync(folderToDelete);
+        //del.sync(folderToDelete);
 
         var msg = numCells + " cells";
 

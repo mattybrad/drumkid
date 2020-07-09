@@ -57,6 +57,8 @@ function generateArduinoFile(tempFolderName, sourcePath, baseName, callback) {
 exports.generateArduinoFiles = function(tempFolderName, filePaths, callback) {
   var filesDone = 0;
   var totalNumCells = 0;
+  console.log("file paths: ",filePaths);
+  console.log("number of file paths: ",filePaths.length);
   for(var i=0; i<filePaths.length; i++) {
     generateArduinoFile(tempFolderName, filePaths[i], "sample"+i, function(numCells) {
       filesDone ++;
