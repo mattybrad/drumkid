@@ -18,11 +18,11 @@ app.use(fileUpload({
 app.use('/downloads', express.static('downloads'));
 app.use(express.static('app'));
 
-app.get('generatesamples', function(req, res) {
+app.get('/generatesamples', function(req, res) {
   res.send("the server works, but you need to send a post request");
 });
 
-app.post('generatesamples', function(req, res) {
+app.post('/generatesamples', function(req, res) {
 
   var filePaths = [];
   var filesMoved = 0;
