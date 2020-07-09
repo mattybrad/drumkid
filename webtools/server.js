@@ -18,11 +18,11 @@ app.use(fileUpload({
 app.use('/downloads', express.static('downloads'));
 app.use(express.static('app'));
 
-app.get('/samplegen', function(req, res) {
-  res.send("the server works");
+app.get('/generatesamples', function(req, res) {
+  res.send("the server works, but you need to send a post request");
 });
 
-app.post('/samplegen', function(req, res) {
+app.post('/generatesamples', function(req, res) {
 
   var filePaths = [];
   var filesMoved = 0;
@@ -92,7 +92,7 @@ app.post('/samplegen', function(req, res) {
           outputHTML += "These samples use " + percentage + " of the available space and therefore may not compile";
         }
         outputHTML += "<br/>";
-        outputHTML += "<a href='downloads/"+outFileName+"'>Download samples</a>";
+        outputHTML += "<a href='./downloads/"+outFileName+"'>Download samples</a>";
         outputHTML += "</body></html>";
 
         res.send(outputHTML);
