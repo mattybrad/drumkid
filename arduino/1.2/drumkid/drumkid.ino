@@ -994,7 +994,7 @@ void saveParams(byte slotNum) {
 // prior to firmware version 1.1, no way of knowing whether older firmware was previously installed
 // from V1.1 onwards, new special address beyond the 864 bytes reserved for storing sessions
 // Slot 864-865: if these bytes have values 119 and 206 respectively, we are using the new memory system (1 in 65,025 chance of these being randomly correct)
-// Slot 866: current version (0 = V1.1)
+// Slot 866: current version (0 = V1.1, 1 = V1.2)
 // Slots 867-871: reserved for other version stuff if needed
 // Slots 872-879: MIDI note numbers for channels 1 through 5 (and another 3 reserved)
 // Slots 880-887: MIDI channel numbers for channels 1 through 5 (and another 3 reserved)
@@ -1006,11 +1006,14 @@ void checkEepromScheme() {
   byte check2 = EEPROM.read(865);
   if(check1==119&&check2==206) {
     // all good, already using the new EEPROM scheme
+
+    // update firmware version in memory if needed
+    if(EEPROM.read(866) != 1) EEPROM.write(866, 1);
   } else {
     // prepare EEPROM for new scheme
     EEPROM.write(864, 119);
     EEPROM.write(865, 206);
-    EEPROM.write(866, 0);
+    EEPROM.write(866, 1);
     // write default MIDI note/channel settings
     for(i=0; i<NUM_SAMPLES; i++) {
       EEPROM.write(872+i, defaultMidiNotes[i]);

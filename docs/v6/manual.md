@@ -1,4 +1,4 @@
-# DrumKid manual (V1.1)
+# DrumKid manual (V1.2)
 ## Introduction
 Welcome to the DrumKid manual! DrumKid is a musical instrument that creates rhythms using random numbers. To get started with DrumKid, unscrew the six screws on the back of the unit (you should be able to do this by hand), and carefully remove the back plate. Insert three AA batteries (you can use rechargeable or single-use), replace the back plate, and tighten the screws. Slide the power switch to "on" - you should see the lights flash briefly. After this, DrumKid is ready to use. Plug some headphones or a 3.5mm stereo aux cable into the socket (mono won't work), and start playing. If you would prefer not to use batteries, you can also power DrumKid by connecting a USB mini cable to the socket recessed on the right hand side of the device.
 ## Philosophy
@@ -154,7 +154,7 @@ Because DrumKid uses a lo-fi method (known as pulse width modulation) to generat
 24. Nihil (---X-)
 
 ## Firmware versions
-The first versions of DrumKid (those made before July 2020) used firmware version 1.0. This manual refers to firmware version 1.1, which is now available and is included with newer DrumKids. Please note that updating to the new firmware may alter some settings in your saved beats, particularly the time signature, tempo, and "drop" settings.
+This manual refers to firmware version 1.2, which is now available and is included with newer DrumKids. Please note that updating to the new firmware from version 1.0 may alter some settings in your saved beats, particularly the time signature, tempo, and "drop" settings.
 
 ### Updating firmware
 DrumKid's "brain" is a tiny computer called an Arduino Nano clone - this is the board inside DrumKid with a mini USB port on it. To upload new firmware, you will need a computer running the latest Arduino IDE software (download from https://www.arduino.cc/) and a USB "mini-B" cable to connect the computer to the Arduino Nano.
@@ -164,7 +164,7 @@ Before you upload anything to the Arduino, unplug any MIDI cables and make sure 
 - "Processor" should be "ATmega328P (Old Bootloader)" - please note that it needs to be the old bootloader specifically!
 - "Port" will depend on your setup - try changing this if you're having trouble
 
-To test that you're able to upload code, try opening the "Blink" example sketch (File > Examples > Basics > Blink) then uploading it to DrumKid (Sketch > Upload). If successful, one of the LEDs should start flashing on and off. Next, try uploading the latest DrumKid code from https://github.com/mattybrad/drumkid - start by downloading the whole project (repository) as a ZIP file, then unzip it to a folder on your computer, open the arduino/1.1/drumkid/drumkid.ino file, and upload this sketch to the Arduino.
+To test that you're able to upload code, try opening the "Blink" example sketch (File > Examples > Basics > Blink) then uploading it to DrumKid (Sketch > Upload). If successful, one of the LEDs should start flashing on and off. Next, try uploading the latest DrumKid code from https://github.com/mattybrad/drumkid - start by downloading the whole project (repository) as a ZIP file, then unzip it to a folder on your computer, open the arduino/1.2/drumkid/drumkid.ino file (or a later version if it exists), and upload this sketch to the Arduino.
 
 If you encounter any problems uploading code to the Arduino, check the following:
 - The switch on the underside of the PCB should be set to "Arduino"
@@ -172,6 +172,9 @@ If you encounter any problems uploading code to the Arduino, check the following
 - Try a different USB cable
 - Double-check the "board" and "processor" settings (see above)
 - Try a different port
+
+## Using your own samples
+You can upload your own samples using the online tool on the DrumKid web page: https://mattbradshawdesign.com/projects/drumkid/ - once you have downloaded the samples, copy them into your firmware folder and re-upload the firmware using the Arduino software. If you want to restore the default samples, you can either generate a new set of default samples using the web tool, or you can find a backup of them in the "originalsamples" folder.
 
 ## Hacking DrumKid (this section is a work in progress!)
 DrumKid is an open source project, based on the Arduino Nano, and is designed in such a way that it can be modified and repaired. The source files for DrumKid are available from [https://github.com/mattybrad/drumkid/](https://github.com/mattybrad/drumkid/) - you will find the schematics, CAD files, parts list, source code and more. The rest of this manual is aimed at advanced users of DrumKid who are already familiar with the instrument's basic features and would like to customise DrumKid (or for anyone who is just interested in how DrumKid works). Most ideas described in this manual will require some skills in programming and/or electronics, but don't let that put you off - even if you don't currently have those skills, this might be a good way to learn!

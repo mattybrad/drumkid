@@ -6,6 +6,7 @@
   <body>
     <h1>Generate DrumKid samples</h1>
     <p>This tool helps you generate samples to load into DrumKid. For each channel, you can either use the default sample or upload your own. If you're struggling to fit larger samples into DrumKid, you can choose to load silence into any of the channels to make some extra room. If the total size of your five samples is too large, the tool will warn you after generating them (and the Arduino software will not let you upload them).</p>
+    <p>WAV files are recommended, although many other formats will work. MP3 files are not supported (they are unsuitable anyway because the MP3 algorithm pads the start of a file with sample, which messes up timing). If you are struggling to fit your samples into DrumKid's (small) memory, try using an audio editor like Audacity to trim some of the silence from the end of your samples.
     <p>The tool will generate a ZIP file containing five Arduino .h files. Copy these files into your DrumKid firmware folder (firmware version 1.2+) and upload your firmware as normal.</p>
     <form id="mainForm" action="generatesamples" method="post" encType="multipart/form-data">
       <h3>Channel 1 (default = kick)</h3>
