@@ -190,6 +190,8 @@ void setup(){
   
   startMozzi(CONTROL_RATE);
 
+  randSeed((long)analogRead(4)*analogRead(5)); // A4 and A5 should be floating, use to seed random numbers
+
   // initialise all buttons using Bounce2 library
   for(i=0; i<NUM_BUTTONS; i++) {
     buttons[i].interval(25);
@@ -927,35 +929,35 @@ void resetSessionToDefaults() {
 }
 
 void createRandomSession() {
-  storedValues[CHANCE] = random(64,192);
-  storedValues[ZOOM] = random(100,190);
-  storedValues[RANGE] = random(0,128);
-  storedValues[MIDPOINT] = random(80,190);
+  storedValues[CHANCE] = rand(64,192);
+  storedValues[ZOOM] = rand(100,190);
+  storedValues[RANGE] = rand(0,128);
+  storedValues[MIDPOINT] = rand(80,190);
   
-  storedValues[PITCH] = random(135,256);
-  if(random(0,6)==0) storedValues[PITCH] = random(0,120);
-  storedValues[CRUSH] = random(160,256);
-  storedValues[CROP] = random(128,256);
+  storedValues[PITCH] = rand(135,256);
+  if(rand(0,6)==0) storedValues[PITCH] = rand(0,120);
+  storedValues[CRUSH] = rand(160,256);
+  storedValues[CROP] = rand(128,256);
   storedValues[DROP] = 128;
-  if(random(0,3)==0) storedValues[DROP] = random(29,226);
+  if(rand(0,3)==0) storedValues[DROP] = rand(29,226);
 
   storedValues[DRONE_MOD] = 127;
   storedValues[DRONE] = 127;
-  storedValues[DRONE_ROOT] = random(0,256);
+  storedValues[DRONE_ROOT] = rand(0,256);
   storedValues[DRONE_PITCH] = 127;
-  if(random(0,6)==0) storedValues[DRONE_MOD] = random(0,256);
-  if(random(0,4)==0) storedValues[DRONE] = random(64,192);
+  if(rand(0,6)==0) storedValues[DRONE_MOD] = rand(0,256);
+  if(rand(0,4)==0) storedValues[DRONE] = rand(64,192);
 
-  storedValues[BEAT] = random(0,240);
+  storedValues[BEAT] = rand(0,240);
 
   if(!beatPlaying) {
     // don't randomise time signature and tempo unless stopped
     storedValues[TIME_SIGNATURE] = 64; // equates to 4/4
-    if(random(0,3)==0) storedValues[TIME_SIGNATURE] = random(0,256);
-    storedValues[TEMPO] = random(70,160);
-    if(random(0,4)==0) storedValues[TEMPO] = random(0,256);
+    if(rand(0,3)==0) storedValues[TIME_SIGNATURE] = rand(0,256);
+    storedValues[TEMPO] = rand(70,160);
+    if(rand(0,4)==0) storedValues[TEMPO] = rand(0,256);
   }
-  storedValues[SWING] = random(0,256);
+  storedValues[SWING] = rand(0,256);
 
   newStateLoaded = true;
   for(byte i=0;i<NUM_PARAM_GROUPS;i++) {

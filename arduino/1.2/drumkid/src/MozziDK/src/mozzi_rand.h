@@ -11,7 +11,7 @@
 unsigned long xorshift96();
 
 void xorshiftSeed(unsigned long seed);
-void randSeed(unsigned long seed);
+void randSeed(long seed);
 void randSeed();
 
 int8_t rand(int8_t minval, int8_t maxval);
