@@ -187,10 +187,9 @@ void setup(){
   for(i=0;i<NUM_LEDS;i++) {
     pinMode(ledPins[i],OUTPUT); // set LED pins as outputs
   }
-  
-  startMozzi(CONTROL_RATE);
 
   randSeed((long)analogRead(4)*analogRead(5)); // A4 and A5 should be floating, use to seed random numbers
+  startMozzi(CONTROL_RATE);
 
   // initialise all buttons using Bounce2 library
   for(i=0; i<NUM_BUTTONS; i++) {
