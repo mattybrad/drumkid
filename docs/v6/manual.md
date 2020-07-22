@@ -129,30 +129,30 @@ Because DrumKid uses a lo-fi method (known as pulse width modulation) to generat
 
 ## Preset beat list
 Please note that the LED pattern for each beat is illustrated to help you find the correct beat.
-1. You can leave your hat on ⚪⚫⚫⚫⚫
-2. Johnny Two-Hats ⚫⚪⚫⚫⚫
-3. Drum lesson ⚫⚫⚪⚫⚫
-4. Half-time rock ⚫⚫⚫⚪⚫
-5. There there ⚫⚫⚫⚫⚪
-6. Metal ⚪⚫⚫⚫⚫
-7. Four to the floor ⚫⚪⚫⚫⚫
-8. "Dance" ⚫⚫⚪⚫⚫
-9. Blue Monday ⚫⚫⚫⚪⚫
-10. Chime ⚫⚫⚫⚫⚪
-11. Funk Soul Brother ⚪⚫⚫⚫⚫
-12. Amen I ⚫⚪⚫⚫⚫
-13. Amen II ⚫⚫⚪⚫⚫
-14. Superstition ⚫⚫⚫⚪⚫
-15. Derribar el muro ⚫⚫⚫⚫⚪
-16. Hips don't lie ⚪⚫⚫⚫⚫
-17. Videotape ⚫⚪⚫⚫⚫
-18. Videotape (Bonnaroo) ⚫⚫⚪⚫⚫
-19. Military ⚫⚫⚫⚪⚫
-20. Ballad ⚫⚫⚫⚫⚪
-21. Waltz ⚪⚫⚫⚫⚫
-22. Take Five ⚫⚪⚫⚫⚫
-23. Unsquare ⚫⚫⚪⚫⚫
-24. Nihil ⚫⚫⚫⚪⚫
+1. You can leave your hat on ⚫⚪⚪⚪⚪
+2. Johnny Two-Hats ⚪⚫⚪⚪⚪
+3. Drum lesson ⚪⚪⚫⚪⚪
+4. Half-time rock ⚪⚪⚪⚫⚪
+5. There there ⚪⚪⚪⚪⚫
+6. Metal ⚫⚪⚪⚪⚪
+7. Four to the floor ⚪⚫⚪⚪⚪
+8. "Dance" ⚪⚪⚫⚪⚪
+9. Blue Monday ⚪⚪⚪⚫⚪
+10. Chime ⚪⚪⚪⚪⚫
+11. Funk Soul Brother ⚫⚪⚪⚪⚪
+12. Amen I ⚪⚫⚪⚪⚪
+13. Amen II ⚪⚪⚫⚪⚪
+14. Superstition ⚪⚪⚪⚫⚪
+15. Derribar el muro ⚪⚪⚪⚪⚫
+16. Hips don't lie ⚫⚪⚪⚪⚪
+17. Videotape ⚪⚫⚪⚪⚪
+18. Videotape (Bonnaroo) ⚪⚪⚫⚪⚪
+19. Military ⚪⚪⚪⚫⚪
+20. Ballad ⚪⚪⚪⚪⚫
+21. Waltz ⚫⚪⚪⚪⚪
+22. Take Five ⚪⚫⚪⚪⚪
+23. Unsquare ⚪⚪⚫⚪⚪
+24. Nihil ⚪⚪⚪⚫⚪
 
 ## Firmware versions
 This manual refers to firmware version 1.2, which is now available and is included with newer DrumKids. Please note that updating to the new firmware from version 1.0 may alter some settings in your saved beats, particularly the time signature, tempo, and "drop" settings.
