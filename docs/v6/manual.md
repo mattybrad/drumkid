@@ -177,12 +177,14 @@ If you encounter any problems uploading code to the Arduino, check the following
 You can upload your own samples using the online tool on the DrumKid web page: [https://mattbradshawdesign.com/projects/drumkid/] - once you have downloaded the samples, copy them into your firmware folder and re-upload the firmware using the Arduino software. If you want to restore the default samples, you can either generate a new set of default samples using the web tool, or you can find a backup of them in the "originalsamples" folder.
 
 ## Hacking DrumKid (this section is a work in progress!)
-DrumKid is an open source project, based on the Arduino Nano, and is designed in such a way that it can be modified and repaired. The source files for DrumKid are available from [https://github.com/mattybrad/drumkid/](https://github.com/mattybrad/drumkid/) - you will find the schematics, CAD files, parts list, source code and more. The rest of this manual is aimed at advanced users of DrumKid who are already familiar with the instrument's basic features and would like to customise DrumKid (or for anyone who is just interested in how DrumKid works). Most ideas described in this manual will require some skills in programming and/or electronics, but don't let that put you off - even if you don't currently have those skills, this might be a good way to learn!
+DrumKid is an open source project, based on the Arduino Nano, and is designed in such a way that it can be modified and repaired. The source files for DrumKid are available from [https://github.com/mattybrad/drumkid/](https://github.com/mattybrad/drumkid/) - you will find the schematics, CAD files, parts list, source code and more. The rest of this manual is aimed at advanced users of DrumKid who are already familiar with the instrument's basic features and would like to customise DrumKid (or for anyone who is just interested in how DrumKid works). Most ideas described in this part of the manual will require some skills in programming and/or electronics, but don't let that put you off - even if you don't currently have those skills, this might be a good way to learn!
+
+### Disclaimer
+The remainder of this manual will be a little less structured and a little more stream-of-consciousness. Also, I'll be referring to various files found in the GitHub repo, which is an ever-changing resource. If you can't find a particular file in the exact location specified, or if something is a bit different to what is described here, it probably just means that I've reorganised the repo or made some improvements to one of the files. You may occasionally need to use your imagination and/or ingenuity.
 
 ## What's possible?
-Here are a few examples of things that you could do with DrumKid:
+Here are a few examples of things that you could do with DrumKid (beyond what's described in the vanilla manual above):
 - Add your own preset beats
-- Load a different set of drum samples
 - Change the drone waveform
 - Replace one of the parameters with an effect that you program yourself (e.g. delay or chorus)
 - Add a light sensor to control certain parameters
@@ -193,10 +195,42 @@ Here are a few examples of things that you could do with DrumKid:
 - 3D-print a custom case
 
 ## What's inside DrumKid?
-The front panel of DrumKid is a printed circuit board (PCB), with some components mounted on top (buttons, knobs, LEDs, power switch, headphone output) and some hidden underneath. The stuff underneath is what we're mainly concerned with in this hackers' manual.
+The front panel of DrumKid is a printed circuit board (PCB), with some components mounted on top (buttons, knobs, LEDs, power switch, headphone output) and some hidden underneath. The stuff underneath is what we're mainly concerned with in this section of the manual. Besides the circuit board and electronic components, DrumKid also contains laser-cut plastic parts and metal stand-offs, which form a rudimentary (open-sided) case.
 
-If you're only modifying DrumKid's software/code, you won't even need to do any disassembly, but it's useful to see and understand what you're modifying before you get stuck in. Using a cross-head screwdriver, unscrew the six machine screws on the back of DrumKid, and remove the rear cover. You should now be able to see all the circuitry, including the Arduino Nano board which controls everything.
+If you're only modifying DrumKid's software/code, you won't even need to do any disassembly, but it's useful to see and understand what you're modifying before you get stuck in. Unscrew the six thumb-screws on the back of DrumKid, and remove the rear cover (as if you were replacing the batteries). You should now be able to see all the circuitry, including the Arduino Nano board which controls everything.
 
-The Arduino Nano is a microcontroller - basically a small, low-powered computer. This computer runs a single "sketch", which is the name for a piece of software running on an Arduino. This sketch monitors DrumKid's buttons and knobs, controls its LEDs, sends and receives data via the MIDI ports, and (most importantly) generates an audio signal.
+The board inside DrumKid is actually technically not an official Arduino Nano, but an unofficial clone, so I will just call it a Nano from this point onwards. "Arduino" refers to a specific brand of boards, although the design is open source, which is how unofficial clones are able to exist legally. It was too costly to put an official Arduino board inside DrumKid, but I would heartily recommend buying an official Arduino to play with if you haven't used one before, or donating to the Arduino project.
 
-Each of the Arduino's pins (the metal bits along the edges) corresponds to a different signal either going into or out of the board, and there is a spare set of "breakout" holes that you can use to solder extra components which will connect to any of the pins. To access the other side of the board for soldering, simply unscrew the four machine screws on the front of DrumKid which hold the plastic cover in place.
+Anyway, the Nano is a microcontroller - basically a small, low-powered computer. This computer runs a single "sketch", which is the name for a piece of software running on an Arduino (or compatible) board. This sketch monitors DrumKid's buttons and knobs, controls its LEDs, sends and receives data via the MIDI ports, and (most importantly) generates an audio signal.
+
+Each of the Nano's pins (the metal bits along the edges) corresponds to a different signal either going into or out of the board, and there is a spare set of "breakout" holes that you can use to solder extra components which will connect to any of the pins. To access the other side of the board for soldering, simply unscrew the four machine screws on the front of DrumKid which hold the plastic cover in place.
+
+## Hacking DrumKid's code
+The basic process for hacking DrumKid's code starts the same way as installing a firmware update, so you should start by reading the "Updating Firmware" section above. You will see that I suggest uploading the "Blink" example sketch to check that the upload process is working properly. The next stage towards hacking DrumKid is to try editing that sketch. Try making the LED blink faster or slower, or try lighting a different LED. Have a look at some other example sketches. Maybe try and make certain LEDs light up when you press certain buttons. Below is a list of what each of the Nano's pins is used for in the circuit, to help you get started.
+
+## Nano pins
+The Nano board has 14 digital pins (which can either send or receive binary on/off signals) and 6 analogue pins (which can read a range of voltages between 0V and 5V). In DrumKid's circuit, the analogue pins are used to read the potentiometers, and the digital pins are used for everything else. Certain digital pins can also output a special kind of signal (PWM - pulse width modulation) which is useful for generating audio signals. Here is the list of pins used (and not used) by DrumKid:
+D0 - MIDI input
+D1 - MIDI output
+D2 - LED 1
+D3 - LED 2
+D4 - Start/stop button
+D5 - Button A
+D6 - Button B
+D7 - Button C
+D8 - Button D
+D9 - Audio output
+D10 - Tap tempo button
+D11 - LED 3
+D12 - LED 4
+D13 - LED 5
+A0 - Potentiometer 1
+A1 - Potentiometer 2
+A2 - Potentiometer 3
+A3 - Potentiometer 4
+Please note there is also an LED (the left one) permanently connected to the 5V power supply - this is just to show you that DrumKid is receiving power, and cannot be controlled by the Nano.
+
+## How DrumKid makes sound
+To generate audio, DrumKid makes use of a library called Mozzi, which you can download from https://sensorium.github.io/Mozzi/
+
+Mozzi makes efficient use of a microcontroller's limited resources, and is one of the few ways I have found of allowing an Arduino-style board to generate interesting sounds (beyond just square-wave bleeps). I would recommend trying the Mozzi example sketches once you've installed the library. Start with the basic sine wave example and check that you can hear a sound through the output.
