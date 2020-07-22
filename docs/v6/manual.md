@@ -128,7 +128,7 @@ If you press buttons B+C+D together, you can access the MIDI settings menu, whic
 Because DrumKid uses a lo-fi method (known as pulse width modulation) to generate its audio signal, there is a trace, high-frequency noise present in the output. While this signal should be above the human range of hearing, you may want to filter it out if you are recording DrumKid in a studio, especially if you intend to pitch-shift the recording downwards (since this could bring the noise within human hearing range). To remove the noise, use a band-stop or low-pass filter (before any pitch-shifting) - the offending frequency should be at 32768Hz.
 
 ## Preset beat list (X denotes LED)
-1. You can leave your hat on (X----)
+1. You can leave your hat on (⚪⚫⚫⚫⚫)
 2. Johnny Two-Hats (-X---)
 3. Drum lesson (--X--)
 4. Half-time rock (---X-)
