@@ -127,31 +127,32 @@ If you press buttons B+C+D together, you can access the MIDI settings menu, whic
 ## Other info
 Because DrumKid uses a lo-fi method (known as pulse width modulation) to generate its audio signal, there is a trace, high-frequency noise present in the output. While this signal should be above the human range of hearing, you may want to filter it out if you are recording DrumKid in a studio, especially if you intend to pitch-shift the recording downwards (since this could bring the noise within human hearing range). To remove the noise, use a band-stop or low-pass filter (before any pitch-shifting) - the offending frequency should be at 32768Hz.
 
-## Preset beat list (X denotes LED)
-1. You can leave your hat on (⚪⚫⚫⚫⚫)
-2. Johnny Two-Hats (-X---)
-3. Drum lesson (--X--)
-4. Half-time rock (---X-)
-5. There there (----X)
-6. Metal (X----)
-7. Four to the floor (-X---)
-8. "Dance" (--X--)
-9. Blue Monday (---X-)
-10. Chime (----X)
-11. Funk Soul Brother (X----)
-12. Amen I (-X---)
-13. Amen II (--X--)
-14. Superstition (---X-)
-15. Derribar el muro (----X)
-16. Hips don't lie (X----)
-17. Videotape (-X---)
-18. Videotape (Bonnaroo) (--X--)
-19. Military (---X-)
-20. Ballad (----X)
-21. Waltz (X----)
-22. Take Five (-X---)
-23. Unsquare (--X--)
-24. Nihil (---X-)
+## Preset beat list
+Please note that the LED pattern for each beat is illustrated to help you find the correct beat.
+1. You can leave your hat on ⚪⚫⚫⚫⚫
+2. Johnny Two-Hats ⚫⚪⚫⚫⚫
+3. Drum lesson ⚫⚫⚪⚫⚫
+4. Half-time rock ⚫⚫⚫⚪⚫
+5. There there ⚫⚫⚫⚫⚪
+6. Metal ⚪⚫⚫⚫⚫
+7. Four to the floor ⚫⚪⚫⚫⚫
+8. "Dance" ⚫⚫⚪⚫⚫
+9. Blue Monday ⚫⚫⚫⚪⚫
+10. Chime ⚫⚫⚫⚫⚪
+11. Funk Soul Brother ⚪⚫⚫⚫⚫
+12. Amen I ⚫⚪⚫⚫⚫
+13. Amen II ⚫⚫⚪⚫⚫
+14. Superstition ⚫⚫⚫⚪⚫
+15. Derribar el muro ⚫⚫⚫⚫⚪
+16. Hips don't lie ⚪⚫⚫⚫⚫
+17. Videotape ⚫⚪⚫⚫⚫
+18. Videotape (Bonnaroo) ⚫⚫⚪⚫⚫
+19. Military ⚫⚫⚫⚪⚫
+20. Ballad ⚫⚫⚫⚫⚪
+21. Waltz ⚪⚫⚫⚫⚫
+22. Take Five ⚫⚪⚫⚫⚫
+23. Unsquare ⚫⚫⚪⚫⚫
+24. Nihil ⚫⚫⚫⚪⚫
 
 ## Firmware versions
 This manual refers to firmware version 1.2, which is now available and is included with newer DrumKids. Please note that updating to the new firmware from version 1.0 may alter some settings in your saved beats, particularly the time signature, tempo, and "drop" settings.
