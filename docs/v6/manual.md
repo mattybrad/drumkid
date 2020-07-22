@@ -4,7 +4,7 @@ Welcome to the DrumKid manual! DrumKid is a musical instrument that creates rhyt
 ## Philosophy
 DrumKid is designed around a very basic computer chip with limited memory and processing power. My idea was to squeeze as much cool sound out of this chip as possible, but it has its limits. Rather than try and hide from these limits, I decided to embrace them. This means that it is absolutely possible to make horrible, distorted, broken noises using DrumKid. Some of these horrible noises will sound cool, others will not. DrumKid is a playable instrument like any other - experiment with it and see what happens.
 ## Demo videos and resources
-You can find demo videos and other resources at <https://www.mattbradshawdesign.com/projects/drumkid>, or more technical info (source code, schematics, etc) at <https://github.com/mattybrad/drumkid>.
+You can find demo videos and other resources at https://www.mattbradshawdesign.com/projects/drumkid, or more technical info (source code, schematics, etc) at https://github.com/mattybrad/drumkid.
 ## Basic functions
 DrumKid has six buttons and four knobs. The basic functions are as follows:
  - Press the start/stop button to start or stop the rhythm
@@ -174,10 +174,10 @@ If you encounter any problems uploading code to the Arduino, check the following
 - Try a different port
 
 ## Using your own samples
-You can upload your own samples using the online tool on the DrumKid web page: [https://mattbradshawdesign.com/projects/drumkid/] - once you have downloaded the samples, copy them into your firmware folder and re-upload the firmware using the Arduino software. If you want to restore the default samples, you can either generate a new set of default samples using the web tool, or you can find a backup of them in the "originalsamples" folder.
+You can upload your own samples using the online tool on the DrumKid web page: https://mattbradshawdesign.com/projects/drumkid/ - once you have downloaded the samples, copy them into your firmware folder and re-upload the firmware using the Arduino software. If you want to restore the default samples, you can either generate a new set of default samples using the web tool, or you can find a backup of them in the "originalsamples" folder.
 
 ## Hacking DrumKid (this section is a work in progress!)
-DrumKid is an open source project, based on the Arduino Nano, and is designed in such a way that it can be modified and repaired. The source files for DrumKid are available from [https://github.com/mattybrad/drumkid/](https://github.com/mattybrad/drumkid/) - you will find the schematics, CAD files, parts list, source code and more. The rest of this manual is aimed at advanced users of DrumKid who are already familiar with the instrument's basic features and would like to customise DrumKid (or for anyone who is just interested in how DrumKid works). Most ideas described in this part of the manual will require some skills in programming and/or electronics, but don't let that put you off - even if you don't currently have those skills, this might be a good way to learn!
+DrumKid is an open source project, based on the Arduino Nano, and is designed in such a way that it can be modified and repaired. The source files for DrumKid are available from https://github.com/mattybrad/drumkid/ - you will find the schematics, CAD files, parts list, source code and more. The rest of this manual is aimed at advanced users of DrumKid who are already familiar with the instrument's basic features and would like to customise DrumKid (or for anyone who is just interested in how DrumKid works). Most ideas described in this part of the manual will require some skills in programming and/or electronics, but don't let that put you off - even if you don't currently have those skills, this might be a good way to learn!
 
 ### Disclaimer
 The remainder of this manual will be a little less structured and a little more stream-of-consciousness. Also, I'll be referring to various files found in the GitHub repo, which is an ever-changing resource. If you can't find a particular file in the exact location specified, or if something is a bit different to what is described here, it probably just means that I've reorganised the repo or made some improvements to one of the files. You may occasionally need to use your imagination and/or ingenuity.
@@ -233,4 +233,16 @@ Please note there is also an LED (the left one) permanently connected to the 5V 
 ## How DrumKid makes sound
 To generate audio, DrumKid makes use of a library called Mozzi, which you can download from https://sensorium.github.io/Mozzi/
 
-Mozzi makes efficient use of a microcontroller's limited resources, and is one of the few ways I have found of allowing an Arduino-style board to generate interesting sounds (beyond just square-wave bleeps). I would recommend trying the Mozzi example sketches once you've installed the library. Start with the basic sine wave example and check that you can hear a sound through the output.
+Mozzi makes efficient use of a microcontroller's limited resources, and is one of the few ways I have found of allowing an Arduino-style board to generate interesting sounds (beyond just square-wave bleeps). I would recommend trying the Mozzi example sketches once you've installed the library. Start with the basic sine wave example and check that you can hear a sound through the output, then try editing Mozzi sketches or writing your own to get familiar with how the library works.
+
+## A simple first "hack" - editing the default rhythms
+Once you're happy using the Arduino software to edit sketches and upload them to DrumKid, you can start editing the DrumKid source code. A good first task is to replace some of the default rhythms. Open the drumkid.ino file in your firmware folder, and you should see various tabs at the top of the window, representing other files besides the main code. Open the tab marked "beats.h".
+
+You should see a lot of zeros and ones, organised into lines and blocks. Each line corresponds to a channel (kick, hi-hat, snare, rim, or tom, although obviously you can choose any samples you want). A line contains 32 ones or zeros. If you changed every 0 on the first line into a 1, the kick drum would be triggered 32 times over two bars. Your ones and zeros must be organised into groups of eight, like they are to start with (each group of eight is called a "byte" - computers like things to be in well-organised bytes). Each byte begins with the letter B, so that the software knows what to expect.
+
+Try resetting an entire beat to just zeros, but then add a one at the start of the very first line (so the first byte is B10000000). Upload the code, use the "beat" control to find the beat you have created, and you should hear a very boring rhythm consisting of just one kick drum at the start of the bar.
+
+Now make some more interesting beats. Remember you can always re-download the original beats from GitHub if you want them (or just make a copy of the beats.h file before you start editing).
+
+## Interfacing DrumKid with other gear (Eurorack etc)
+By default, DrumKid has an audio output, a MIDI output, and a MIDI input. This is already enough to connectivity to allow DrumKid to talk to a computer, and you may find that this is enough functionality for you, particularly if you are adept at using your DAW to re-map incoming MIDI signals. However, if you want to make DrumKid trigger a modular synth without using MIDI, for example... well, this topic is going to need some more in-depth thought and experimentation from me so I'm going to stop here for now. I did say it was a work in progress. More coming soon!
