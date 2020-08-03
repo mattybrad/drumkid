@@ -6,7 +6,7 @@ encoding utf-8
 Sheet 1 1
 Title "DrumKid"
 Date ""
-Rev "v8"
+Rev "v9"
 Comp "by Matt Bradshaw"
 Comment1 ""
 Comment2 ""
@@ -1122,10 +1122,10 @@ Wire Wire Line
 	10050 5600 10050 6000
 Connection ~ 10050 6000
 $Comp
-L Device:R R?
+L Device:R R14
 U 1 1 5F2845DE
 P 8050 5600
-F 0 "R?" V 7843 5600 50  0000 C CNN
+F 0 "R14" V 7843 5600 50  0000 C CNN
 F 1 "270" V 7934 5600 50  0000 C CNN
 F 2 "drumkidcustom:R_Axial_DIN0207_L6.3mm_D2.5mm_P10.16mm_Horizontal" V 7980 5600 50  0001 C CNN
 F 3 "~" H 8050 5600 50  0001 C CNN
@@ -1138,12 +1138,12 @@ Connection ~ 9300 5300
 Wire Wire Line
 	8900 5600 9200 5600
 $Comp
-L Device:C C?
+L Device:C C2
 U 1 1 5F2A0A75
 P 8300 5850
-F 0 "C?" H 8415 5896 50  0000 L CNN
+F 0 "C2" H 8415 5896 50  0000 L CNN
 F 1 "100nF" H 8415 5805 50  0000 L CNN
-F 2 "" H 8338 5700 50  0001 C CNN
+F 2 "Capacitor_THT:C_Disc_D3.0mm_W1.6mm_P2.50mm" H 8338 5700 50  0001 C CNN
 F 3 "~" H 8300 5850 50  0001 C CNN
 	1    8300 5850
 	1    0    0    -1  
@@ -1161,10 +1161,10 @@ Wire Wire Line
 Wire Wire Line
 	7450 5600 7900 5600
 $Comp
-L Connector_Generic:Conn_01x15 J?
+L Connector_Generic:Conn_01x15 J10
 U 1 1 5F2D1783
 P 10150 2300
-F 0 "J?" H 10230 2342 50  0000 L CNN
+F 0 "J10" H 10230 2342 50  0000 L CNN
 F 1 "Conn_01x15" H 10230 2251 50  0000 L CNN
 F 2 "Connector_PinSocket_2.54mm:PinSocket_1x15_P2.54mm_Vertical" H 10150 2300 50  0001 C CNN
 F 3 "~" H 10150 2300 50  0001 C CNN
@@ -1188,10 +1188,10 @@ ANALOG_6
 Text Label 9950 2600 2    50   ~ 0
 ANALOG_7
 $Comp
-L Connector_Generic:Conn_01x15 J?
+L Connector_Generic:Conn_01x15 J11
 U 1 1 5F2D1791
 P 10150 3950
-F 0 "J?" H 10230 3992 50  0000 L CNN
+F 0 "J11" H 10230 3992 50  0000 L CNN
 F 1 "Conn_01x15" H 10230 3901 50  0000 L CNN
 F 2 "Connector_PinSocket_2.54mm:PinSocket_1x15_P2.54mm_Vertical" H 10150 3950 50  0001 C CNN
 F 3 "~" H 10150 3950 50  0001 C CNN
@@ -1237,10 +1237,10 @@ VIN
 Text Label 9950 1700 2    50   ~ 0
 3V3
 $Comp
-L power:VCC #PWR?
+L power:VCC #PWR01
 U 1 1 5F2D17AA
 P 9400 1500
-F 0 "#PWR?" H 9400 1350 50  0001 C CNN
+F 0 "#PWR01" H 9400 1350 50  0001 C CNN
 F 1 "VCC" H 9417 1673 50  0000 C CNN
 F 2 "" H 9400 1500 50  0001 C CNN
 F 3 "" H 9400 1500 50  0001 C CNN
@@ -1248,10 +1248,10 @@ F 3 "" H 9400 1500 50  0001 C CNN
 	1    0    0    -1  
 $EndComp
 $Comp
-L power:GND #PWR?
+L power:GND #PWR02
 U 1 1 5F2D17B0
 P 9400 4650
-F 0 "#PWR?" H 9400 4400 50  0001 C CNN
+F 0 "#PWR02" H 9400 4400 50  0001 C CNN
 F 1 "GND" H 9405 4477 50  0000 C CNN
 F 2 "" H 9400 4650 50  0001 C CNN
 F 3 "" H 9400 4650 50  0001 C CNN
@@ -1348,23 +1348,23 @@ F 3 "~" H 5450 2850 50  0001 C CNN
 	0    1    1    0   
 $EndComp
 $Comp
-L Connector_Generic:Conn_01x10 J?
+L Connector_Generic:Conn_01x10 J5
 U 1 1 5F2F774B
 P 3950 7100
-F 0 "J?" H 3800 7800 50  0000 L CNN
+F 0 "J5" H 3800 7800 50  0000 L CNN
 F 1 "Conn_01x10" H 3600 7700 50  0000 L CNN
-F 2 "" H 3950 7100 50  0001 C CNN
+F 2 "Connector_PinSocket_2.54mm:PinSocket_1x10_P2.54mm_Vertical" H 3950 7100 50  0001 C CNN
 F 3 "~" H 3950 7100 50  0001 C CNN
 	1    3950 7100
 	1    0    0    -1  
 $EndComp
 $Comp
-L Connector_Generic:Conn_01x10 J?
+L Connector_Generic:Conn_01x10 J6
 U 1 1 5F2F97BE
 P 4300 7100
-F 0 "J?" H 4250 7800 50  0000 L CNN
+F 0 "J6" H 4250 7800 50  0000 L CNN
 F 1 "Conn_01x10" H 4100 7700 50  0000 L CNN
-F 2 "" H 4300 7100 50  0001 C CNN
+F 2 "Connector_PinSocket_2.54mm:PinSocket_1x10_P2.54mm_Vertical" H 4300 7100 50  0001 C CNN
 F 3 "~" H 4300 7100 50  0001 C CNN
 	1    4300 7100
 	1    0    0    -1  
@@ -1390,23 +1390,23 @@ Wire Wire Line
 Wire Wire Line
 	3750 7600 4100 7600
 $Comp
-L Connector_Generic:Conn_01x10 J?
+L Connector_Generic:Conn_01x10 J7
 U 1 1 5F336643
 P 4950 7100
-F 0 "J?" H 4800 7800 50  0000 L CNN
+F 0 "J7" H 4800 7800 50  0000 L CNN
 F 1 "Conn_01x10" H 4600 7700 50  0000 L CNN
-F 2 "" H 4950 7100 50  0001 C CNN
+F 2 "Connector_PinSocket_2.54mm:PinSocket_1x10_P2.54mm_Vertical" H 4950 7100 50  0001 C CNN
 F 3 "~" H 4950 7100 50  0001 C CNN
 	1    4950 7100
 	1    0    0    -1  
 $EndComp
 $Comp
-L Connector_Generic:Conn_01x10 J?
+L Connector_Generic:Conn_01x10 J8
 U 1 1 5F336649
 P 5300 7100
-F 0 "J?" H 5250 7800 50  0000 L CNN
+F 0 "J8" H 5250 7800 50  0000 L CNN
 F 1 "Conn_01x10" H 5100 7700 50  0000 L CNN
-F 2 "" H 5300 7100 50  0001 C CNN
+F 2 "Connector_PinSocket_2.54mm:PinSocket_1x10_P2.54mm_Vertical" H 5300 7100 50  0001 C CNN
 F 3 "~" H 5300 7100 50  0001 C CNN
 	1    5300 7100
 	1    0    0    -1  
