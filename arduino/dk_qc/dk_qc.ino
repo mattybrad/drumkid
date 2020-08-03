@@ -1,4 +1,4 @@
-// DrumKid quality control testing sketch (V6/V7)
+// DrumKid quality control testing sketch (V6/V7/V8)
 // This is probably not the sketch you're looking for!
 // I use it to test each DrumKid unit before shipping it
 // It also wipes the EEPROM (memory) so be careful ;)

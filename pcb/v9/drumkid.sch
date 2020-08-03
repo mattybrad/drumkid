@@ -6,7 +6,7 @@ encoding utf-8
 Sheet 1 1
 Title "DrumKid"
 Date ""
-Rev "v9"
+Rev "v8"
 Comp "by Matt Bradshaw"
 Comment1 ""
 Comment2 ""
@@ -25,23 +25,12 @@ F 3 "~" H 5750 2050 50  0001 C CNN
 	-1   0    0    1   
 $EndComp
 $Comp
-L Device:R R2
-U 1 1 5CC223A8
-P 5450 2050
-F 0 "R2" V 5243 2050 50  0000 C CNN
-F 1 "680" V 5334 2050 50  0000 C CNN
-F 2 "Resistor_SMD:R_1206_3216Metric" V 5380 2050 50  0001 C CNN
-F 3 "~" H 5450 2050 50  0001 C CNN
-	1    5450 2050
-	0    1    1    0   
-$EndComp
-$Comp
 L Device:Battery BT1
 U 1 1 5CC2645C
 P 1450 1300
 F 0 "BT1" H 1558 1346 50  0000 L CNN
 F 1 "Battery" H 1558 1255 50  0000 L CNN
-F 2 "Connector_Wire:SolderWire-0.5sqmm_1x02_P4.8mm_D0.9mm_OD2.3mm" V 1450 1360 50  0001 C CNN
+F 2 "Connector_Wire:SolderWirePad_1x02_P5.08mm_Drill1.5mm" V 1450 1360 50  0001 C CNN
 F 3 "~" V 1450 1360 50  0001 C CNN
 	1    1450 1300
 	1    0    0    -1  
@@ -111,50 +100,6 @@ F 2 "drumkidcustom:LED_D5.0mm" H 5750 3650 50  0001 C CNN
 F 3 "~" H 5750 3650 50  0001 C CNN
 	1    5750 3650
 	-1   0    0    1   
-$EndComp
-$Comp
-L Device:R R3
-U 1 1 5CC3F36C
-P 5450 2450
-F 0 "R3" V 5243 2450 50  0000 C CNN
-F 1 "680" V 5334 2450 50  0000 C CNN
-F 2 "Resistor_SMD:R_1206_3216Metric" V 5380 2450 50  0001 C CNN
-F 3 "~" H 5450 2450 50  0001 C CNN
-	1    5450 2450
-	0    1    1    0   
-$EndComp
-$Comp
-L Device:R R4
-U 1 1 5CC3F3BC
-P 5450 2850
-F 0 "R4" V 5243 2850 50  0000 C CNN
-F 1 "680" V 5334 2850 50  0000 C CNN
-F 2 "Resistor_SMD:R_1206_3216Metric" V 5380 2850 50  0001 C CNN
-F 3 "~" H 5450 2850 50  0001 C CNN
-	1    5450 2850
-	0    1    1    0   
-$EndComp
-$Comp
-L Device:R R5
-U 1 1 5CC3F40A
-P 5450 3250
-F 0 "R5" V 5243 3250 50  0000 C CNN
-F 1 "680" V 5334 3250 50  0000 C CNN
-F 2 "Resistor_SMD:R_1206_3216Metric" V 5380 3250 50  0001 C CNN
-F 3 "~" H 5450 3250 50  0001 C CNN
-	1    5450 3250
-	0    1    1    0   
-$EndComp
-$Comp
-L Device:R R6
-U 1 1 5CC3F45E
-P 5450 3650
-F 0 "R6" V 5243 3650 50  0000 C CNN
-F 1 "680" V 5334 3650 50  0000 C CNN
-F 2 "Resistor_SMD:R_1206_3216Metric" V 5380 3650 50  0001 C CNN
-F 3 "~" H 5450 3650 50  0001 C CNN
-	1    5450 3650
-	0    1    1    0   
 $EndComp
 $Comp
 L Switch:SW_Push SW1
@@ -320,22 +265,20 @@ Wire Wire Line
 $Comp
 L drumkid-rescue:AudioJack3_Ground_Switch-Connector J9
 U 1 1 5CC95FE7
-P 9850 5500
-F 0 "J9" H 9617 5379 50  0000 R CNN
-F 1 "AudioJack3_Ground_Switch" H 9617 5470 50  0000 R CNN
-F 2 "drumkidcustom:Tayda_3.5mm_stereo_TRS_jack_A-853" H 9850 5500 50  0001 C CNN
-F 3 "~" H 9850 5500 50  0001 C CNN
-	1    9850 5500
+P 10250 5500
+F 0 "J9" H 10100 5050 50  0000 R CNN
+F 1 "AudioJack3_Ground_Switch" H 10400 4950 50  0000 R CNN
+F 2 "drumkidcustom:Tayda_3.5mm_stereo_TRS_jack_A-853" H 10250 5500 50  0001 C CNN
+F 3 "~" H 10250 5500 50  0001 C CNN
+	1    10250 5500
 	-1   0    0    1   
 $EndComp
-NoConn ~ 9650 5400
-NoConn ~ 9650 5200
+NoConn ~ 10050 5400
+NoConn ~ 10050 5200
 Text Notes 7850 1150 0    50   ~ 0
 Arduino pin breakouts for extra hackability
-Text Label 7350 5600 0    50   ~ 0
+Text Label 7450 5600 0    50   ~ 0
 DIGITAL_9
-Wire Wire Line
-	7350 5600 7850 5600
 $Comp
 L Switch:SW_Push SW6
 U 1 1 5CEECF1D
@@ -364,12 +307,12 @@ Wire Wire Line
 $Comp
 L Device:R_POT RV5
 U 1 1 5CD6A7C0
-P 8000 5600
-F 0 "RV5" V 7793 5600 50  0000 C CNN
-F 1 "10k" V 7884 5600 50  0000 C CNN
-F 2 "drumkidcustom:Potentiometer_Alps_RK09K_Single_Vertical" H 8000 5600 50  0001 C CNN
-F 3 "~" H 8000 5600 50  0001 C CNN
-	1    8000 5600
+P 8750 5600
+F 0 "RV5" V 8543 5600 50  0000 C CNN
+F 1 "10k" V 8634 5600 50  0000 C CNN
+F 2 "drumkidcustom:Potentiometer_Alps_RK09K_Single_Vertical" H 8750 5600 50  0001 C CNN
+F 3 "~" H 8750 5600 50  0001 C CNN
+	1    8750 5600
 	0    -1   -1   0   
 $EndComp
 $Comp
@@ -422,104 +365,104 @@ $EndComp
 $Comp
 L Mechanical:MountingHole H1
 U 1 1 5DB7E4A0
-P 10350 1650
-F 0 "H1" H 10450 1696 50  0000 L CNN
-F 1 "MountingHole" H 10450 1605 50  0000 L CNN
-F 2 "drumkidcustom:MountingHole_3.2mm_M3" H 10350 1650 50  0001 C CNN
-F 3 "~" H 10350 1650 50  0001 C CNN
-	1    10350 1650
+P 1000 6850
+F 0 "H1" H 1100 6896 50  0000 L CNN
+F 1 "MountingHole" H 1100 6805 50  0000 L CNN
+F 2 "drumkidcustom:MountingHole_3.2mm_M3" H 1000 6850 50  0001 C CNN
+F 3 "~" H 1000 6850 50  0001 C CNN
+	1    1000 6850
 	1    0    0    -1  
 $EndComp
 $Comp
 L Mechanical:MountingHole H2
 U 1 1 5DB7E63A
-P 10350 1850
-F 0 "H2" H 10450 1896 50  0000 L CNN
-F 1 "MountingHole" H 10450 1805 50  0000 L CNN
-F 2 "drumkidcustom:MountingHole_3.2mm_M3" H 10350 1850 50  0001 C CNN
-F 3 "~" H 10350 1850 50  0001 C CNN
-	1    10350 1850
+P 1000 7050
+F 0 "H2" H 1100 7096 50  0000 L CNN
+F 1 "MountingHole" H 1100 7005 50  0000 L CNN
+F 2 "drumkidcustom:MountingHole_3.2mm_M3" H 1000 7050 50  0001 C CNN
+F 3 "~" H 1000 7050 50  0001 C CNN
+	1    1000 7050
 	1    0    0    -1  
 $EndComp
 $Comp
 L Mechanical:MountingHole H3
 U 1 1 5DB7E762
-P 10350 2050
-F 0 "H3" H 10450 2096 50  0000 L CNN
-F 1 "MountingHole" H 10450 2005 50  0000 L CNN
-F 2 "drumkidcustom:MountingHole_3.2mm_M3" H 10350 2050 50  0001 C CNN
-F 3 "~" H 10350 2050 50  0001 C CNN
-	1    10350 2050
+P 1000 7250
+F 0 "H3" H 1100 7296 50  0000 L CNN
+F 1 "MountingHole" H 1100 7205 50  0000 L CNN
+F 2 "drumkidcustom:MountingHole_3.2mm_M3" H 1000 7250 50  0001 C CNN
+F 3 "~" H 1000 7250 50  0001 C CNN
+	1    1000 7250
 	1    0    0    -1  
 $EndComp
 $Comp
 L Mechanical:MountingHole H4
 U 1 1 5DB7E7F8
-P 10350 2250
-F 0 "H4" H 10450 2296 50  0000 L CNN
-F 1 "MountingHole" H 10450 2205 50  0000 L CNN
-F 2 "drumkidcustom:MountingHole_3.2mm_M3" H 10350 2250 50  0001 C CNN
-F 3 "~" H 10350 2250 50  0001 C CNN
-	1    10350 2250
+P 1000 7450
+F 0 "H4" H 1100 7496 50  0000 L CNN
+F 1 "MountingHole" H 1100 7405 50  0000 L CNN
+F 2 "drumkidcustom:MountingHole_3.2mm_M3" H 1000 7450 50  0001 C CNN
+F 3 "~" H 1000 7450 50  0001 C CNN
+	1    1000 7450
 	1    0    0    -1  
 $EndComp
 $Comp
 L Mechanical:MountingHole H5
 U 1 1 5DB7E890
-P 10350 2450
-F 0 "H5" H 10450 2496 50  0000 L CNN
-F 1 "MountingHole" H 10450 2405 50  0000 L CNN
-F 2 "drumkidcustom:MountingHole_3.2mm_M3" H 10350 2450 50  0001 C CNN
-F 3 "~" H 10350 2450 50  0001 C CNN
-	1    10350 2450
+P 1950 6850
+F 0 "H5" H 2050 6896 50  0000 L CNN
+F 1 "MountingHole" H 2050 6805 50  0000 L CNN
+F 2 "drumkidcustom:MountingHole_3.2mm_M3" H 1950 6850 50  0001 C CNN
+F 3 "~" H 1950 6850 50  0001 C CNN
+	1    1950 6850
 	1    0    0    -1  
 $EndComp
 $Comp
 L Mechanical:MountingHole H6
 U 1 1 5DB7E92E
-P 10350 2650
-F 0 "H6" H 10450 2696 50  0000 L CNN
-F 1 "MountingHole" H 10450 2605 50  0000 L CNN
-F 2 "drumkidcustom:MountingHole_3.2mm_M3" H 10350 2650 50  0001 C CNN
-F 3 "~" H 10350 2650 50  0001 C CNN
-	1    10350 2650
+P 1950 7050
+F 0 "H6" H 2050 7096 50  0000 L CNN
+F 1 "MountingHole" H 2050 7005 50  0000 L CNN
+F 2 "drumkidcustom:MountingHole_3.2mm_M3" H 1950 7050 50  0001 C CNN
+F 3 "~" H 1950 7050 50  0001 C CNN
+	1    1950 7050
 	1    0    0    -1  
 $EndComp
 $Comp
 L Mechanical:MountingHole H7
 U 1 1 5DB7F9BD
-P 10350 3050
-F 0 "H7" H 10450 3096 50  0000 L CNN
-F 1 "MountingHole" H 10450 3005 50  0000 L CNN
-F 2 "drumkidcustom:MountingHole_3.2mm_M3" H 10350 3050 50  0001 C CNN
-F 3 "~" H 10350 3050 50  0001 C CNN
-	1    10350 3050
+P 1950 7250
+F 0 "H7" H 2050 7296 50  0000 L CNN
+F 1 "MountingHole" H 2050 7205 50  0000 L CNN
+F 2 "drumkidcustom:MountingHole_3.2mm_M3" H 1950 7250 50  0001 C CNN
+F 3 "~" H 1950 7250 50  0001 C CNN
+	1    1950 7250
 	1    0    0    -1  
 $EndComp
 $Comp
 L Mechanical:MountingHole H8
 U 1 1 5DB7FA6B
-P 10350 3250
-F 0 "H8" H 10450 3296 50  0000 L CNN
-F 1 "MountingHole" H 10450 3205 50  0000 L CNN
-F 2 "drumkidcustom:MountingHole_3.2mm_M3" H 10350 3250 50  0001 C CNN
-F 3 "~" H 10350 3250 50  0001 C CNN
-	1    10350 3250
+P 1950 7450
+F 0 "H8" H 2050 7496 50  0000 L CNN
+F 1 "MountingHole" H 2050 7405 50  0000 L CNN
+F 2 "drumkidcustom:MountingHole_3.2mm_M3" H 1950 7450 50  0001 C CNN
+F 3 "~" H 1950 7450 50  0001 C CNN
+	1    1950 7450
 	1    0    0    -1  
 $EndComp
 $Comp
 L power:GND #PWR0103
 U 1 1 5E6F0EE1
-P 9650 6000
-F 0 "#PWR0103" H 9650 5750 50  0001 C CNN
-F 1 "GND" H 9655 5827 50  0000 C CNN
-F 2 "" H 9650 6000 50  0001 C CNN
-F 3 "" H 9650 6000 50  0001 C CNN
-	1    9650 6000
+P 10050 6000
+F 0 "#PWR0103" H 10050 5750 50  0001 C CNN
+F 1 "GND" H 10055 5827 50  0000 C CNN
+F 2 "" H 10050 6000 50  0001 C CNN
+F 3 "" H 10050 6000 50  0001 C CNN
+	1    10050 6000
 	1    0    0    -1  
 $EndComp
 Wire Wire Line
-	8000 5450 8000 5300
+	8750 5450 8750 5300
 $Comp
 L arduino_nano_v3.x:Arduino_Nano_v3.x A1
 U 1 1 5E754F97
@@ -588,6 +531,17 @@ Text Label 1500 3600 2    50   ~ 0
 DIGITAL_12
 Text Label 1500 3700 2    50   ~ 0
 DIGITAL_13
+$Comp
+L Diode:1N5817 D8
+U 1 1 5E76DFE8
+P 2200 1600
+F 0 "D8" V 2246 1521 50  0000 R CNN
+F 1 "1N5817" V 2155 1521 50  0000 R CNN
+F 2 "Diode_THT:D_DO-41_SOD81_P10.16mm_Horizontal" H 2200 1425 50  0001 C CNN
+F 3 "http://www.vishay.com/docs/88525/1n5817.pdf" H 2200 1600 50  0001 C CNN
+	1    2200 1600
+	0    -1   -1   0   
+$EndComp
 Wire Wire Line
 	1450 1100 1650 1100
 $Comp
@@ -658,12 +612,12 @@ NoConn ~ 600  5600
 $Comp
 L power:GND #PWR0102
 U 1 1 5E79D457
-P 5700 6300
-F 0 "#PWR0102" H 5700 6050 50  0001 C CNN
-F 1 "GND" H 5705 6127 50  0000 C CNN
-F 2 "" H 5700 6300 50  0001 C CNN
-F 3 "" H 5700 6300 50  0001 C CNN
-	1    5700 6300
+P 5700 6150
+F 0 "#PWR0102" H 5700 5900 50  0001 C CNN
+F 1 "GND" H 5705 5977 50  0000 C CNN
+F 2 "" H 5700 6150 50  0001 C CNN
+F 3 "" H 5700 6150 50  0001 C CNN
+	1    5700 6150
 	1    0    0    -1  
 $EndComp
 $Comp
@@ -683,7 +637,7 @@ U 1 1 5E79D868
 P 5950 5700
 F 0 "R10" V 5743 5700 50  0000 C CNN
 F 1 "220" V 5834 5700 50  0000 C CNN
-F 2 "Resistor_SMD:R_1206_3216Metric" V 5880 5700 50  0001 C CNN
+F 2 "drumkidcustom:R_Axial_DIN0207_L6.3mm_D2.5mm_P10.16mm_Horizontal" V 5880 5700 50  0001 C CNN
 F 3 "~" H 5950 5700 50  0001 C CNN
 	1    5950 5700
 	0    1    1    0   
@@ -694,7 +648,7 @@ U 1 1 5E79D86F
 P 6850 5700
 F 0 "R11" V 6643 5700 50  0000 C CNN
 F 1 "220" V 6734 5700 50  0000 C CNN
-F 2 "Resistor_SMD:R_1206_3216Metric" V 6780 5700 50  0001 C CNN
+F 2 "drumkidcustom:R_Axial_DIN0207_L6.3mm_D2.5mm_P10.16mm_Horizontal" V 6780 5700 50  0001 C CNN
 F 3 "~" H 6850 5700 50  0001 C CNN
 	1    6850 5700
 	0    -1   -1   0   
@@ -703,10 +657,6 @@ Text Notes 6250 6150 0    50   ~ 0
 MIDI OUT
 NoConn ~ 6100 5600
 NoConn ~ 6700 5600
-Wire Wire Line
-	6400 6000 5700 6000
-Wire Wire Line
-	5700 6000 5700 6300
 Wire Wire Line
 	6400 6000 6400 5900
 $Comp
@@ -734,7 +684,7 @@ U 1 1 5E7D146D
 P 1350 5700
 F 0 "R7" V 1143 5700 50  0000 C CNN
 F 1 "220" V 1234 5700 50  0000 C CNN
-F 2 "Resistor_SMD:R_1206_3216Metric" V 1280 5700 50  0001 C CNN
+F 2 "drumkidcustom:R_Axial_DIN0207_L6.3mm_D2.5mm_P10.16mm_Horizontal" V 1280 5700 50  0001 C CNN
 F 3 "~" H 1350 5700 50  0001 C CNN
 	1    1350 5700
 	0    1    1    0   
@@ -745,7 +695,7 @@ U 1 1 5E7D16D4
 P 1500 5850
 F 0 "D7" V 1454 5929 50  0000 L CNN
 F 1 "1N4148" V 1545 5929 50  0000 L CNN
-F 2 "Diode_SMD:D_SOD-323" H 1500 5675 50  0001 C CNN
+F 2 "Diode_THT:D_DO-35_SOD27_P7.62mm_Horizontal" H 1500 5675 50  0001 C CNN
 F 3 "http://www.nxp.com/documents/data_sheet/1N4148_1N4448.pdf" H 1500 5850 50  0001 C CNN
 	1    1500 5850
 	0    1    1    0   
@@ -762,7 +712,7 @@ U 1 1 5E7DCDB3
 P 2350 5800
 F 0 "U1" H 2350 6267 50  0000 C CNN
 F 1 "6N138" H 2350 6176 50  0000 C CNN
-F 2 "Package_DIP:PowerIntegrations_SMD-8" H 2640 5500 50  0001 C CNN
+F 2 "Package_DIP:DIP-8_W7.62mm_Socket" H 2640 5500 50  0001 C CNN
 F 3 "http://www.onsemi.com/pub/Collateral/HCPL2731-D.pdf" H 2640 5500 50  0001 C CNN
 	1    2350 5800
 	1    0    0    -1  
@@ -781,7 +731,7 @@ U 1 1 5E7E86BF
 P 4400 5900
 F 0 "R9" V 4193 5900 50  0000 C CNN
 F 1 "470" V 4284 5900 50  0000 C CNN
-F 2 "Resistor_SMD:R_1206_3216Metric" V 4330 5900 50  0001 C CNN
+F 2 "drumkidcustom:R_Axial_DIN0207_L6.3mm_D2.5mm_P10.16mm_Horizontal" V 4330 5900 50  0001 C CNN
 F 3 "~" H 4400 5900 50  0001 C CNN
 	1    4400 5900
 	0    1    1    0   
@@ -793,7 +743,7 @@ U 1 1 5E7F50BF
 P 2800 5700
 F 0 "R8" V 2593 5700 50  0000 C CNN
 F 1 "10k" V 2684 5700 50  0000 C CNN
-F 2 "Resistor_SMD:R_1206_3216Metric" V 2730 5700 50  0001 C CNN
+F 2 "drumkidcustom:R_Axial_DIN0207_L6.3mm_D2.5mm_P10.16mm_Horizontal" V 2730 5700 50  0001 C CNN
 F 3 "~" H 2800 5700 50  0001 C CNN
 	1    2800 5700
 	0    1    1    0   
@@ -813,7 +763,6 @@ Wire Wire Line
 	2650 5050 4550 5050
 Wire Wire Line
 	2650 6000 2950 6000
-Connection ~ 5700 6000
 Wire Wire Line
 	2950 5700 2950 6000
 $Comp
@@ -821,22 +770,12 @@ L Device:R R1
 U 1 1 5E83A6B6
 P 5450 1650
 F 0 "R1" V 5243 1650 50  0000 C CNN
-F 1 "680" V 5334 1650 50  0000 C CNN
-F 2 "Resistor_SMD:R_1206_3216Metric" V 5380 1650 50  0001 C CNN
+F 1 "R_LED" V 5334 1650 50  0000 C CNN
+F 2 "drumkidcustom:R_Axial_DIN0207_L6.3mm_D2.5mm_P10.16mm_Horizontal" V 5380 1650 50  0001 C CNN
 F 3 "~" H 5450 1650 50  0001 C CNN
 	1    5450 1650
 	0    1    1    0   
 $EndComp
-Text Label 5300 2050 2    50   ~ 0
-DIGITAL_2
-Text Label 5300 2450 2    50   ~ 0
-DIGITAL_3
-Text Label 5300 2850 2    50   ~ 0
-DIGITAL_11
-Text Label 5300 3250 2    50   ~ 0
-DIGITAL_12
-Text Label 5300 3650 2    50   ~ 0
-DIGITAL_13
 $Comp
 L power:VCC #PWR0108
 U 1 1 5E83EB5C
@@ -1012,20 +951,9 @@ U 1 1 5E8C7A0F
 P 2950 1350
 F 0 "C1" H 3068 1396 50  0000 L CNN
 F 1 "470uF" H 3068 1305 50  0000 L CNN
-F 2 "Capacitor_SMD:CP_Elec_8x10" H 2988 1200 50  0001 C CNN
+F 2 "drumkidcustom:CP_Radial_D6.3mm_P2.50mm" H 2988 1200 50  0001 C CNN
 F 3 "~" H 2950 1350 50  0001 C CNN
 	1    2950 1350
-	1    0    0    -1  
-$EndComp
-$Comp
-L Device:C C2
-U 1 1 5E8C7ACD
-P 3300 1350
-F 0 "C2" H 3415 1396 50  0000 L CNN
-F 1 "C" H 3415 1305 50  0000 L CNN
-F 2 "drumkidcustom:C_Disc_D3.4mm_W2.1mm_P2.50mm" H 3338 1200 50  0001 C CNN
-F 3 "~" H 3300 1350 50  0001 C CNN
-	1    3300 1350
 	1    0    0    -1  
 $EndComp
 Wire Wire Line
@@ -1044,7 +972,6 @@ F 3 "" H 3300 1800 50  0001 C CNN
 	1    3300 1800
 	1    0    0    -1  
 $EndComp
-Connection ~ 3300 1500
 Wire Wire Line
 	1900 2000 1900 1800
 $Comp
@@ -1102,44 +1029,19 @@ U 1 1 5E730EEC
 P 4800 5550
 F 0 "C3" H 4918 5596 50  0000 L CNN
 F 1 "470uF" H 4918 5505 50  0000 L CNN
-F 2 "Capacitor_SMD:CP_Elec_8x10" H 4838 5400 50  0001 C CNN
+F 2 "drumkidcustom:CP_Radial_D6.3mm_P2.50mm" H 4838 5400 50  0001 C CNN
 F 3 "~" H 4800 5550 50  0001 C CNN
 	1    4800 5550
 	1    0    0    -1  
 $EndComp
-$Comp
-L Device:C C4
-U 1 1 5E730FB4
-P 5150 5550
-F 0 "C4" H 5265 5596 50  0000 L CNN
-F 1 "C" H 5265 5505 50  0000 L CNN
-F 2 "drumkidcustom:C_Disc_D3.4mm_W2.1mm_P2.50mm" H 5188 5400 50  0001 C CNN
-F 3 "~" H 5150 5550 50  0001 C CNN
-	1    5150 5550
-	1    0    0    -1  
-$EndComp
-Wire Wire Line
-	5150 5400 5150 5050
 Wire Wire Line
 	4550 5050 4800 5050
-Connection ~ 5150 5050
-Wire Wire Line
-	5150 5050 5700 5050
 Wire Wire Line
 	4800 5400 4800 5050
 Connection ~ 4800 5050
 Wire Wire Line
-	4800 5050 5150 5050
-Wire Wire Line
 	4800 5700 4800 6000
 Connection ~ 4800 6000
-Wire Wire Line
-	4800 6000 5150 6000
-Wire Wire Line
-	5150 5700 5150 6000
-Connection ~ 5150 6000
-Wire Wire Line
-	5150 6000 5700 6000
 Wire Wire Line
 	2200 2000 2200 1900
 Wire Wire Line
@@ -1151,30 +1053,16 @@ Wire Wire Line
 	2200 1900 2200 1750
 Connection ~ 2750 1200
 Wire Wire Line
-	3150 1200 3300 1200
-Wire Wire Line
 	2950 1200 3150 1200
-Connection ~ 3150 1200
-$Comp
-L Mechanical:MountingHole H9
-U 1 1 5E73A9BB
-P 10350 3650
-F 0 "H9" H 10450 3696 50  0000 L CNN
-F 1 "MountingHole" H 10450 3605 50  0000 L CNN
-F 2 "drumkidcustom:MountingHole_3.2mm_M3" H 10350 3650 50  0001 C CNN
-F 3 "~" H 10350 3650 50  0001 C CNN
-	1    10350 3650
-	1    0    0    -1  
-$EndComp
 $Comp
 L Mechanical:MountingHole H10
 U 1 1 5E73AA49
-P 10350 3850
-F 0 "H10" H 10450 3896 50  0000 L CNN
-F 1 "MountingHole" H 10450 3805 50  0000 L CNN
-F 2 "drumkidcustom:MountingHole_3.2mm_M3" H 10350 3850 50  0001 C CNN
-F 3 "~" H 10350 3850 50  0001 C CNN
-	1    10350 3850
+P 2900 7050
+F 0 "H10" H 3000 7096 50  0000 L CNN
+F 1 "MountingHole" H 3000 7005 50  0000 L CNN
+F 2 "drumkidcustom:MountingHole_3.2mm_M3" H 2900 7050 50  0001 C CNN
+F 3 "~" H 2900 7050 50  0001 C CNN
+	1    2900 7050
 	1    0    0    -1  
 $EndComp
 Wire Wire Line
@@ -1184,69 +1072,374 @@ Wire Wire Line
 $Comp
 L Device:CP C5
 U 1 1 5EF27403
-P 8250 5300
-F 0 "C5" V 8505 5300 50  0000 C CNN
-F 1 "22uF" V 8414 5300 50  0000 C CNN
-F 2 "Capacitor_SMD:CP_Elec_8x10" H 8288 5150 50  0001 C CNN
-F 3 "~" H 8250 5300 50  0001 C CNN
-	1    8250 5300
+P 9000 5300
+F 0 "C5" V 9255 5300 50  0000 C CNN
+F 1 "22uF" V 9164 5300 50  0000 C CNN
+F 2 "drumkidcustom:CP_Radial_D6.3mm_P2.50mm" H 9038 5150 50  0001 C CNN
+F 3 "~" H 9000 5300 50  0001 C CNN
+	1    9000 5300
 	0    -1   -1   0   
 $EndComp
 $Comp
 L Device:R R13
 U 1 1 5EF29817
-P 9350 5500
-F 0 "R13" V 9450 5500 50  0000 C CNN
-F 1 "1k" V 9550 5500 50  0000 C CNN
-F 2 "Resistor_SMD:R_1206_3216Metric" V 9280 5500 50  0001 C CNN
-F 3 "~" H 9350 5500 50  0001 C CNN
-	1    9350 5500
+P 9750 5500
+F 0 "R13" V 9850 5500 50  0000 C CNN
+F 1 "1k" V 9950 5500 50  0000 C CNN
+F 2 "drumkidcustom:R_Axial_DIN0207_L6.3mm_D2.5mm_P10.16mm_Horizontal" V 9680 5500 50  0001 C CNN
+F 3 "~" H 9750 5500 50  0001 C CNN
+	1    9750 5500
 	0    1    1    0   
 $EndComp
 $Comp
 L Device:R R12
 U 1 1 5EF282B1
-P 9350 5300
-F 0 "R12" V 9143 5300 50  0000 C CNN
-F 1 "1k" V 9234 5300 50  0000 C CNN
-F 2 "Resistor_SMD:R_1206_3216Metric" V 9280 5300 50  0001 C CNN
-F 3 "~" H 9350 5300 50  0001 C CNN
-	1    9350 5300
+P 9750 5300
+F 0 "R12" V 9543 5300 50  0000 C CNN
+F 1 "1k" V 9634 5300 50  0000 C CNN
+F 2 "drumkidcustom:R_Axial_DIN0207_L6.3mm_D2.5mm_P10.16mm_Horizontal" V 9680 5300 50  0001 C CNN
+F 3 "~" H 9750 5300 50  0001 C CNN
+	1    9750 5300
 	0    1    1    0   
 $EndComp
 Wire Wire Line
-	9500 5300 9650 5300
+	9900 5300 10050 5300
 Wire Wire Line
-	9500 5500 9650 5500
+	9900 5500 10050 5500
 Wire Wire Line
-	8400 5300 8900 5300
+	9300 5300 9300 5500
 Wire Wire Line
-	8900 5300 8900 5500
+	9300 5500 9600 5500
 Wire Wire Line
-	8900 5500 9200 5500
-Connection ~ 8900 5300
+	9300 5300 9600 5300
 Wire Wire Line
-	8900 5300 9200 5300
+	8750 5300 8850 5300
 Wire Wire Line
-	8000 5300 8100 5300
+	9200 5600 9200 6000
 Wire Wire Line
-	8150 5600 8800 5600
+	9200 6000 10050 6000
 Wire Wire Line
-	8800 5600 8800 6000
-Wire Wire Line
-	8800 6000 9650 6000
-Wire Wire Line
-	9650 5600 9650 6000
-Connection ~ 9650 6000
+	10050 5600 10050 6000
+Connection ~ 10050 6000
 $Comp
-L Diode:1N4001 D8
-U 1 1 5EF372BA
-P 2200 1600
-F 0 "D8" V 2246 1521 50  0000 R CNN
-F 1 "1N4001" V 2155 1521 50  0000 R CNN
-F 2 "Diode_SMD:D_SOD-123" H 2200 1425 50  0001 C CNN
-F 3 "http://www.vishay.com/docs/88503/1n4001.pdf" H 2200 1600 50  0001 C CNN
-	1    2200 1600
-	0    -1   -1   0   
+L Device:R R?
+U 1 1 5F2845DE
+P 8050 5600
+F 0 "R?" V 7843 5600 50  0000 C CNN
+F 1 "270" V 7934 5600 50  0000 C CNN
+F 2 "drumkidcustom:R_Axial_DIN0207_L6.3mm_D2.5mm_P10.16mm_Horizontal" V 7980 5600 50  0001 C CNN
+F 3 "~" H 8050 5600 50  0001 C CNN
+	1    8050 5600
+	0    1    1    0   
 $EndComp
+Wire Wire Line
+	9150 5300 9300 5300
+Connection ~ 9300 5300
+Wire Wire Line
+	8900 5600 9200 5600
+$Comp
+L Device:C C?
+U 1 1 5F2A0A75
+P 8300 5850
+F 0 "C?" H 8415 5896 50  0000 L CNN
+F 1 "100nF" H 8415 5805 50  0000 L CNN
+F 2 "" H 8338 5700 50  0001 C CNN
+F 3 "~" H 8300 5850 50  0001 C CNN
+	1    8300 5850
+	1    0    0    -1  
+$EndComp
+Connection ~ 9200 6000
+Wire Wire Line
+	8600 5600 8300 5600
+Wire Wire Line
+	8300 5700 8300 5600
+Connection ~ 8300 5600
+Wire Wire Line
+	8300 5600 8200 5600
+Wire Wire Line
+	8300 6000 9200 6000
+Wire Wire Line
+	7450 5600 7900 5600
+$Comp
+L Connector_Generic:Conn_01x15 J?
+U 1 1 5F2D1783
+P 10150 2300
+F 0 "J?" H 10230 2342 50  0000 L CNN
+F 1 "Conn_01x15" H 10230 2251 50  0000 L CNN
+F 2 "Connector_PinSocket_2.54mm:PinSocket_1x15_P2.54mm_Vertical" H 10150 2300 50  0001 C CNN
+F 3 "~" H 10150 2300 50  0001 C CNN
+	1    10150 2300
+	1    0    0    -1  
+$EndComp
+Text Label 9950 1900 2    50   ~ 0
+ANALOG_0
+Text Label 9950 2000 2    50   ~ 0
+ANALOG_1
+Text Label 9950 2100 2    50   ~ 0
+ANALOG_2
+Text Label 9950 2200 2    50   ~ 0
+ANALOG_3
+Text Label 9950 2300 2    50   ~ 0
+ANALOG_4
+Text Label 9950 2400 2    50   ~ 0
+ANALOG_5
+Text Label 9950 2500 2    50   ~ 0
+ANALOG_6
+Text Label 9950 2600 2    50   ~ 0
+ANALOG_7
+$Comp
+L Connector_Generic:Conn_01x15 J?
+U 1 1 5F2D1791
+P 10150 3950
+F 0 "J?" H 10230 3992 50  0000 L CNN
+F 1 "Conn_01x15" H 10230 3901 50  0000 L CNN
+F 2 "Connector_PinSocket_2.54mm:PinSocket_1x15_P2.54mm_Vertical" H 10150 3950 50  0001 C CNN
+F 3 "~" H 10150 3950 50  0001 C CNN
+	1    10150 3950
+	1    0    0    -1  
+$EndComp
+Text Label 9950 4550 2    50   ~ 0
+DIGITAL_0
+Text Label 9950 4650 2    50   ~ 0
+DIGITAL_1
+Text Label 9950 4250 2    50   ~ 0
+DIGITAL_2
+Text Label 9950 4150 2    50   ~ 0
+DIGITAL_3
+Text Label 9950 4050 2    50   ~ 0
+DIGITAL_4
+Text Label 9950 3950 2    50   ~ 0
+DIGITAL_5
+Text Label 9950 3850 2    50   ~ 0
+DIGITAL_6
+Text Label 9950 3750 2    50   ~ 0
+DIGITAL_7
+Text Label 9950 3650 2    50   ~ 0
+DIGITAL_8
+Text Label 9950 3550 2    50   ~ 0
+DIGITAL_9
+Text Label 9950 3450 2    50   ~ 0
+DIGITAL_10
+Text Label 9950 3350 2    50   ~ 0
+DIGITAL_11
+Text Label 9950 3250 2    50   ~ 0
+DIGITAL_12
+Text Label 9950 1600 2    50   ~ 0
+DIGITAL_13
+Text Label 9950 2800 2    50   ~ 0
+RESET
+Text Label 9950 4450 2    50   ~ 0
+RESET
+Text Label 9950 1800 2    50   ~ 0
+AREF
+Text Label 9950 3000 2    50   ~ 0
+VIN
+Text Label 9950 1700 2    50   ~ 0
+3V3
+$Comp
+L power:VCC #PWR?
+U 1 1 5F2D17AA
+P 9400 1500
+F 0 "#PWR?" H 9400 1350 50  0001 C CNN
+F 1 "VCC" H 9417 1673 50  0000 C CNN
+F 2 "" H 9400 1500 50  0001 C CNN
+F 3 "" H 9400 1500 50  0001 C CNN
+	1    9400 1500
+	1    0    0    -1  
+$EndComp
+$Comp
+L power:GND #PWR?
+U 1 1 5F2D17B0
+P 9400 4650
+F 0 "#PWR?" H 9400 4400 50  0001 C CNN
+F 1 "GND" H 9405 4477 50  0000 C CNN
+F 2 "" H 9400 4650 50  0001 C CNN
+F 3 "" H 9400 4650 50  0001 C CNN
+	1    9400 4650
+	1    0    0    -1  
+$EndComp
+Wire Wire Line
+	9400 1500 9400 2700
+Wire Wire Line
+	9400 2700 9950 2700
+Wire Wire Line
+	9950 2900 9400 2900
+Wire Wire Line
+	9400 2900 9400 4350
+Wire Wire Line
+	9950 4350 9400 4350
+Connection ~ 9400 4350
+Wire Wire Line
+	9400 4350 9400 4650
+$Comp
+L Mechanical:MountingHole H9
+U 1 1 5E73A9BB
+P 2900 6850
+F 0 "H9" H 3000 6896 50  0000 L CNN
+F 1 "MountingHole" H 3000 6805 50  0000 L CNN
+F 2 "drumkidcustom:MountingHole_3.2mm_M3" H 2900 6850 50  0001 C CNN
+F 3 "~" H 2900 6850 50  0001 C CNN
+	1    2900 6850
+	1    0    0    -1  
+$EndComp
+Text Label 5300 3650 2    50   ~ 0
+DIGITAL_13
+Text Label 5300 3250 2    50   ~ 0
+DIGITAL_12
+Text Label 5300 2850 2    50   ~ 0
+DIGITAL_11
+Text Label 5300 2450 2    50   ~ 0
+DIGITAL_3
+Text Label 5300 2050 2    50   ~ 0
+DIGITAL_2
+$Comp
+L Device:R R2
+U 1 1 5CC223A8
+P 5450 2050
+F 0 "R2" V 5243 2050 50  0000 C CNN
+F 1 "R_LED" V 5334 2050 50  0000 C CNN
+F 2 "drumkidcustom:R_Axial_DIN0207_L6.3mm_D2.5mm_P10.16mm_Horizontal" V 5380 2050 50  0001 C CNN
+F 3 "~" H 5450 2050 50  0001 C CNN
+	1    5450 2050
+	0    1    1    0   
+$EndComp
+$Comp
+L Device:R R3
+U 1 1 5CC3F36C
+P 5450 2450
+F 0 "R3" V 5243 2450 50  0000 C CNN
+F 1 "R_LED" V 5334 2450 50  0000 C CNN
+F 2 "drumkidcustom:R_Axial_DIN0207_L6.3mm_D2.5mm_P10.16mm_Horizontal" V 5380 2450 50  0001 C CNN
+F 3 "~" H 5450 2450 50  0001 C CNN
+	1    5450 2450
+	0    1    1    0   
+$EndComp
+$Comp
+L Device:R R5
+U 1 1 5CC3F40A
+P 5450 3250
+F 0 "R5" V 5243 3250 50  0000 C CNN
+F 1 "R_LED" V 5334 3250 50  0000 C CNN
+F 2 "drumkidcustom:R_Axial_DIN0207_L6.3mm_D2.5mm_P10.16mm_Horizontal" V 5380 3250 50  0001 C CNN
+F 3 "~" H 5450 3250 50  0001 C CNN
+	1    5450 3250
+	0    1    1    0   
+$EndComp
+$Comp
+L Device:R R6
+U 1 1 5CC3F45E
+P 5450 3650
+F 0 "R6" V 5243 3650 50  0000 C CNN
+F 1 "R_LED" V 5334 3650 50  0000 C CNN
+F 2 "drumkidcustom:R_Axial_DIN0207_L6.3mm_D2.5mm_P10.16mm_Horizontal" V 5380 3650 50  0001 C CNN
+F 3 "~" H 5450 3650 50  0001 C CNN
+	1    5450 3650
+	0    1    1    0   
+$EndComp
+$Comp
+L Device:R R4
+U 1 1 5CC3F3BC
+P 5450 2850
+F 0 "R4" V 5243 2850 50  0000 C CNN
+F 1 "R_LED" V 5334 2850 50  0000 C CNN
+F 2 "drumkidcustom:R_Axial_DIN0207_L6.3mm_D2.5mm_P10.16mm_Horizontal" V 5380 2850 50  0001 C CNN
+F 3 "~" H 5450 2850 50  0001 C CNN
+	1    5450 2850
+	0    1    1    0   
+$EndComp
+$Comp
+L Connector_Generic:Conn_01x10 J?
+U 1 1 5F2F774B
+P 3950 7100
+F 0 "J?" H 3800 7800 50  0000 L CNN
+F 1 "Conn_01x10" H 3600 7700 50  0000 L CNN
+F 2 "" H 3950 7100 50  0001 C CNN
+F 3 "~" H 3950 7100 50  0001 C CNN
+	1    3950 7100
+	1    0    0    -1  
+$EndComp
+$Comp
+L Connector_Generic:Conn_01x10 J?
+U 1 1 5F2F97BE
+P 4300 7100
+F 0 "J?" H 4250 7800 50  0000 L CNN
+F 1 "Conn_01x10" H 4100 7700 50  0000 L CNN
+F 2 "" H 4300 7100 50  0001 C CNN
+F 3 "~" H 4300 7100 50  0001 C CNN
+	1    4300 7100
+	1    0    0    -1  
+$EndComp
+Wire Wire Line
+	3750 6700 4100 6700
+Wire Wire Line
+	3750 6800 4100 6800
+Wire Wire Line
+	3750 6900 4100 6900
+Wire Wire Line
+	3750 7000 4100 7000
+Wire Wire Line
+	3750 7100 4100 7100
+Wire Wire Line
+	3750 7200 4100 7200
+Wire Wire Line
+	3750 7300 4100 7300
+Wire Wire Line
+	3750 7400 4100 7400
+Wire Wire Line
+	3750 7500 4100 7500
+Wire Wire Line
+	3750 7600 4100 7600
+$Comp
+L Connector_Generic:Conn_01x10 J?
+U 1 1 5F336643
+P 4950 7100
+F 0 "J?" H 4800 7800 50  0000 L CNN
+F 1 "Conn_01x10" H 4600 7700 50  0000 L CNN
+F 2 "" H 4950 7100 50  0001 C CNN
+F 3 "~" H 4950 7100 50  0001 C CNN
+	1    4950 7100
+	1    0    0    -1  
+$EndComp
+$Comp
+L Connector_Generic:Conn_01x10 J?
+U 1 1 5F336649
+P 5300 7100
+F 0 "J?" H 5250 7800 50  0000 L CNN
+F 1 "Conn_01x10" H 5100 7700 50  0000 L CNN
+F 2 "" H 5300 7100 50  0001 C CNN
+F 3 "~" H 5300 7100 50  0001 C CNN
+	1    5300 7100
+	1    0    0    -1  
+$EndComp
+Wire Wire Line
+	4750 6700 5100 6700
+Wire Wire Line
+	4750 6800 5100 6800
+Wire Wire Line
+	4750 6900 5100 6900
+Wire Wire Line
+	4750 7000 5100 7000
+Wire Wire Line
+	4750 7100 5100 7100
+Wire Wire Line
+	4750 7200 5100 7200
+Wire Wire Line
+	4750 7300 5100 7300
+Wire Wire Line
+	4750 7400 5100 7400
+Wire Wire Line
+	4750 7500 5100 7500
+Wire Wire Line
+	4750 7600 5100 7600
+Wire Wire Line
+	5700 6150 5700 6000
+Connection ~ 5700 6000
+Wire Wire Line
+	5700 6000 6400 6000
+Wire Wire Line
+	4800 6000 5700 6000
+Wire Wire Line
+	4800 5050 5700 5050
+Text Notes 5550 6900 0    50   ~ 0
+Extra holes to enable adding\nstripboard modifications
 $EndSCHEMATC
