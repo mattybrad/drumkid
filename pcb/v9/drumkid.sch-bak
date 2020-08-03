@@ -1143,7 +1143,7 @@ U 1 1 5F2A0A75
 P 8300 5850
 F 0 "C2" H 8415 5896 50  0000 L CNN
 F 1 "100nF" H 8415 5805 50  0000 L CNN
-F 2 "" H 8338 5700 50  0001 C CNN
+F 2 "Capacitor_THT:C_Disc_D3.0mm_W1.6mm_P2.50mm" H 8338 5700 50  0001 C CNN
 F 3 "~" H 8300 5850 50  0001 C CNN
 	1    8300 5850
 	1    0    0    -1  
@@ -1353,7 +1353,7 @@ U 1 1 5F2F774B
 P 3950 7100
 F 0 "J5" H 3800 7800 50  0000 L CNN
 F 1 "Conn_01x10" H 3600 7700 50  0000 L CNN
-F 2 "" H 3950 7100 50  0001 C CNN
+F 2 "Connector_PinSocket_2.54mm:PinSocket_1x10_P2.54mm_Vertical" H 3950 7100 50  0001 C CNN
 F 3 "~" H 3950 7100 50  0001 C CNN
 	1    3950 7100
 	1    0    0    -1  
@@ -1364,7 +1364,7 @@ U 1 1 5F2F97BE
 P 4300 7100
 F 0 "J6" H 4250 7800 50  0000 L CNN
 F 1 "Conn_01x10" H 4100 7700 50  0000 L CNN
-F 2 "" H 4300 7100 50  0001 C CNN
+F 2 "Connector_PinSocket_2.54mm:PinSocket_1x10_P2.54mm_Vertical" H 4300 7100 50  0001 C CNN
 F 3 "~" H 4300 7100 50  0001 C CNN
 	1    4300 7100
 	1    0    0    -1  
@@ -1395,7 +1395,7 @@ U 1 1 5F336643
 P 4950 7100
 F 0 "J7" H 4800 7800 50  0000 L CNN
 F 1 "Conn_01x10" H 4600 7700 50  0000 L CNN
-F 2 "" H 4950 7100 50  0001 C CNN
+F 2 "Connector_PinSocket_2.54mm:PinSocket_1x10_P2.54mm_Vertical" H 4950 7100 50  0001 C CNN
 F 3 "~" H 4950 7100 50  0001 C CNN
 	1    4950 7100
 	1    0    0    -1  
@@ -1406,7 +1406,7 @@ U 1 1 5F336649
 P 5300 7100
 F 0 "J8" H 5250 7800 50  0000 L CNN
 F 1 "Conn_01x10" H 5100 7700 50  0000 L CNN
-F 2 "" H 5300 7100 50  0001 C CNN
+F 2 "Connector_PinSocket_2.54mm:PinSocket_1x10_P2.54mm_Vertical" H 5300 7100 50  0001 C CNN
 F 3 "~" H 5300 7100 50  0001 C CNN
 	1    5300 7100
 	1    0    0    -1  
@@ -1442,4 +1442,126 @@ Wire Wire Line
 	4800 5050 5700 5050
 Text Notes 5550 6900 0    50   ~ 0
 Extra holes to enable adding\nstripboard modifications
+$Comp
+L drumkid-rescue:AudioJack3_Ground_Switch-Connector J15
+U 1 1 5F38384E
+P 7200 900
+F 0 "J15" H 6850 800 50  0000 R CNN
+F 1 "AudioJack3_Ground_Switch" H 6950 700 50  0000 R CNN
+F 2 "drumkidcustom:Tayda_3.5mm_stereo_TRS_jack_A-853" H 7200 900 50  0001 C CNN
+F 3 "~" H 7200 900 50  0001 C CNN
+	1    7200 900 
+	-1   0    0    1   
+$EndComp
+$Comp
+L Connector_Generic:Conn_01x05 J14
+U 1 1 5F383854
+P 6500 800
+F 0 "J14" H 6800 800 50  0000 C CNN
+F 1 "Conn_01x05" H 6800 700 50  0000 C CNN
+F 2 "Connector_PinSocket_2.54mm:PinSocket_1x05_P2.54mm_Vertical" H 6500 800 50  0001 C CNN
+F 3 "~" H 6500 800 50  0001 C CNN
+	1    6500 800 
+	-1   0    0    1   
+$EndComp
+Text Notes 5050 1050 0    50   ~ 0
+Extra 3.5mm socket footprints\nin case of hacking (Eurorack?)
+Wire Wire Line
+	6700 1000 6900 1000
+Wire Wire Line
+	6900 1000 6900 900 
+Wire Wire Line
+	6900 900  7000 900 
+Wire Wire Line
+	7000 1000 6950 1000
+Wire Wire Line
+	6950 1000 6950 950 
+Wire Wire Line
+	6950 950  6850 950 
+Wire Wire Line
+	6850 950  6850 800 
+Wire Wire Line
+	6850 800  6700 800 
+Wire Wire Line
+	6800 900  6800 850 
+Wire Wire Line
+	6800 850  7000 850 
+Wire Wire Line
+	7000 850  7000 800 
+Wire Wire Line
+	6700 900  6800 900 
+Wire Wire Line
+	6700 700  6900 700 
+Wire Wire Line
+	6900 700  6900 600 
+Wire Wire Line
+	6900 600  7000 600 
+Wire Wire Line
+	7000 700  6950 700 
+Wire Wire Line
+	6950 700  6950 650 
+Wire Wire Line
+	6950 650  6700 650 
+Wire Wire Line
+	6700 650  6700 600 
+$Comp
+L drumkid-rescue:AudioJack3_Ground_Switch-Connector J?
+U 1 1 5F3BF4C6
+P 4650 900
+F 0 "J?" H 4300 800 50  0000 R CNN
+F 1 "AudioJack3_Ground_Switch" H 4400 700 50  0000 R CNN
+F 2 "drumkidcustom:Tayda_3.5mm_stereo_TRS_jack_A-853" H 4650 900 50  0001 C CNN
+F 3 "~" H 4650 900 50  0001 C CNN
+	1    4650 900 
+	-1   0    0    1   
+$EndComp
+$Comp
+L Connector_Generic:Conn_01x05 J?
+U 1 1 5F3BF4CC
+P 3950 800
+F 0 "J?" H 4250 800 50  0000 C CNN
+F 1 "Conn_01x05" H 4250 700 50  0000 C CNN
+F 2 "Connector_PinSocket_2.54mm:PinSocket_1x05_P2.54mm_Vertical" H 3950 800 50  0001 C CNN
+F 3 "~" H 3950 800 50  0001 C CNN
+	1    3950 800 
+	-1   0    0    1   
+$EndComp
+Wire Wire Line
+	4350 1000 4350 900 
+Wire Wire Line
+	4350 900  4450 900 
+Wire Wire Line
+	4400 1000 4400 950 
+Wire Wire Line
+	4400 950  4300 950 
+Wire Wire Line
+	4300 950  4300 800 
+Wire Wire Line
+	4300 800  4150 800 
+Wire Wire Line
+	4250 900  4250 850 
+Wire Wire Line
+	4250 850  4450 850 
+Wire Wire Line
+	4450 850  4450 800 
+Wire Wire Line
+	4150 900  4250 900 
+Wire Wire Line
+	4150 700  4350 700 
+Wire Wire Line
+	4350 700  4350 600 
+Wire Wire Line
+	4350 600  4450 600 
+Wire Wire Line
+	4450 700  4400 700 
+Wire Wire Line
+	4400 700  4400 650 
+Wire Wire Line
+	4400 650  4150 650 
+Wire Wire Line
+	4150 650  4150 600 
+Wire Wire Line
+	4400 1000 4450 1000
+Wire Wire Line
+	4350 1000 4150 1000
 $EndSCHEMATC
