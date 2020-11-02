@@ -1564,4 +1564,15 @@ Wire Wire Line
 	4400 1000 4450 1000
 Wire Wire Line
 	4350 1000 4150 1000
+$Comp
+L drumkidcustom:drumkid_logo U2
+U 1 1 5FA091CC
+P 3250 4450
+F 0 "U2" H 3275 4496 50  0000 L CNN
+F 1 "drumkid_logo" H 3275 4405 50  0000 L CNN
+F 2 "drumkidcustom:drumkid_logo" H 3250 4450 50  0001 C CNN
+F 3 "" H 3250 4450 50  0001 C CNN
+	1    3250 4450
+	1    0    0    -1  
+$EndComp
 $EndSCHEMATC
