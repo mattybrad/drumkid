@@ -1166,7 +1166,7 @@ U 1 1 5F2D1783
 P 10150 2300
 F 0 "J10" H 10230 2342 50  0000 L CNN
 F 1 "Conn_01x15" H 10230 2251 50  0000 L CNN
-F 2 "Connector_PinSocket_2.54mm:PinSocket_1x15_P2.54mm_Vertical" H 10150 2300 50  0001 C CNN
+F 2 "Connector_PinHeader_2.54mm:PinHeader_1x15_P2.54mm_Vertical" H 10150 2300 50  0001 C CNN
 F 3 "~" H 10150 2300 50  0001 C CNN
 	1    10150 2300
 	1    0    0    -1  
@@ -1193,7 +1193,7 @@ U 1 1 5F2D1791
 P 10150 3950
 F 0 "J11" H 10230 3992 50  0000 L CNN
 F 1 "Conn_01x15" H 10230 3901 50  0000 L CNN
-F 2 "Connector_PinSocket_2.54mm:PinSocket_1x15_P2.54mm_Vertical" H 10150 3950 50  0001 C CNN
+F 2 "Connector_PinHeader_2.54mm:PinHeader_1x15_P2.54mm_Vertical" H 10150 3950 50  0001 C CNN
 F 3 "~" H 10150 3950 50  0001 C CNN
 	1    10150 3950
 	1    0    0    -1  
@@ -1364,7 +1364,7 @@ U 1 1 5F2F97BE
 P 4300 7100
 F 0 "J6" H 4250 7800 50  0000 L CNN
 F 1 "Conn_01x10" H 4100 7700 50  0000 L CNN
-F 2 "Connector_PinSocket_2.54mm:PinSocket_1x10_P2.54mm_Vertical" H 4300 7100 50  0001 C CNN
+F 2 "Connector_PinHeader_2.54mm:PinHeader_1x10_P2.54mm_Vertical" H 4300 7100 50  0001 C CNN
 F 3 "~" H 4300 7100 50  0001 C CNN
 	1    4300 7100
 	1    0    0    -1  
@@ -1395,7 +1395,7 @@ U 1 1 5F336643
 P 4950 7100
 F 0 "J7" H 4800 7800 50  0000 L CNN
 F 1 "Conn_01x10" H 4600 7700 50  0000 L CNN
-F 2 "Connector_PinSocket_2.54mm:PinSocket_1x10_P2.54mm_Vertical" H 4950 7100 50  0001 C CNN
+F 2 "Connector_PinHeader_2.54mm:PinHeader_1x10_P2.54mm_Vertical" H 4950 7100 50  0001 C CNN
 F 3 "~" H 4950 7100 50  0001 C CNN
 	1    4950 7100
 	1    0    0    -1  
@@ -1505,10 +1505,10 @@ Wire Wire Line
 Wire Wire Line
 	6700 650  6700 600 
 $Comp
-L drumkid-rescue:AudioJack3_Ground_Switch-Connector J?
+L drumkid-rescue:AudioJack3_Ground_Switch-Connector J13
 U 1 1 5F3BF4C6
 P 4650 900
-F 0 "J?" H 4300 800 50  0000 R CNN
+F 0 "J13" H 4300 800 50  0000 R CNN
 F 1 "AudioJack3_Ground_Switch" H 4400 700 50  0000 R CNN
 F 2 "drumkidcustom:Tayda_3.5mm_stereo_TRS_jack_A-853" H 4650 900 50  0001 C CNN
 F 3 "~" H 4650 900 50  0001 C CNN
@@ -1516,10 +1516,10 @@ F 3 "~" H 4650 900 50  0001 C CNN
 	-1   0    0    1   
 $EndComp
 $Comp
-L Connector_Generic:Conn_01x05 J?
+L Connector_Generic:Conn_01x05 J12
 U 1 1 5F3BF4CC
 P 3950 800
-F 0 "J?" H 4250 800 50  0000 C CNN
+F 0 "J12" H 4250 800 50  0000 C CNN
 F 1 "Conn_01x05" H 4250 700 50  0000 C CNN
 F 2 "Connector_PinSocket_2.54mm:PinSocket_1x05_P2.54mm_Vertical" H 3950 800 50  0001 C CNN
 F 3 "~" H 3950 800 50  0001 C CNN
