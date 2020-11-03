@@ -12,6 +12,9 @@ const byte analogPins[NUM_ANALOG_PINS] = {A0,A1,A2,A3};
 
 const float noteFrequencies[NUM_BUTTON_PINS] = {220.0,246.94,277.18,311.13,349.23,392.00};
 
+float baseFrequency;
+float tuningOffset;
+
 #define CONTROL_RATE 64
 
 Oscil <SIN2048_NUM_CELLS, AUDIO_RATE> aSin(SIN2048_DATA);
@@ -20,15 +23,28 @@ void setup(){
   for(byte i=0; i<NUM_BUTTON_PINS; i++) {
     pinMode(buttonPins[i], INPUT_PULLUP);
   }
+  for(byte i=0; i<NUM_LED_PINS; i++) {
+    pinMode(ledPins[i], OUTPUT);
+  }
   startMozzi(CONTROL_RATE);
-  aSin.setFreq(noteFrequencies[0]);
+  
+  baseFrequency = noteFrequencies[0];
 }
 
 
 void updateControl(){
   for(byte i=0; i<NUM_BUTTON_PINS; i++) {
-    if(!digitalRead(buttonPins[i])) aSin.setFreq(noteFrequencies[i]);
+    boolean buttonIsPressed = !digitalRead(buttonPins[i]);
+    if(buttonIsPressed) {
+      baseFrequency = noteFrequencies[i];
+    }
+    if(i<NUM_LED_PINS) {
+      digitalWrite(ledPins[i], buttonIsPressed);
+    }
   }
+  tuningOffset = mozziAnalogRead(analogPins[0])/200.0 + 0.5;
+  float newFrequency = baseFrequency * tuningOffset;
+  aSin.setFreq(newFrequency);
 }
 
 
