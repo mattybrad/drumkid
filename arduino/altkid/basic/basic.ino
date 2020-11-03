@@ -1,3 +1,12 @@
+// ALTKID: Basic
+
+// This is an alternative firmware sketch for DrumKid
+// This code is simply intended to show how to write your own code for DrumKid
+// A sine wave oscillator is controlled by DrumKid's buttons
+// The tuning can be controlled using the left potentiometer
+// The LEDs will light up when buttons are pressed
+// Make sure to install the Mozzi library before starting: https://sensorium.github.io/Mozzi/
+
 // need to include the main Mozzi library, the oscillator template and the sine wavetable data
 #include <MozziGuts.h>
 #include <Oscil.h>
