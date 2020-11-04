@@ -6,6 +6,16 @@
 
 #define CONTROL_RATE 256
 
+// define how many pins are used for DrumKid's LEDs, buttons, and potentiometers
+#define NUM_LED_PINS 5
+#define NUM_BUTTON_PINS 6
+#define NUM_ANALOG_PINS 4
+
+// define which pins are used
+const byte ledPins[NUM_LED_PINS] = {2,3,11,12,13};
+const byte buttonPins[NUM_BUTTON_PINS] = {4,5,6,7,8,10};
+const byte analogPins[NUM_ANALOG_PINS] = {A0,A1,A2,A3};
+
 byte gain[4];
 byte channel = 0;
 unsigned long int nextNoteTime = 0;
@@ -24,6 +34,15 @@ const float noteFreqs[88] = {
 };
 const byte majorScale[7] = {0,2,4,5,7,9,11};
 
+const byte chords[6][3] = {
+  {0,4,7},
+  {2,5,9},
+  {4,7,11},
+  {5,9,0},
+  {7,11,2},
+  {9,0,4}
+};
+
 ADSR <CONTROL_RATE, CONTROL_RATE> env[4];
 Oscil <SQUARE_ANALOGUE512_NUM_CELLS, AUDIO_RATE> aSin1(SQUARE_ANALOGUE512_DATA);
 Oscil <SQUARE_ANALOGUE512_NUM_CELLS, AUDIO_RATE> aSin2(SQUARE_ANALOGUE512_DATA);
@@ -31,6 +50,12 @@ Oscil <SQUARE_ANALOGUE512_NUM_CELLS, AUDIO_RATE> aSin3(SQUARE_ANALOGUE512_DATA);
 Oscil <SQUARE_ANALOGUE512_NUM_CELLS, AUDIO_RATE> aSin4(SQUARE_ANALOGUE512_DATA);
 
 void setup(){
+  for(byte i=0; i<NUM_BUTTON_PINS; i++) {
+    pinMode(buttonPins[i], INPUT_PULLUP);
+  }
+  for(byte i=0; i<NUM_LED_PINS; i++) {
+    pinMode(ledPins[i], OUTPUT);
+  }
   startMozzi(CONTROL_RATE);
   aSin1.setFreq(110);
   aSin2.setFreq(220);
@@ -40,16 +65,28 @@ void setup(){
     env[i].setADLevels(255,128);
     env[i].setTimes(3,30,100,700);
   }
+  
 }
 
-
+byte currentChord = 0;
 void updateControl(){
-  byte quadRand = rand(0,16);
+  
+  byte chance = mozziAnalogRead(A0);
+  byte range = map(mozziAnalogRead(A2),0,1023,0,44);
+  byte midpoint = map(mozziAnalogRead(A3),0,1023,0,88);
+
+  for(byte i=0; i<NUM_BUTTON_PINS; i++) {
+    if(!digitalRead(buttonPins[i])) currentChord = i;
+  }
+  
   if(millis()>=nextNoteTime) {
     for(byte i=0;i<4;i++) {
-      if(bitRead(quadRand, i)) {
-        byte randNote = rand(5,50);
-        float randFreq = noteFreqs[majorScale[randNote%7]+12*(randNote/7)];
+      byte onOffRand = rand(0,1024);
+      if(onOffRand<chance) {
+        //byte randNote = rand(max(0,midpoint-range),min(40,midpoint+range));
+        //float randFreq = noteFreqs[chords[0][randNote%3]+12*(randNote/3)];
+        byte randNote = rand(max(0,midpoint-range),min(88,midpoint+range));
+        float randFreq = noteFreqs[findClosestNoteInChord(randNote)];
         if(i==0) aSin1.setFreq(randFreq);
         else if(i==1) aSin2.setFreq(randFreq);
         else if(i==2) aSin3.setFreq(randFreq);
@@ -57,7 +94,7 @@ void updateControl(){
         env[i].noteOn();
       }
     }
-    nextNoteTime += rand(10,100);
+    nextNoteTime += 200;
   }
   for(byte i=0;i<4;i++) {
     env[i].update();
@@ -65,6 +102,19 @@ void updateControl(){
   }
 }
 
+int findClosestNoteInChord(int rawNote) {
+  int closestNoteDistance = 255;
+  byte closestNote = 0;
+  int thisDistance;
+  for(byte i=0; i<3; i++) {
+    thisDistance = abs(chords[currentChord][i] - (rawNote%12));
+    if(thisDistance < closestNoteDistance) {
+      closestNote = i;
+      closestNoteDistance = thisDistance;
+    }
+  }
+  return 12*(rawNote/12) + chords[currentChord][closestNote];
+}
 
 int updateAudio(){
   long int out = (aSin1.next() * gain[0]);
