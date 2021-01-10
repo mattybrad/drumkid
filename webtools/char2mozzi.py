@@ -36,8 +36,8 @@
 import sys, array, os, textwrap, random
 
 if len(sys.argv) != 5:
-        print ('Usage: char2mozzi.py <infile outfile tablename samplerate>')
-        sys.exit(1)
+		print ('Usage: char2mozzi.py <infile outfile tablename samplerate>')
+		sys.exit(1)
 
 [infile, outfile, tablename, samplerate] = sys.argv[1:]
 
@@ -78,6 +78,6 @@ def char2mozzi(infile, outfile, tablename, samplerate):
 		fout.write('\n\n#endif /* ' + tablename + '_H_ */\n')
 		fout.close()
 		#print ("wrote " + outfile)
-        print(str(len(values)))
+		print(str(len(values)))
 
 char2mozzi(infile, outfile, tablename, samplerate)

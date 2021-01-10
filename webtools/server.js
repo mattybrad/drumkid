@@ -49,7 +49,7 @@ app.post('/generatesamples', function(req, res) {
     if(req.files) {
       if(req.files['file'+(i+1)]) {
         thisFile = req.files['file'+(i+1)];
-        console.log(i, "req.files exists, attempting to move...")
+        console.log(i, "req.files exists, attempting to move...");
         thisFile.mv(uploadPath, function(){
           console.log("..moved");
           incrementFilesMoved();
