@@ -18,6 +18,8 @@ order of operations:
 
 const { spawn } = require('child_process');
 
+var sampleRate = '4096'; // usually 16384
+
 function generateArduinoFile(tempFolderName, sourcePath, baseName, callback) {
   console.log("run on this path/name:",sourcePath, baseName);
   const soxProcess = spawn('sox', [
@@ -25,7 +27,7 @@ function generateArduinoFile(tempFolderName, sourcePath, baseName, callback) {
     '--bits',
     '8',
     '-r',
-    '16384',
+    sampleRate,
     '--encoding',
     'signed-integer',
     '--endian',
@@ -40,7 +42,7 @@ function generateArduinoFile(tempFolderName, sourcePath, baseName, callback) {
       'tempfolders/'+tempFolderName + '/rawfiles/'+baseName+'.raw',
       'tempfolders/'+tempFolderName + '/arduino/'+baseName+'.h',
       baseName,
-      '16384'
+      sampleRate
     ]);
     var numCells = 0;
     mozziProcess.stdout.on('data', function(data) {
