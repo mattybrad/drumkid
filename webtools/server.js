@@ -31,11 +31,14 @@ app.post('/generatesamples', function(req, res) {
   fs.mkdirSync('./tempfolders/'+tempFolderName+'/uploads');
   fs.mkdirSync('./tempfolders/'+tempFolderName+'/rawfiles');
   fs.mkdirSync('./tempfolders/'+tempFolderName+'/arduino');
+  var sampleRates = [];
   for(var i=0; i<5; i++) {
     var thisFile = null;
     var thisPath = './tempfolders/'+tempFolderName+'/uploads/'+i+".wav";
     var uploadPath = thisPath;
     var thisSource = req.body['file'+(i+1)+'Source'];
+    var thisRate = req.body['file'+(i+1)+'SampleRate'];
+    sampleRates[i] = thisRate;
     switch(thisSource) {
       case "default":
       thisPath = "./defaultsamples/" + i + ".wav";
@@ -49,7 +52,7 @@ app.post('/generatesamples', function(req, res) {
     if(req.files) {
       if(req.files['file'+(i+1)]) {
         thisFile = req.files['file'+(i+1)];
-        console.log(i, "req.files exists, attempting to move...")
+        console.log(i, "req.files exists, attempting to move...");
         thisFile.mv(uploadPath, function(){
           console.log("..moved");
           incrementFilesMoved();
@@ -67,7 +70,7 @@ app.post('/generatesamples', function(req, res) {
   function incrementFilesMoved() {
     filesMoved ++;
     if(filesMoved == 5) {
-      sampleGen.generateArduinoFiles(tempFolderName, filePaths, function(numCells){
+      sampleGen.generateArduinoFiles(tempFolderName, filePaths, sampleRates, function(numCells){
         // make zip file
         var inPath = path.join(__dirname, 'tempfolders', tempFolderName, 'arduino');
         var outFileName = 'drumkid_samples_'+tempFolderName+'.zip';

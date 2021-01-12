@@ -6,7 +6,7 @@
   <body>
     <h1>Generate DrumKid samples</h1>
     <p>This tool helps you generate samples to load into DrumKid. For each channel, you can either use the default sample or upload your own. If you're struggling to fit larger samples into DrumKid, you can choose to load silence into any of the channels to make some extra room. If the total size of your five samples is too large, the tool will warn you after generating them (and the Arduino software will not let you upload them).</p>
-    <p>WAV files are recommended, although many other formats will work. MP3 files are not supported (they are unsuitable anyway because the MP3 algorithm pads the start of a file with sample, which messes up timing). If you are struggling to fit your samples into DrumKid's (small) memory, try using an audio editor like Audacity to trim some of the silence from the end of your samples.
+    <p>WAV files are recommended, although many other formats will work. MP3 files are not supported (they are unsuitable anyway because the MP3 algorithm pads the start of a file with sample, which messes up timing). If you are struggling to fit your samples into DrumKid's (small) memory, try using an audio editor like Audacity to trim some of the silence from the end of your samples, or reduce the sample rate using the drop-down menu.
     <p>The tool will generate a ZIP file containing five Arduino .h files. Copy these files into your DrumKid firmware folder (firmware version 1.2+) and upload your firmware as normal.</p>
     <form id="mainForm" action="generatesamples" method="post" encType="multipart/form-data">
       <h3>Channel 1 (default = kick)</h3>
@@ -16,12 +16,30 @@
         <option selected value="default">Use default file</option>
         <option value="silent">Use silence</option>
       </select>
+      <select name="file1SampleRate">
+        <option value="16384" selected>16kHz</option>
+        <option value="8192">8kHz</option>
+        <option value="4096">4kHz</option>
+        <option value="2048">2kHz</option>
+        <option value="1024">1kHz</option>
+        <option value="512">512Hz</option>
+        <option value="256">256Hz</option>
+      </select>
       <h3>Channel 2 (default = closed hat)</h3>
       <input name="file2" type="file" onchange="testChange(2)"><br/>
       <select name="file2Source">
         <option value="uploaded">Use uploaded file</option>
         <option selected value="default">Use default file</option>
         <option value="silent">Use silence</option>
+      </select>
+      <select name="file2SampleRate">
+        <option value="16384" selected>16kHz</option>
+        <option value="8192">8kHz</option>
+        <option value="4096">4kHz</option>
+        <option value="2048">2kHz</option>
+        <option value="1024">1kHz</option>
+        <option value="512">512Hz</option>
+        <option value="256">256Hz</option>
       </select>
       <h3>Channel 3 (default = snare)</h3>
       <input name="file3" type="file" onchange="testChange(3)"><br/>
@@ -30,6 +48,15 @@
         <option selected value="default">Use default file</option>
         <option value="silent">Use silence</option>
       </select>
+      <select name="file3SampleRate">
+        <option value="16384" selected>16kHz</option>
+        <option value="8192">8kHz</option>
+        <option value="4096">4kHz</option>
+        <option value="2048">2kHz</option>
+        <option value="1024">1kHz</option>
+        <option value="512">512Hz</option>
+        <option value="256">256Hz</option>
+      </select>
       <h3>Channel 4 (default = rim)</h3>
       <input name="file4" type="file" onchange="testChange(4)"><br/>
       <select name="file4Source">
@@ -37,12 +64,30 @@
         <option selected value="default">Use default file</option>
         <option value="silent">Use silence</option>
       </select>
+      <select name="file4SampleRate">
+        <option value="16384" selected>16kHz</option>
+        <option value="8192">8kHz</option>
+        <option value="4096">4kHz</option>
+        <option value="2048">2kHz</option>
+        <option value="1024">1kHz</option>
+        <option value="512">512Hz</option>
+        <option value="256">256Hz</option>
+      </select>
       <h3>Channel 5 (default = tom)</h3>
       <input name="file5" type="file" onchange="testChange(5)"><br/>
       <select name="file5Source">
         <option value="uploaded">Use uploaded file</option>
         <option selected value="default">Use default file</option>
         <option value="silent">Use silence</option>
+      </select>
+      <select name="file5SampleRate">
+        <option value="16384" selected>16kHz</option>
+        <option value="8192">8kHz</option>
+        <option value="4096">4kHz</option>
+        <option value="2048">2kHz</option>
+        <option value="1024">1kHz</option>
+        <option value="512">512Hz</option>
+        <option value="256">256Hz</option>
       </select>
       <br/><br/>
       <input type="submit" value="Generate samples">

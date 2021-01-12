@@ -18,14 +18,15 @@ order of operations:
 
 const { spawn } = require('child_process');
 
-function generateArduinoFile(tempFolderName, sourcePath, baseName, callback) {
+function generateArduinoFile(tempFolderName, sourcePath, baseName, sampleRate, callback) {
   console.log("run on this path/name:",sourcePath, baseName);
+  console.log("sample rate:",sampleRate);
   const soxProcess = spawn('sox', [
     sourcePath,
     '--bits',
     '8',
     '-r',
-    '16384',
+    sampleRate,
     '--encoding',
     'signed-integer',
     '--endian',
@@ -40,7 +41,7 @@ function generateArduinoFile(tempFolderName, sourcePath, baseName, callback) {
       'tempfolders/'+tempFolderName + '/rawfiles/'+baseName+'.raw',
       'tempfolders/'+tempFolderName + '/arduino/'+baseName+'.h',
       baseName,
-      '16384'
+      sampleRate
     ]);
     var numCells = 0;
     mozziProcess.stdout.on('data', function(data) {
@@ -54,13 +55,14 @@ function generateArduinoFile(tempFolderName, sourcePath, baseName, callback) {
   })
 }
 
-exports.generateArduinoFiles = function(tempFolderName, filePaths, callback) {
+exports.generateArduinoFiles = function(tempFolderName, filePaths, sampleRates, callback) {
   var filesDone = 0;
   var totalNumCells = 0;
   console.log("file paths: ",filePaths);
   console.log("number of file paths: ",filePaths.length);
+  console.log("sample rates: ",sampleRates);
   for(var i=0; i<filePaths.length; i++) {
-    generateArduinoFile(tempFolderName, filePaths[i], "sample"+i, function(numCells) {
+    generateArduinoFile(tempFolderName, filePaths[i], "sample"+i, sampleRates[i], function(numCells) {
       filesDone ++;
       totalNumCells += numCells;
       if(filesDone == filePaths.length) {
