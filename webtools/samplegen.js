@@ -18,7 +18,7 @@ order of operations:
 
 const { spawn } = require('child_process');
 
-var sampleRate = '4096'; // usually 16384
+var sampleRate = '8192'; // usually 16384
 
 function generateArduinoFile(tempFolderName, sourcePath, baseName, callback) {
   console.log("run on this path/name:",sourcePath, baseName);
