@@ -1,4 +1,4 @@
-18731488990238147
+18735333250661230
 Battery
 BatteryHolder_Bulgin_BX0036_1xC
 Bulgin Battery Holder, BX0036, Battery Type C (https://www.bulgin.com/products/pub/media/bulgin/data/Battery_holders.pdf)
@@ -82250,6 +82250,13 @@ C Disc series Radial pin pitch 2.50mm  diameter 3.4mm width 2.1mm Capacitor
 2
 2
 drumkidcustom
+DK button SMD
+
+
+0
+0
+0
+drumkidcustom
 EG1206
 EG1206-1
 Switch
@@ -82295,6 +82302,13 @@ drumkidcustom
 SW_PUSH-12mm_Wuerth-430476085716
 SW PUSH 12mm http://katalog.we-online.de/em/datasheet/430476085716.pdf
 tact sw push 12mm
+0
+4
+2
+drumkidcustom
+SW_Push_1P1T_NO_CK_PTS125Sx43PSMTR
+C&K Switches 1P1T SMD PTS125 Series 12mm Tact Switch with Pegs, https://www.ckswitches.com/media/1462/pts125.pdf
+Button Tactile Switch SPST 1P1T
 0
 4
 2
