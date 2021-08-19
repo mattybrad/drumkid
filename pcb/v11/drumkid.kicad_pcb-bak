@@ -18,7 +18,7 @@
     (34 B.Paste user)
     (35 F.Paste user)
     (36 B.SilkS user)
-    (37 F.SilkS user hide)
+    (37 F.SilkS user)
     (38 B.Mask user)
     (39 F.Mask user)
     (40 Dwgs.User user)
@@ -547,7 +547,7 @@
   )
 
   (module drumkidcustom:drumkid_logo (layer F.Cu) (tedit 5F9FF410) (tstamp 611EDC39)
-    (at 185 106)
+    (at 100.5 60)
     (path /5FA312B5)
     (fp_text reference U3 (at 0 -2.54) (layer F.SilkS) hide
       (effects (font (size 1.524 1.524) (thickness 0.3)))
@@ -4083,7 +4083,7 @@
   (gr_text "R\nRN\nS\nTN\nT" (at 74.93 149.86) (layer F.SilkS)
     (effects (font (size 1.5 1) (thickness 0.25)) (justify left))
   )
-  (gr_text "DrumKid v10\nby Matt Bradshaw\nmattbradshawdesign.com\ngithub.com/mattybrad/drumkid" (at 93.5 98) (layer F.SilkS) (tstamp 5F28FD89)
+  (gr_text "DrumKid v11\nby Matt Bradshaw\nmattbradshawdesign.com\ngithub.com/mattybrad/drumkid" (at 93.5 98) (layer F.SilkS) (tstamp 5F28FD89)
     (effects (font (size 1.2 1.2) (thickness 0.2)) (justify left))
   )
   (gr_line (start 73.66 154.94) (end 68.58 154.94) (layer F.SilkS) (width 0.15))
