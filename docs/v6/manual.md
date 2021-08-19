@@ -164,8 +164,8 @@ DrumKid's "brain" is a tiny computer called an Arduino Nano clone - this is the 
 
 Before you upload anything to the Arduino, unplug any MIDI cables and make sure the switch on the underside of the PCB is set to "Arduino" rather than "MIDI" (and remember to switch it back to "MIDI" when you're done). You should also check that the "board", "processor" and "port" settings are correct in the Arduino software. Click on the "Tools" menu to check this:
 - "Board" should be "Arduino Nano"
-- "Processor" should be "ATmega328P (Old Bootloader)" - please note that it needs to be the old bootloader specifically!
 - "Port" will depend on your setup - try changing this if you're having trouble
+- "Processor" should usually be "ATmega328P", but if this doesn't work then try "ATmega328P (Old Bootloader)"
 
 To test that you're able to upload code, try opening the "Blink" example sketch (File > Examples > Basics > Blink) then uploading it to DrumKid (Sketch > Upload). If successful, one of the LEDs should start flashing on and off. Next, try uploading the latest DrumKid code from https://github.com/mattybrad/drumkid - start by downloading the whole project (repository) as a ZIP file, then unzip it to a folder on your computer, open the arduino/1.2/drumkid/drumkid.ino file (or a later version if it exists), and upload this sketch to the Arduino.
 
