@@ -16,10 +16,10 @@ Conn_01x15,"J3,J4",Connector_PinSocket_2.54mm:PinSocket_1x15_P2.54mm_Vertical,
 Conn_01x10,"J5,J8",Connector_PinSocket_2.54mm:PinSocket_1x10_P2.54mm_Vertical,
 Conn_01x10,"J6,J7",Connector_PinHeader_2.54mm:PinHeader_1x10_P2.54mm_Vertical,
 AudioJack3_Ground_Switch,"J9,J13,J15",drumkidcustom:Tayda_3.5mm_stereo_TRS_jack_A-853,
-680*,"R1,R2,R3,R4,R5,R6",Resistor_SMD:R_0805_2012Metric,C17798
+680,"R1,R2,R3,R4,R5,R6",Resistor_SMD:R_0805_2012Metric,C17798
 220,"R7,R10,R11,R12,R13",Resistor_SMD:R_0805_2012Metric,C17557
 270,R14,Resistor_SMD:R_0805_2012Metric,C17590
-680*,R15,Resistor_THT:R_Axial_DIN0207_L6.3mm_D2.5mm_P7.62mm_Horizontal,
+680,R15,Resistor_THT:R_Axial_DIN0207_L6.3mm_D2.5mm_P7.62mm_Horizontal,
 10k,R8,Resistor_SMD:R_0805_2012Metric,C17414
 470,R9,Resistor_SMD:R_0805_2012Metric,C17710
 R_POT,"RV1,RV2,RV3,RV4",drumkidcustom:Potentiometer_Alps_RK09K_Single_Vertical,

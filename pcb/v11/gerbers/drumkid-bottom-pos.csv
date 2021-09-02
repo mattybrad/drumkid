@@ -1,4 +1,4 @@
-Designator,Val,Package,Mix X,Mid Y,Rotation,Layer
+Designator,Val,Package,Mid X,Mid Y,Rotation,Layer
 C2,100nF,C_0402_1005Metric,76.223,-112.522,0,bottom
 C5,22uF,C_0603_1608Metric,86.36,-113.2585,270,bottom
 D7,1N4148,D_SOD-123,122,-116.35,270,bottom
@@ -24,4 +24,4 @@ SW3,SW_Push,SW_Push_1P1T_NO_CK_PTS125Sx43PSMTR,111,-87,270,bottom
 SW4,SW_Push,SW_Push_1P1T_NO_CK_PTS125Sx43PSMTR,89,-87,270,bottom
 SW5,SW_Push,SW_Push_1P1T_NO_CK_PTS125Sx43PSMTR,76,-87,270,bottom
 SW6,SW_Push,SW_Push_1P1T_NO_CK_PTS125Sx43PSMTR,63,-87,270,bottom
-U1,6N138,PowerIntegrations_SMD-8,114,-116,180,bottom
+U1,6N138,PowerIntegrations_SMD-8,114,-116,270,bottom
