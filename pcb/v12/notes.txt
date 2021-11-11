@@ -1,0 +1,3 @@
+change output resistors from 1K to 220R
+label possible LED resistor values
+include info about unused hacker pins
