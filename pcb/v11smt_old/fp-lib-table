@@ -1,4 +1,0 @@
-(fp_lib_table
-  (lib (name drumkidcustom)(type KiCad)(uri ${KIPRJMOD}/drumkidcustom.pretty)(options "")(descr ""))
-  (lib (name Eurocad)(type KiCad)(uri ${KIPRJMOD}/eurocad-master/Eurocad.pretty)(options "")(descr ""))
-)
