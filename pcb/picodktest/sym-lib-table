@@ -1,0 +1,6 @@
+(sym_lib_table
+  (lib (name "arduino_nano_v3.x")(type "Legacy")(uri "${KIPRJMOD}/arduino_nano_v3.x.lib")(options "")(descr ""))
+  (lib (name "drumkid-rescue")(type "Legacy")(uri "${KIPRJMOD}/drumkid-rescue.lib")(options "")(descr ""))
+  (lib (name "drumkidcustom")(type "Legacy")(uri "${KIPRJMOD}/drumkidcustom.lib")(options "")(descr ""))
+  (lib (name "MCU_RaspberryPi_and_Boards")(type "KiCad")(uri "${KIPRJMOD}/RP-Pico Libraries/MCU_RaspberryPi_and_Boards.kicad_sym")(options "")(descr ""))
+)
