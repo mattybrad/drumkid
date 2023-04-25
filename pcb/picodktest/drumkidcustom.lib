@@ -1,0 +1,15 @@
+EESchema-LIBRARY Version 2.4
+#encoding utf-8
+#
+# drumkid_logo
+#
+DEF drumkid_logo U 0 0 N N 1 F N
+F0 "U" 0 0 50 H V C CNN
+F1 "drumkid_logo" 0 -100 50 H V C CNN
+F2 "" 0 0 50 H I C CNN
+F3 "" 0 0 50 H I C CNN
+DRAW
+ENDDRAW
+ENDDEF
+#
+#End Library

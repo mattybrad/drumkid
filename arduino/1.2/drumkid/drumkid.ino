@@ -808,6 +808,7 @@ void loop(){
           updateParameters(paramSet);
         }
       } else if((midiBytes[0]>>4)==0x9 && currentMidiByte == 2) {
+        // Note on (any channel)
         if(midiBytes[2] > 0) {
           newMidiDroneRoot = true;
           byte paramSet = DRONE_ROOT / 4;
@@ -819,6 +820,24 @@ void loop(){
           }
           updateParameters(paramSet);
           newMidiDroneRoot = false;
+        }
+      }
+      // MIDI thru, experimental, only certain message types
+      bool useMidiThru = false;
+      if(useMidiThru) {
+        if(currentMidiByte == 2) {
+          switch(midiBytes[0]>>4) {
+            case 0xB:
+            // CC
+            case 0x9:
+            // note on
+            case 0x8:
+            // note off
+            Serial.write(midiBytes[0]);           
+            Serial.write(midiBytes[1]);
+            Serial.write(midiBytes[2]);
+            break;
+          }
         }
       }
       currentMidiByte ++;

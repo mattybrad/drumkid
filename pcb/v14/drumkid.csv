@@ -24,4 +24,5 @@ AudioJack3_Ground_Switch,"J9,J13,J15",drumkidcustom:Tayda_3.5mm_stereo_TRS_jack_
 R_POT,"RV1,RV2,RV3,RV4",drumkidcustom:Potentiometer_Alps_RK09K_Single_Vertical,
 10k,RV5,drumkidcustom:Potentiometer_Alps_RK09K_Single_Vertical,
 SW_SPDT,"SW7,SW8",drumkidcustom:EG1206,
+6N138,U1,Package_DIP:PowerIntegrations_SMD-8,C188666
 drumkid_logo,"U2,U3",drumkidcustom:drumkid_logo,
