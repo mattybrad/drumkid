@@ -1,8 +1,8 @@
 # DrumKid manual (V1.2)
 ## Introduction
-Welcome to the DrumKid manual! DrumKid is a musical instrument that creates rhythms using random numbers. To get started with DrumKid, unscrew the six screws on the back of the unit (you should be able to do this by hand), and carefully remove the back plate. Insert three AA batteries (you can use rechargeable or single-use), replace the back plate, and tighten the screws. Slide the power switch to "on" - you should see the lights flash briefly. After this, DrumKid is ready to use. Plug some headphones or a 3.5mm stereo* aux cable into the socket, and start playing. If you would prefer not to use batteries, you can also power DrumKid by connecting a USB mini cable to the socket recessed on the right hand side of the device.
+Welcome to the DrumKid manual! DrumKid is a musical instrument that creates rhythms using random numbers. To get started with DrumKid, unscrew the six screws on the back of the unit (you should be able to do this by hand), and carefully remove the back plate. Insert three AA batteries (you can use rechargeable or single-use), replace the back plate, and tighten the screws. Slide the power switch to "on" - you should see the lights flash briefly. After this, DrumKid is ready to use. Plug some headphones or a 3.5mm stereo<sup>†</sup> aux cable into the socket, and start playing. If you would prefer not to use batteries, you can also power DrumKid by connecting a USB mini cable to the socket recessed on the right hand side of the device.
 
-\* On newer DrumKid models (V8 or later) you can also use a mono 3.5mm cable, but this will not work on older models
+<sup>†</sup> On newer DrumKid models (V8 or later) you can also use a mono 3.5mm cable, but this will not work on older models
 ## Philosophy
 DrumKid is designed around a very basic computer chip with limited memory and processing power. My idea was to squeeze as much cool sound out of this chip as possible, but it has its limits. Rather than try and hide from these limits, I decided to embrace them. This means that it is absolutely possible to make horrible, distorted, broken noises using DrumKid. Some of these horrible noises will sound cool, others will not. DrumKid is a playable instrument like any other - experiment with it and see what happens.
 ## Demo videos and resources
@@ -213,24 +213,26 @@ The basic process for hacking DrumKid's code starts the same way as installing a
 
 ## Nano pins
 The Nano board has 14 digital pins (which can either send or receive binary on/off signals) and 6 analogue pins (which can read a range of voltages between 0V and 5V). In DrumKid's circuit, the analogue pins are used to read the potentiometers, and the digital pins are used for everything else. Certain digital pins can also output a special kind of signal (PWM - pulse width modulation) which is useful for generating audio signals. Here is the list of pins used (and not used) by DrumKid:
-D0 - MIDI input
-D1 - MIDI output
-D2 - LED 1
-D3 - LED 2
-D4 - Start/stop button
-D5 - Button A
-D6 - Button B
-D7 - Button C
-D8 - Button D
-D9 - Audio output
-D10 - Tap tempo button
-D11 - LED 3
-D12 - LED 4
-D13 - LED 5
-A0 - Potentiometer 1
-A1 - Potentiometer 2
-A2 - Potentiometer 3
-A3 - Potentiometer 4
+
+- **D0** - MIDI input
+- **D1** - MIDI output
+- **D2** - LED 1
+- **D3** - LED 2
+- **D4** - Start/stop button
+- **D5** - Button A
+- **D6** - Button B
+- **D7** - Button C
+- **D8** - Button D
+- **D9** - Audio output
+- **D10** - Tap tempo button
+- **D11** - LED 3
+- **D12** - LED 4
+- **D13** - LED 5
+- **A0** - Potentiometer 1
+- **A1** - Potentiometer 2
+- **A2** - Potentiometer 3
+- **A3** - Potentiometer 4
+
 Please note there is also an LED (the left one) permanently connected to the 5V power supply - this is just to show you that DrumKid is receiving power, and cannot be controlled by the Nano.
 
 ## How DrumKid makes sound
