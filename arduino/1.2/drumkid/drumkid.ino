@@ -821,6 +821,14 @@ void loop(){
           updateParameters(paramSet);
           newMidiDroneRoot = false;
         }
+      } else if((midiBytes[0]>>4==0xC) && currentMidiByte == 1) {
+        // program change (beat number)
+        if(midiBytes[1]<NUM_BEATS) {
+          paramBeat = midiBytes[1];
+        } else {
+          paramBeat = NUM_BEATS - 1;
+        }
+        previousBeat = paramBeat;
       }
       // MIDI thru, experimental, only certain message types
       bool useMidiThru = false;
@@ -831,6 +839,8 @@ void loop(){
             // CC
             case 0x9:
             // note on
+            case 0xC:
+            // program change
             case 0x8:
             // note off
             Serial.write(midiBytes[0]);           
